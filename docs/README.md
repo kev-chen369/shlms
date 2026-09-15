@@ -10,7 +10,7 @@
 - 核心：[订单状态机](./07-order-state-machine.md)、[佣金与钱包](./08-commission-wallet.md)
 - 保障：[后台](./09-admin-console.md)、[测试](./10-test-plan.md)、[部署](./11-deployment.md)、[监控](./12-monitoring.md)
 - 产品：[前端规格](./13-frontend-ui-spec.md)、[业务流程](./14-business-processes.md)
-- UI 设计图：[用户端五屏总览](./images/mobile-ui-overview-v1.png)、[运营后台总览](./images/admin-dashboard-overview-v1.png)、[购买与返现旅程](./images/purchase-cashback-journey-v1.png)、[钱包与邀请流程](./images/wallet-withdrawal-referral-v1.png)
+- UI 设计图：[用户端五屏总览](./images/mobile-ui-overview-v1.png)、[多平台客户端](./images/multi-platform-client-overview-v1.png)、[运营后台总览](./images/admin-dashboard-overview-v1.png)、[购买与返现旅程](./images/purchase-cashback-journey-v1.png)、[钱包与邀请流程](./images/wallet-withdrawal-referral-v1.png)
 
 V1 验收主链路：用户注册 → 商品搜索 → Tracking → 推广链接 → 第三方下单 → 订单归因 → 佣金确认 → 返现可用 → 提现 → 对账。
 
