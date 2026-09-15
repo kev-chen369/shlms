@@ -10,6 +10,8 @@
 
 **Spec:** `docs/产品总设计_V1.1.md`, `docs/01-api-spec.md`, `docs/03-channel-jd.md`
 
+**Progress (2026-09-15):** Tasks 1-3 implemented and verified on `feat/mvp-foundation`; Tasks 4-6 remain.
+
 ## Global Constraints
 
 - No real AppKey, AppSecret, PID, access token, cookie, or user credential may enter Git, logs, fixtures, or documentation.
