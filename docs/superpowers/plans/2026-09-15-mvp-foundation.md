@@ -10,7 +10,7 @@
 
 **Spec:** `docs/产品总设计_V1.1.md`, `docs/01-api-spec.md`, `docs/03-channel-jd.md`
 
-**Progress (2026-09-15):** Tasks 1-3 implemented and verified on `feat/mvp-foundation`; Tasks 4-6 remain.
+**Progress (2026-09-15):** Tasks 1-4 implemented and verified on `feat/mvp-foundation`; Tasks 5-6 remain. Live JD calls are paused until exposed credentials are rotated and the application permission set is confirmed.
 
 ## Global Constraints
 
