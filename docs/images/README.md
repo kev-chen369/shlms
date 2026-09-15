@@ -7,6 +7,8 @@
 - `purchase-cashback-journey-v1.png`：搜索比价、商品详情、跳转确认和返现订单四步购买旅程。
 - `wallet-withdrawal-referral-v1.png`：钱包首页、资金明细、提现申请和一级邀请奖励四屏流程。
 - `multi-platform-client-overview-v1.png`：京东、美团、饿了么和淘票票的首页入口、跨平台搜索、场景详情及统一订单总览。
+- `expanded-ecommerce-platforms-v1.png`：淘宝/天猫、拼多多、唯品会和苏宁易购的电商频道、全网比价、优惠详情及订单总览。
+- `local-life-travel-platforms-v1.png`：美团、饿了么、淘票票、携程和同程的生活旅行频道、场景比价、优惠详情及订单总览。
 
 ## 设计基线
 
