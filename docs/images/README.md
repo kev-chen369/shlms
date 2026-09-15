@@ -4,6 +4,8 @@
 
 - `mobile-ui-overview-v1.png`：用户端首页、搜索、商品详情、订单和个人中心五屏总览。
 - `admin-dashboard-overview-v1.png`：运营管理后台经营指标、渠道、订单、佣金、对账和风控总览。
+- `purchase-cashback-journey-v1.png`：搜索比价、商品详情、跳转确认和返现订单四步购买旅程。
+- `wallet-withdrawal-referral-v1.png`：钱包首页、资金明细、提现申请和一级邀请奖励四屏流程。
 
 ## 设计基线
 
