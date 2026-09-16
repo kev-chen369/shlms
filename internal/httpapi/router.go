@@ -24,5 +24,8 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 	if dependencies.PromoterApplications != nil && dependencies.Users != nil {
 		mux.HandleFunc("POST /api/v1/promoter/applications", promoterApplicationHandler(dependencies))
 	}
+	if dependencies.PromoterCurrentApplication != nil && dependencies.Users != nil {
+		mux.HandleFunc("GET /api/v1/promoter/applications/current", promoterCurrentApplicationHandler(dependencies))
+	}
 	return mux
 }

@@ -28,6 +28,8 @@
 
 提交成功返回 200：applicationId、status=PENDING、consentedAt，是原始提交回执，重放不会变成新的审核结果；当前审核状态应查询 profile。相同用户和键在规范化输入一致时返回原 ID 与同意时间，拒绝后重新申请需新键。协议更新后旧版本请求需重新确认当前协议，此时旧键不可用于新版本申请。生产认证及启动装配仍未完成。
 
+`GET /api/v1/promoter/applications/current` 已实现，返回本人当前申请的 applicationId、displayName、scene、agreementVersion、consentedAt、status、reason、canReapply。status 反映当前推广身份，停用为 DISABLED；仅 REJECTED 可重新申请。无申请返回 404 / APPLICATION_NOT_FOUND，未登录 401，存储失败 503；只公开拒绝 / 停用的用户可见原因，审批内部备注不得写入该字段。单条 JOIN 保证申请与身份来自同一查询快照；不接受 userId 查询他人。接口需身份和 CurrentApplicationService 依赖，仍未接入生产启动入口。
+
 新增推广身份 / 申请、推广位、只读商品预览、转链状态、分享事件、推广订单 / 收益 / 看板、结算批次以及提现查询；完整方法、路径和输入输出以[推广中心详细设计第 3 节](./21-promotion-center-detailed-design.md#3-接口契约)为准。后台补申请审核与推广员停用审计。
 
 保留购物用途的 `POST /promotions/link`，推广用途新增 `POST /promotions/preview` 和 `POST /promotions/convert`，共享领域能力但不绕过推广权限。身份来自鉴权上下文，所有推广位和链接需验证所有权。写请求同键同输入幂等，不同输入返回 409；处理中状态可查询，不因上游超时盲目重复发起。金额对外为十进制定点字符串与币种，内部按最小货币单位整数处理。

@@ -19,10 +19,11 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
-	Promotion            PromotionCreator
-	Users                UserResolver
-	Promoter             PromoterReader
-	PromoterApplications PromoterApplicant
+	Promotion                  PromotionCreator
+	Users                      UserResolver
+	Promoter                   PromoterReader
+	PromoterApplications       PromoterApplicant
+	PromoterCurrentApplication PromoterApplicationReader
 }
 
 type promotionLinkRequest struct {
