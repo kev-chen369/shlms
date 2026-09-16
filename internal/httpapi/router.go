@@ -27,5 +27,9 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 	if dependencies.PromoterCurrentApplication != nil && dependencies.Users != nil {
 		mux.HandleFunc("GET /api/v1/promoter/applications/current", promoterCurrentApplicationHandler(dependencies))
 	}
+	if dependencies.Admins != nil && dependencies.PromoterAdmin != nil {
+		mux.HandleFunc("POST /admin/v1/promoter-applications/{id}/review", promoterAdminHandler(dependencies, "REVIEW"))
+		mux.HandleFunc("POST /admin/v1/promoters/{id}/disable", promoterAdminHandler(dependencies, "DISABLE"))
+	}
 	return mux
 }

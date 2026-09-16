@@ -22,6 +22,8 @@
 
 ## 推广中心接口扩展（待实现）
 
+后台增量实现：`POST /admin/v1/promoter-applications/{id}/review` 接受 `{approve: boolean, reason: string, version: integer}`；`POST /admin/v1/promoters/{id}/disable` 接受 `{reason: string, version: integer}`。均要求 JSON、Idempotency-Key 和独立管理员认证。权限分别为 promoter:review / promoter:disable，版本必须大于 0，原因去首尾空白后 1～500 字符（用户可见，不得填内部机密）。响应包含 userId、applicationId、status、version；相同请求重放返回原操作回执，当前状态需另行查询。身份缺失 401、权限不足 / 自审 403、目标不存在 404、版本 / 状态 / 幂等冲突 409、内部异常 503。缺少管理员解析器或管理服务时路由不注册，尚未接入生产启动。
+
 实现进展（2026-09-16）：`GET /api/v1/promoter/profile` 已实现查询服务和可注入路由，返回 status、reason、applicationId、capabilities。未申请返回 NOT_APPLIED；未认证返回 401，读取失败返回 503 / PROMOTER_UNAVAILABLE，响应禁止缓存。只能查询鉴权本人，拒绝依赖返回的其他用户记录，不公开审核通过的内部备注。缺少身份或查询依赖时不注册路由。该接口尚未装配进生产启动入口，数据库仓储和真实认证仍待实现；其他接口仍为目标契约。
 
 增量实现：申请 PostgreSQL 仓储及 `POST /api/v1/promoter/applications` 已实现，需注入身份与 ApplicationService 才开放路由。请求使用 application/json 和 Idempotency-Key（1～128 个非空白 ASCII 字符），字段为 displayName、scene、agreementVersion、agreed（必须 true）；服务端要求明确配置当前协议版本，不提供虚构默认协议。姓名 / 场景去首尾空白后限制 80 字符，请求体最多 4 KiB，禁止客户端指定用户、申请 ID、同意时间及未知字段。协议未同意 / 版本不符为 422，幂等冲突或当前状态不允许申请为 409，读取 / 写入异常脱敏为 503。
