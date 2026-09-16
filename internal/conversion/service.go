@@ -95,11 +95,7 @@ func (s Service) Convert(ctx context.Context, in ConvertInput) (Record, error) {
 	if err != nil {
 		return Record{}, ErrUnavailable
 	}
-	if !quote.ExpiresAt.After(time.Now()) || quote.ExternalProductID != snapshot.ExternalProductID ||
-		quote.ProductName != snapshot.ProductName || quote.CouponPriceMinor != snapshot.CouponPriceMinor ||
-		quote.PromoterEstimateMinor != snapshot.PromoterEstimateMinor ||
-		quote.ConsumerCashbackEstimateMinor != snapshot.ConsumerCashbackEstimateMinor ||
-		quote.RuleVersion != snapshot.RuleVersion {
+	if !quoteMatches(snapshot, quote) {
 		return Record{}, ErrPriceChanged
 	}
 	if _, err := s.Eligibility.Check(ctx, in.OwnerUserID, in.PositionID); err != nil {
@@ -110,6 +106,16 @@ func (s Service) Convert(ctx context.Context, in ConvertInput) (Record, error) {
 		PreviewID: in.PreviewID, Scene: in.Scene,
 		IdempotencyKey: in.IdempotencyKey, RequestFingerprint: fingerprint,
 	})
+}
+
+func quoteMatches(snapshot preview.Snapshot, quote preview.Quote) bool {
+	return quote.ExpiresAt.After(time.Now()) &&
+		quote.ExternalProductID == snapshot.ExternalProductID &&
+		quote.ProductName == snapshot.ProductName &&
+		quote.CouponPriceMinor == snapshot.CouponPriceMinor &&
+		quote.PromoterEstimateMinor == snapshot.PromoterEstimateMinor &&
+		quote.ConsumerCashbackEstimateMinor == snapshot.ConsumerCashbackEstimateMinor &&
+		quote.RuleVersion == snapshot.RuleVersion
 }
 
 func eligibilityError(err error) error {

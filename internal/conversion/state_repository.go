@@ -52,6 +52,18 @@ func (r Repository) MarkFinal(ctx context.Context, id, channelRequestID string, 
 		RETURNING `+recordColumns, id, channelRequestID, version, code))
 }
 
+// RejectPending is used when the pre-call quote changed. No channel request is sent.
+func (r Repository) RejectPending(ctx context.Context, id string, version int64) (Record, error) {
+	if !validText(id, 128) || version < 1 || r.DB == nil {
+		return Record{}, ErrInvalid
+	}
+	return transition(r.DB.QueryRowContext(ctx, `UPDATE promotion_conversion_requests
+		SET status='FAILED_FINAL',channel_request_id=id,failure_code='INVALID_RESULT',
+			version=version+1,updated_at=CURRENT_TIMESTAMP
+		WHERE id=$1 AND version=$2 AND status='PENDING'
+		RETURNING `+recordColumns, id, version))
+}
+
 // MarkSucceeded accepts a late verified channel result even after an uncertain
 // timeout. The caller must validate the URL against the approved channel host.
 func (r Repository) MarkSucceeded(ctx context.Context, id, channelRequestID string, version int64, linkURL string) (Record, error) {

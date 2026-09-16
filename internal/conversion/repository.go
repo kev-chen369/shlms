@@ -190,3 +190,8 @@ func (r Repository) FindByID(ctx context.Context, ownerUserID, id string) (Recor
 func (r Repository) FindByKey(ctx context.Context, ownerUserID, key string) (Record, error) {
 	return scanRecord(r.DB.QueryRowContext(ctx, `SELECT `+recordColumns+` FROM promotion_conversion_requests WHERE owner_user_id=$1 AND idempotency_key=$2`, ownerUserID, key))
 }
+
+// FindByIDInternal is for the private channel worker, never an HTTP user lookup.
+func (r Repository) FindByIDInternal(ctx context.Context, id string) (Record, error) {
+	return scanRecord(r.DB.QueryRowContext(ctx, `SELECT `+recordColumns+` FROM promotion_conversion_requests WHERE id=$1`, id))
+}
