@@ -112,7 +112,9 @@
 | settlement_batches / settlement_items | 渠道结算证据、周期、状态；收益记录及调整唯一关联，重复结算不重复入账 |
 | wallet_transactions | 增加来源 SHOPPING_CASHBACK / PROMOTION_REWARD / REFERRAL_REWARD，关联收益、批次、冲正原流水 |
 
-以上为目标模型，需要新增迁移；现有 Tracking 迁移不等于已支持这些字段。新增归属字段须兼容历史购物 Tracking，不可直接给旧记录补造推广员。索引覆盖本人 + 时间、推广位 + 时间、订单收益状态、批次明细与幂等键。
+以上为目标模型，除已落地的部分仍需后续迁移；现有 Tracking 迁移不等于已支持这些字段。新增归属字段须兼容历史购物 Tracking，不可直接给旧记录补造推广员。索引覆盖本人 + 时间、推广位 + 时间、订单收益状态、批次明细与幂等键。
+
+预览存储进展（M2-02c-1）：`promotion_previews` 已以 `(position_id, owner_user_id)` 外键绑定本人推广位，以 `(owner_user_id, idempotency_key)` 唯一约束防重；只保存 CNY 分栏估算、规则版本、渠道证据引用和时效，不保存可分享链接，也不作为结算凭证。仓储仅供后续获批渠道报价服务调用，目前无生产预览入口，不代表已取得真实报价。
 
 推广员：未申请 → PENDING → ENABLED / REJECTED；REJECTED 可重新申请，ENABLED 可被 DISABLED。恢复资格须有审核和审计，不由客户端变更。
 

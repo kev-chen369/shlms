@@ -1,0 +1,2 @@
+DROP TABLE promotion_previews;
+ALTER TABLE promotion_positions DROP CONSTRAINT promotion_position_owner_key;
