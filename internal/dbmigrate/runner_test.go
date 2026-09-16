@@ -87,6 +87,9 @@ func TestRunActualMigrationsConcurrentlyAndRepeatedly(t *testing.T) {
 	if err != nil || len(again.Applied) != 0 || len(again.AlreadyApplied) != want {
 		t.Fatal(again, err)
 	}
+	if err := Verify(ctx, db, dir); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestRunRejectsModifiedAndMissingAppliedMigrations(t *testing.T) {

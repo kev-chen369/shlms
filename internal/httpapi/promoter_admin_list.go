@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/kev-chen369/shlms/internal/promoter"
 )
@@ -17,9 +16,8 @@ type PromoterAdminLister interface {
 func promoterAdminListHandler(d Dependencies) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
-		actor, err := d.Admins.ResolveAdmin(r)
-		if err != nil || strings.TrimSpace(actor.ID) == "" {
-			writeError(w, 401, "UNAUTHORIZED", "administrator authentication required")
+		actor, ok := resolveAdmin(w, r, d.Admins)
+		if !ok {
 			return
 		}
 		if !actor.Permissions[promoter.ReadPermission] {
@@ -33,6 +31,7 @@ func promoterAdminListHandler(d Dependencies) http.HandlerFunc {
 				return
 			}
 		}
+		var err error
 		limit := 20
 		if values, ok := query["limit"]; ok {
 			limit, err = strconv.Atoi(values[0])

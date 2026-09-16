@@ -6,6 +6,8 @@
 - Bearer Token 鉴权；写接口支持 `Idempotency-Key`。
 
 身份验签基础已实现：目标访问令牌须由配置的 RSA 公钥验证 RS256 签名，header `typ=at+jwt`，claims 包含与配置一致的 issuer、API audience、有效 exp / nbf 及规范 sub。用户 ID 仅取已验签 sub；管理员权限再从服务端表查询。尚未配置真实签发方及接入 API 启动入口，其他格式令牌不能当作已支持。
+
+2026-09-16 启动装配更新：API 入口已接入该验证器和推广模块 PostgreSQL 仓储，且要求全部迁移版本 / 摘要一致。管理员权限每次请求从数据库获取；授权表不可用时后台接口返回 503 / ADMIN_AUTH_UNAVAILABLE。真实签发方公钥和协议版本需部署时注入，缺失配置时启动失败。购物导购 `POST /promotions/link` 仍需京东正式客户端装配，不因推广模块上线基础代码而自动开放。
 - 金额使用十进制定点数并携带币种；时间统一 ISO 8601 UTC。
 - 响应为 `{ "code": 0, "message": "success", "data": {}, "requestId": "..." }`。
 - 分页采用 cursor；错误码稳定，不直接暴露上游错误原文。

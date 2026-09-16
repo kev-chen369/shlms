@@ -150,3 +150,42 @@ func Run(ctx context.Context, db *sql.DB, dir string) (Result, error) {
 	}
 	return result, nil
 }
+
+// Verify is read-only and requires every local migration to have been applied
+// with its current checksum. Applications call this before serving traffic.
+func Verify(ctx context.Context, db *sql.DB, dir string) error {
+	items, err := readMigrations(dir)
+	if err != nil {
+		return err
+	}
+	rows, err := db.QueryContext(ctx, `SELECT version,checksum FROM schema_migrations`)
+	if err != nil {
+		return fmt.Errorf("migration ledger unavailable: %w", err)
+	}
+	defer rows.Close()
+	known := map[string]string{}
+	for rows.Next() {
+		var version, checksum string
+		if err = rows.Scan(&version, &checksum); err != nil {
+			return err
+		}
+		known[version] = checksum
+	}
+	if err = rows.Err(); err != nil {
+		return err
+	}
+	for _, item := range items {
+		checksum, ok := known[item.version]
+		if !ok {
+			return fmt.Errorf("migration %s is not applied", item.version)
+		}
+		if checksum != item.checksum {
+			return fmt.Errorf("migration %s checksum differs from applied version", item.version)
+		}
+		delete(known, item.version)
+	}
+	for version := range known {
+		return fmt.Errorf("applied migration %s is missing from directory", version)
+	}
+	return nil
+}

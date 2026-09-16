@@ -13,3 +13,9 @@
 源码根目录运行 `go run ./cmd/migrate -dir migrations`，需通过环境变量 `DATABASE_URL` 注入目标 PostgreSQL 连接，命令不会打印连接串。首次运行创建 `schema_migrations`，只执行编号 `*.up.sql`；并发实例由数据库锁串行化，重复运行跳过已执行版本。命令核对已应用文件的 SHA-256，历史文件改动 / 丢失或补入更早编号时拒绝继续；失败迁移及账本条目同事务回滚。迁移文件名目前为 000001～000005。
 
 发布流程应在应用启动前单独运行此命令，并以备份、预发布验证和生产权限控制为前提。down SQL 仅供隔离测试或受控恢复，不由该命令自动执行。000006 增加管理员权限表；上文“000001～000005”是迁移命令初次实现时的范围。当前 Go API 启动入口尚未装配推广业务依赖，完成迁移不代表接口可用。
+
+## API 启动配置（2026-09-16 增量）
+
+API 入口现会装配已实现的推广申请、审核与推广位路由；从仓库根目录运行 `go run ./cmd/api` 前需设置 `DATABASE_URL`、`AUTH_PUBLIC_KEY_FILE`、`AUTH_ISSUER`、`AUTH_AUDIENCE` 和 `PROMOTER_AGREEMENT_VERSION`，可选 `API_ADDR`（默认 `:8080`）。占位符见 [deploy/api.env.example](../deploy/api.env.example)。`AUTH_PUBLIC_KEY_FILE` 应指向只读的 RSA 公钥文件；身份提供方须为本 API 受众签发 RS256、`typ=at+jwt` 的访问令牌，sub 使用与数据库一致的规范用户 ID。推广协议版本只能填产品已获批版本，不能仅为通过启动检查随意填写。
+
+启动仅校验所有迁移均已应用且摘要匹配，不自动写数据库；先执行迁移命令。缺少配置、迁移或数据库连接时启动失败。管理员权限来自 `admin_principals` / `admin_permissions`，需由受控运维流程开通、撤销，不由令牌的角色字段赋权。此处是服务端装配，不代表第三方身份提供方、京东正式账户及交易闭环已验收。

@@ -7,7 +7,6 @@ import (
 	"io"
 	"mime"
 	"net/http"
-	"strings"
 
 	"github.com/kev-chen369/shlms/internal/promoter"
 )
@@ -24,9 +23,8 @@ type PromoterAdministrator interface {
 func promoterAdminHandler(d Dependencies, action string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
-		actor, err := d.Admins.ResolveAdmin(r)
-		if err != nil || strings.TrimSpace(actor.ID) == "" {
-			writeError(w, 401, "UNAUTHORIZED", "administrator authentication required")
+		actor, ok := resolveAdmin(w, r, d.Admins)
+		if !ok {
 			return
 		}
 		permission := promoter.ReviewPermission
