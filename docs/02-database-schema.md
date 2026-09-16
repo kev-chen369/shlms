@@ -23,6 +23,8 @@
 
 ## 推广中心增量模型（待迁移）
 
+实现进展（2026-09-16）：`000002_promoter_applications` 已提供身份 / 申请表与 up/down 迁移；按用户隔离申请幂等键，同人最多一份 PENDING 申请，当前申请外键约束归属。提交仓储在同一事务内锁定身份行、检查重复请求、插入申请并更新身份；后台审核未来必须同事务更新申请和身份状态。已在独立 PostgreSQL 测试 schema 验证，尚未在业务环境执行迁移；其余增量模型未实现。down 会删除申请和身份数据，仅用于隔离测试或有备份的明确回滚，不用于常规生产回退。
+
 新增 `promoter_profiles`、`promoter_applications`、`promotion_positions`、`promotion_previews`、`share_artifacts`、`share_records`、`promoter_earning_records`、`settlement_batches`、`settlement_items`；扩展渠道推广位、Tracking、链接和钱包流水来源。字段和约束见[推广中心详细设计第 4 节](./21-promotion-center-detailed-design.md#4-数据与状态)。
 
 同人最多一份待审申请、最多一个启用默认推广位；收益与结算业务唯一键防重复入账。推广位停用不删历史记录，旧购物 Tracking 不伪造推广员归属。统一钱包以来源流水区分收益，新增迁移须兼容历史余额并完成对账。当前已有 Tracking 迁移不代表推广模型已落库。
