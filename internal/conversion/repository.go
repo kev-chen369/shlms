@@ -167,12 +167,18 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 	if _, err = rand.Read(trackingID[:]); err != nil {
 		return Record{}, err
 	}
+	// A valid preview can expire while waiting for a channel mapping lock.
+	// Check again at reservation time, without invalidating existing receipts.
+	reservedAt := time.Now().UTC()
+	if !expiresAt.After(reservedAt) {
+		return Record{}, ErrExpired
+	}
 	record := Record{
 		ID:          "CR-" + hex.EncodeToString(conversionID[:]),
 		TrackingID:  "TR-" + hex.EncodeToString(trackingID[:]),
 		OwnerUserID: in.OwnerUserID, PositionID: in.PositionID, PreviewID: in.PreviewID,
 		IdempotencyKey: in.IdempotencyKey, RequestFingerprint: in.RequestFingerprint,
-		Scene: in.Scene, Status: "PENDING", CreatedAt: time.Now().UTC(),
+		Scene: in.Scene, Status: "PENDING", CreatedAt: reservedAt,
 	}
 	record.UpdatedAt = record.CreatedAt
 	record.Version = 1

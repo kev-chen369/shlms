@@ -240,6 +240,23 @@ func TestReserveWaitsForConcurrentChannelInvalidation(t *testing.T) {
 		result <- err
 	}()
 	// Observe actual PostgreSQL lock contention, not timing-based goroutine order.
+	waitForMappingBlock(t, ctx, db, updaterPID, result)
+	if err := update.Commit(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err := <-result:
+		if !errors.Is(err, ErrNotReady) {
+			t.Fatalf("Reserve after invalidation: %v, want ErrNotReady", err)
+		}
+	case <-ctx.Done():
+		t.Fatal(ctx.Err())
+	}
+	assertNoConversionWrites(t, db)
+}
+
+func waitForMappingBlock(t *testing.T, ctx context.Context, db *sql.DB, updaterPID int, result <-chan error) {
+	t.Helper()
 	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 	for {
@@ -258,18 +275,76 @@ func TestReserveWaitsForConcurrentChannelInvalidation(t *testing.T) {
 		case <-ticker.C:
 		}
 	}
-	if err := update.Commit(); err != nil {
+}
+
+func TestReserveRejectsPreviewExpiredWhileWaitingForMappingLock(t *testing.T) {
+	db := conversionDB(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	lock, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lock.Rollback()
+	var pid int
+	if err := lock.QueryRowContext(ctx, `SELECT pg_backend_pid() FROM channel_positions WHERE position_id='pos-u1' FOR UPDATE`).Scan(&pid); err != nil {
+		t.Fatal(err)
+	}
+	// Expire by passage of real time, not by mutating the snapshot after it is read.
+	expiresAt := time.Now().Add(3 * time.Second)
+	if _, err := db.ExecContext(ctx, `UPDATE promotion_previews SET expires_at=$1 WHERE id='pv-u1'`, expiresAt); err != nil {
+		t.Fatal(err)
+	}
+	result := make(chan error, 1)
+	go func() {
+		_, err := (Repository{DB: db}).Reserve(ctx, request())
+		result <- err
+	}()
+	waitForMappingBlock(t, ctx, db, pid, result)
+	timer := time.NewTimer(time.Until(expiresAt) + 10*time.Millisecond)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
+	case <-ctx.Done():
+		t.Fatal(ctx.Err())
+	}
+	if err := lock.Commit(); err != nil {
 		t.Fatal(err)
 	}
 	select {
 	case err := <-result:
-		if !errors.Is(err, ErrNotReady) {
-			t.Fatalf("Reserve after invalidation: %v, want ErrNotReady", err)
+		if !errors.Is(err, ErrExpired) {
+			t.Fatalf("expired during lock wait: got %v, want ErrExpired", err)
 		}
 	case <-ctx.Done():
 		t.Fatal(ctx.Err())
 	}
 	assertNoConversionWrites(t, db)
+}
+
+func TestReserveReplaysExistingRequestAfterPreviewExpiry(t *testing.T) {
+	db := conversionDB(t)
+	repo := Repository{DB: db}
+	created, err := repo.Reserve(context.Background(), request())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`UPDATE promotion_previews SET expires_at=CURRENT_TIMESTAMP - interval '1 minute',updated_at=CURRENT_TIMESTAMP - interval '2 minutes' WHERE id='pv-u1'`); err != nil {
+		t.Fatal(err)
+	}
+	replayed, err := repo.Reserve(context.Background(), request())
+	if err != nil || replayed.ID != created.ID || replayed.TrackingID != created.TrackingID {
+		t.Fatal(replayed, err)
+	}
+	changed := request()
+	changed.IdempotencyKey = "expired-new-request"
+	if _, err := repo.Reserve(context.Background(), changed); !errors.Is(err, ErrExpired) {
+		t.Fatalf("new request with expired preview: %v, want ErrExpired", err)
+	}
+	var trackingCount, requestCount int
+	if err := db.QueryRow(`SELECT (SELECT count(*) FROM tracking_records),(SELECT count(*) FROM promotion_conversion_requests)`).Scan(&trackingCount, &requestCount); err != nil || trackingCount != 1 || requestCount != 1 {
+		t.Fatal(trackingCount, requestCount, err)
+	}
 }
 
 func TestReserveReplaysExistingRequestAfterChannelInvalidation(t *testing.T) {
