@@ -27,6 +27,8 @@
 
 `000005_channel_positions` 增加京东内部位 → 渠道账户 / 外部位映射及追加型配置事件。重复外部标识在同渠道 / 账户下禁止绑定多个内部位，以免无法精确归属；当前映射只能是 `PENDING_VERIFICATION`，尚无真实渠道核验步骤。配置变更锁定推广身份和内部位，同事务写审计；表所有者仍可做 DDL / TRUNCATE，生产应用角色应收紧权限。000005 的 down 删除映射及事件，仅用于隔离测试或受控回滚。先前段落所说“渠道映射尚未落库”是 000004 阶段的历史状态。
 
+`000006_admin_authorizations` 新增 `admin_principals` 与 `admin_permissions`，只接受四种明确权限。管理员 ID 与验签用户 sub 使用同一规范 ID；新账号默认未启用。每次后台请求从数据库读取启用状态和权限，不接受客户端或令牌中的角色声明作为后台授权。生产账号开通 / 撤销需独立受控操作并留痕，不能让普通客户端调用表写入。
+
 实现进展（2026-09-16）：`000002_promoter_applications` 已提供身份 / 申请表与 up/down 迁移；按用户隔离申请幂等键，同人最多一份 PENDING 申请，当前申请外键约束归属。提交仓储在同一事务内锁定身份行、检查重复请求、插入申请并更新身份；后台审核未来必须同事务更新申请和身份状态。已在独立 PostgreSQL 测试 schema 验证，尚未在业务环境执行迁移；其余增量模型未实现。down 会删除申请和身份数据，仅用于隔离测试或有备份的明确回滚，不用于常规生产回退。
 
 新增 `promoter_profiles`、`promoter_applications`、`promotion_positions`、`promotion_previews`、`share_artifacts`、`share_records`、`promoter_earning_records`、`settlement_batches`、`settlement_items`；扩展渠道推广位、Tracking、链接和钱包流水来源。字段和约束见[推广中心详细设计第 4 节](./21-promotion-center-detailed-design.md#4-数据与状态)。

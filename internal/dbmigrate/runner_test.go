@@ -49,6 +49,11 @@ func TestRunActualMigrationsConcurrentlyAndRepeatedly(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 	dir := "../../migrations"
+	migrations, err := readMigrations(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := len(migrations)
 	const workers = 4
 	results := make([]Result, workers)
 	errs := make([]error, workers)
@@ -65,21 +70,21 @@ func TestRunActualMigrationsConcurrentlyAndRepeatedly(t *testing.T) {
 		}
 		appliedTotal += len(results[i].Applied)
 	}
-	if appliedTotal != 5 {
+	if appliedTotal != want {
 		t.Fatal("migration applied more than once", results)
 	}
 	var count int
-	if err := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != 5 {
+	if err := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != want {
 		t.Fatal(count, err)
 	}
-	for _, table := range []string{"tracking_records", "promoter_profiles", "promoter_applications", "promotion_positions", "channel_positions", "channel_position_config_events"} {
+	for _, table := range []string{"tracking_records", "promoter_profiles", "promoter_applications", "promotion_positions", "channel_positions", "channel_position_config_events", "admin_principals", "admin_permissions"} {
 		var exists bool
 		if err := db.QueryRow(`SELECT to_regclass($1) IS NOT NULL`, table).Scan(&exists); err != nil || !exists {
 			t.Fatal(table, err)
 		}
 	}
 	again, err := Run(ctx, db, dir)
-	if err != nil || len(again.Applied) != 0 || len(again.AlreadyApplied) != 5 {
+	if err != nil || len(again.Applied) != 0 || len(again.AlreadyApplied) != want {
 		t.Fatal(again, err)
 	}
 }
