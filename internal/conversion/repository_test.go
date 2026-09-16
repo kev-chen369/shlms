@@ -39,7 +39,7 @@ func conversionDB(t *testing.T) *sql.DB {
 		}
 		_ = admin.Close()
 	})
-	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews", "000008_promotion_conversion_requests"} {
+	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state"} {
 		b, err := os.ReadFile("../../migrations/" + name + ".up.sql")
 		if err != nil {
 			t.Fatal(err)
@@ -189,6 +189,14 @@ func TestOwnerCanReadHistoricStatusAfterDisable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	claimed, err := repo.Claim(ctx, created.ID, created.Version, time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+	succeeded, err := repo.MarkSucceeded(ctx, claimed.ID, claimed.ChannelRequestID, claimed.Version, "https://channel.example/item")
+	if err != nil {
+		t.Fatal(err)
+	}
 	reader := ReadService{Repository: repo}
 	if _, err := reader.Get(ctx, "u2", created.ID); !errors.Is(err, ErrNotFound) {
 		t.Fatal(err)
@@ -197,14 +205,7 @@ func TestOwnerCanReadHistoricStatusAfterDisable(t *testing.T) {
 		t.Fatal(err)
 	}
 	got, err := reader.Get(ctx, "u1", created.ID)
-	if err != nil || got.ID != created.ID || got.Status != "PENDING" || got.LinkURL != "" || got.SchemeURL != "" {
-		t.Fatal(got, err)
-	}
-	if _, err := db.Exec(`UPDATE promotion_conversion_requests SET status='SUCCEEDED',link_url='https://channel.example/item',scheme_url='jd://item',updated_at=CURRENT_TIMESTAMP WHERE id=$1`, created.ID); err != nil {
-		t.Fatal(err)
-	}
-	got, err = reader.Get(ctx, "u1", created.ID)
-	if err != nil || got.Status != "SUCCEEDED" || got.LinkURL != "https://channel.example/item" || got.SchemeURL != "jd://item" {
+	if err != nil || got.ID != created.ID || got.Status != "SUCCEEDED" || got.LinkURL != succeeded.LinkURL || got.SchemeURL != "" {
 		t.Fatal(got, err)
 	}
 	if _, err := reader.Get(ctx, "u1", " invalid-id "); !errors.Is(err, ErrInvalid) {

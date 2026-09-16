@@ -1,0 +1,10 @@
+DROP INDEX promotion_conversion_lease_recovery;
+ALTER TABLE promotion_conversion_requests
+    DROP CONSTRAINT conversion_success_link,
+    DROP CONSTRAINT conversion_request_identity,
+    DROP CONSTRAINT conversion_failure_code,
+    DROP CONSTRAINT conversion_processing_lease,
+    DROP COLUMN failure_code,
+    DROP COLUMN lease_expires_at,
+    DROP COLUMN attempt_count,
+    DROP COLUMN version;

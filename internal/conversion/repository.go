@@ -41,6 +41,11 @@ type Record struct {
 	RequestFingerprint string
 	Scene              string
 	Status             string
+	ChannelRequestID   string
+	Version            int64
+	AttemptCount       int
+	LeaseExpiresAt     *time.Time
+	FailureCode        string
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
 	LinkURL            string
@@ -59,20 +64,27 @@ func (in ReserveInput) valid() bool {
 		validText(in.Scene, 80) && fingerprintPattern.MatchString(in.RequestFingerprint)
 }
 
-const recordColumns = `id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,created_at,updated_at,link_url,scheme_url`
+const insertColumns = `id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,created_at,updated_at,link_url,scheme_url`
+const recordColumns = insertColumns + `,channel_request_id,version,attempt_count,lease_expires_at,failure_code`
 
 type scanner interface{ Scan(...any) error }
 
 func scanRecord(row scanner) (Record, error) {
 	var r Record
-	var linkURL, schemeURL sql.NullString
+	var linkURL, schemeURL, channelRequestID, failureCode sql.NullString
+	var leaseExpiresAt sql.NullTime
 	err := row.Scan(&r.ID, &r.OwnerUserID, &r.PositionID, &r.PreviewID, &r.TrackingID,
 		&r.IdempotencyKey, &r.RequestFingerprint, &r.Scene, &r.Status, &r.CreatedAt,
-		&r.UpdatedAt, &linkURL, &schemeURL)
+		&r.UpdatedAt, &linkURL, &schemeURL, &channelRequestID, &r.Version,
+		&r.AttemptCount, &leaseExpiresAt, &failureCode)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Record{}, ErrNotFound
 	}
 	r.LinkURL, r.SchemeURL = linkURL.String, schemeURL.String
+	r.ChannelRequestID, r.FailureCode = channelRequestID.String, failureCode.String
+	if leaseExpiresAt.Valid {
+		r.LeaseExpiresAt = &leaseExpiresAt.Time
+	}
 	return r, err
 }
 
@@ -150,13 +162,14 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 		Scene: in.Scene, Status: "PENDING", CreatedAt: time.Now().UTC(),
 	}
 	record.UpdatedAt = record.CreatedAt
+	record.Version = 1
 	_, err = tx.ExecContext(ctx, `INSERT INTO tracking_records(id,idempotency_key,user_id,channel,external_product_id,source,created_at)
 		VALUES($1,$2,$3,'JD',$4,$5,$6)`, record.TrackingID, "conversion:"+record.ID,
 		in.OwnerUserID, productID, "PROMOTION_CENTER", record.CreatedAt)
 	if err != nil {
 		return Record{}, err
 	}
-	_, err = tx.ExecContext(ctx, `INSERT INTO promotion_conversion_requests(`+recordColumns+`)
+	_, err = tx.ExecContext(ctx, `INSERT INTO promotion_conversion_requests(`+insertColumns+`)
 		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, record.ID, record.OwnerUserID,
 		record.PositionID, record.PreviewID, record.TrackingID, record.IdempotencyKey,
 		record.RequestFingerprint, record.Scene, record.Status, record.CreatedAt, record.UpdatedAt,

@@ -123,6 +123,8 @@
 
 状态查询进展（M2-03c-1）：转链预留和同键重放响应包含 `statusUrl`；本人可用 `GET /api/v1/promotions/convert/{id}` 查询状态，停用身份仍可看历史。PENDING / PROCESSING 等非成功状态不返回链接，仅 SUCCEEDED 返回已持久化的链接。渠道执行与超时恢复尚未接入，不能将 PENDING 视为分享成功。
 
+状态持久化进展（M2-03c-2a）：000009 迁移为转链请求增加版本、尝试次数、租约和脱敏失败码。待处理请求只能被一个执行者原子领取；超时不确定结果进入 QUERY_REQUIRED，恢复扫描只发现待查询项，不会自动重发。渠道请求号在领取时固定，成功和确定失败均用版本及请求号保护，终态不回退。当前只有仓储状态机，没有渠道执行器；获批渠道的请求幂等 / 结果查询能力及链接域名核验仍待接入。
+
 推广员：未申请 → PENDING → ENABLED / REJECTED；REJECTED 可重新申请，ENABLED 可被 DISABLED。恢复资格须有审核和审计，不由客户端变更。
 
 交易状态沿用[订单状态机](./07-order-state-machine.md)。推广收益沿用[佣金钱包状态](./08-commission-wallet.md)：ESTIMATED → PENDING_CONFIRM → PENDING_SETTLEMENT → AVAILABLE；失效为 INVALID，到账后冲正为 CLAWED_BACK。统一钱包提现后不简单把某笔推广收益改成 WITHDRAWN；如需分来源提现报表，另建提现分摊明细。
