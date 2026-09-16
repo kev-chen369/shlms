@@ -152,3 +152,49 @@ func TestPostgresDifferentKeysAndRollback(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestPostgresApplicationServiceReplayAfterReview(t *testing.T) {
+	db := promoterDB(t)
+	repo := NewPostgresRepository(db)
+	s := ApplicationService{Repository: repo, AgreementVersion: "v1"}
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+	in := submitInput()
+	first, err := s.SubmitApplication(ctx, in)
+	if err != nil {
+		t.Fatal(err)
+	}
+	in.DisplayName = "姓名"
+	second, err := s.SubmitApplication(ctx, in)
+	if err != nil || first.ID != second.ID || !first.ConsentedAt.Equal(second.ConsentedAt) {
+		t.Fatal(first, second, err)
+	}
+	// Simulate the atomic state update required of the future admin service.
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	if _, err = tx.ExecContext(ctx, `UPDATE promoter_applications SET status='REJECTED' WHERE id=$1`, first.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = tx.ExecContext(ctx, `UPDATE promoter_profiles SET status='REJECTED',reason='incomplete',version=version+1 WHERE user_id=$1`, in.UserID); err != nil {
+		t.Fatal(err)
+	}
+	if err = tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
+	replay, err := s.SubmitApplication(ctx, in)
+	if err != nil || replay.ID != first.ID {
+		t.Fatal(replay, err)
+	}
+	in.IdempotencyKey = "new-application"
+	next, err := s.SubmitApplication(ctx, in)
+	if err != nil || next.ID == first.ID {
+		t.Fatal(next, err)
+	}
+	p, err := repo.FindByUserID(ctx, in.UserID)
+	if err != nil || p.Status != Pending || p.ApplicationID != next.ID || p.Reason != "" || p.Version != 3 {
+		t.Fatal(p, err)
+	}
+}

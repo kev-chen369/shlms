@@ -24,6 +24,10 @@
 
 实现进展（2026-09-16）：`GET /api/v1/promoter/profile` 已实现查询服务和可注入路由，返回 status、reason、applicationId、capabilities。未申请返回 NOT_APPLIED；未认证返回 401，读取失败返回 503 / PROMOTER_UNAVAILABLE，响应禁止缓存。只能查询鉴权本人，拒绝依赖返回的其他用户记录，不公开审核通过的内部备注。缺少身份或查询依赖时不注册路由。该接口尚未装配进生产启动入口，数据库仓储和真实认证仍待实现；其他接口仍为目标契约。
 
+增量实现：申请 PostgreSQL 仓储及 `POST /api/v1/promoter/applications` 已实现，需注入身份与 ApplicationService 才开放路由。请求使用 application/json 和 Idempotency-Key（1～128 个非空白 ASCII 字符），字段为 displayName、scene、agreementVersion、agreed（必须 true）；服务端要求明确配置当前协议版本，不提供虚构默认协议。姓名 / 场景去首尾空白后限制 80 字符，请求体最多 4 KiB，禁止客户端指定用户、申请 ID、同意时间及未知字段。协议未同意 / 版本不符为 422，幂等冲突或当前状态不允许申请为 409，读取 / 写入异常脱敏为 503。
+
+提交成功返回 200：applicationId、status=PENDING、consentedAt，是原始提交回执，重放不会变成新的审核结果；当前审核状态应查询 profile。相同用户和键在规范化输入一致时返回原 ID 与同意时间，拒绝后重新申请需新键。协议更新后旧版本请求需重新确认当前协议，此时旧键不可用于新版本申请。生产认证及启动装配仍未完成。
+
 新增推广身份 / 申请、推广位、只读商品预览、转链状态、分享事件、推广订单 / 收益 / 看板、结算批次以及提现查询；完整方法、路径和输入输出以[推广中心详细设计第 3 节](./21-promotion-center-detailed-design.md#3-接口契约)为准。后台补申请审核与推广员停用审计。
 
 保留购物用途的 `POST /promotions/link`，推广用途新增 `POST /promotions/preview` 和 `POST /promotions/convert`，共享领域能力但不绕过推广权限。身份来自鉴权上下文，所有推广位和链接需验证所有权。写请求同键同输入幂等，不同输入返回 409；处理中状态可查询，不因上游超时盲目重复发起。金额对外为十进制定点字符串与币种，内部按最小货币单位整数处理。
