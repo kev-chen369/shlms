@@ -1,0 +1,167 @@
+package conversion
+
+import (
+	"context"
+	"crypto/rand"
+	"database/sql"
+	"encoding/hex"
+	"errors"
+	"regexp"
+	"strings"
+	"time"
+)
+
+var (
+	ErrInvalid             = errors.New("invalid conversion request")
+	ErrNotEnabled          = errors.New("promoter is not enabled")
+	ErrPosition            = errors.New("position not found or disabled")
+	ErrPreview             = errors.New("preview not found")
+	ErrExpired             = errors.New("preview expired")
+	ErrIdempotencyConflict = errors.New("conversion idempotency conflict")
+	ErrNotFound            = errors.New("conversion not found")
+	fingerprintPattern     = regexp.MustCompile(`^[0-9a-f]{64}$`)
+)
+
+type ReserveInput struct {
+	OwnerUserID        string
+	PositionID         string
+	PreviewID          string
+	IdempotencyKey     string
+	RequestFingerprint string
+	Scene              string
+}
+
+type Record struct {
+	ID                 string
+	OwnerUserID        string
+	PositionID         string
+	PreviewID          string
+	TrackingID         string
+	IdempotencyKey     string
+	RequestFingerprint string
+	Scene              string
+	Status             string
+	CreatedAt          time.Time
+}
+
+type Repository struct{ DB *sql.DB }
+
+func validText(s string, max int) bool {
+	return s != "" && len(s) <= max && s == strings.TrimSpace(s)
+}
+
+func (in ReserveInput) valid() bool {
+	return validText(in.OwnerUserID, 128) && validText(in.PositionID, 128) &&
+		validText(in.PreviewID, 128) && validText(in.IdempotencyKey, 128) &&
+		validText(in.Scene, 80) && fingerprintPattern.MatchString(in.RequestFingerprint)
+}
+
+const recordColumns = `id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,created_at`
+
+type scanner interface{ Scan(...any) error }
+
+func scanRecord(row scanner) (Record, error) {
+	var r Record
+	err := row.Scan(&r.ID, &r.OwnerUserID, &r.PositionID, &r.PreviewID, &r.TrackingID,
+		&r.IdempotencyKey, &r.RequestFingerprint, &r.Scene, &r.Status, &r.CreatedAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Record{}, ErrNotFound
+	}
+	return r, err
+}
+
+// Reserve atomically creates a promotion conversion and its legacy-compatible
+// Tracking row. It never calls a channel or claims a conversion succeeded.
+func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error) {
+	if !in.valid() {
+		return Record{}, ErrInvalid
+	}
+	if r.DB == nil {
+		return Record{}, errors.New("conversion database unavailable")
+	}
+	tx, err := r.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback()
+	// This is the same owner-row lock used by membership and position writes.
+	var membership string
+	err = tx.QueryRowContext(ctx, `SELECT status FROM promoter_profiles WHERE user_id=$1 FOR UPDATE`, in.OwnerUserID).Scan(&membership)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Record{}, ErrNotEnabled
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	if membership != "ENABLED" {
+		return Record{}, ErrNotEnabled
+	}
+	prior, err := scanRecord(tx.QueryRowContext(ctx, `SELECT `+recordColumns+` FROM promotion_conversion_requests WHERE owner_user_id=$1 AND idempotency_key=$2`, in.OwnerUserID, in.IdempotencyKey))
+	if err == nil {
+		if prior.RequestFingerprint != in.RequestFingerprint {
+			return Record{}, ErrIdempotencyConflict
+		}
+		return prior, nil
+	}
+	if !errors.Is(err, ErrNotFound) {
+		return Record{}, err
+	}
+	var positionStatus string
+	err = tx.QueryRowContext(ctx, `SELECT status FROM promotion_positions WHERE id=$1 AND owner_user_id=$2`, in.PositionID, in.OwnerUserID).Scan(&positionStatus)
+	if errors.Is(err, sql.ErrNoRows) || err == nil && positionStatus != "ENABLED" {
+		return Record{}, ErrPosition
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	var productID, previewScene string
+	var expiresAt time.Time
+	err = tx.QueryRowContext(ctx, `SELECT external_product_id,scene,expires_at FROM promotion_previews WHERE id=$1 AND owner_user_id=$2 AND position_id=$3`, in.PreviewID, in.OwnerUserID, in.PositionID).Scan(&productID, &previewScene, &expiresAt)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Record{}, ErrPreview
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	if in.Scene != previewScene {
+		return Record{}, ErrPreview
+	}
+	if !expiresAt.After(time.Now()) {
+		return Record{}, ErrExpired
+	}
+	var conversionID, trackingID [16]byte
+	if _, err = rand.Read(conversionID[:]); err != nil {
+		return Record{}, err
+	}
+	if _, err = rand.Read(trackingID[:]); err != nil {
+		return Record{}, err
+	}
+	record := Record{
+		ID:          "CR-" + hex.EncodeToString(conversionID[:]),
+		TrackingID:  "TR-" + hex.EncodeToString(trackingID[:]),
+		OwnerUserID: in.OwnerUserID, PositionID: in.PositionID, PreviewID: in.PreviewID,
+		IdempotencyKey: in.IdempotencyKey, RequestFingerprint: in.RequestFingerprint,
+		Scene: in.Scene, Status: "PENDING", CreatedAt: time.Now().UTC(),
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO tracking_records(id,idempotency_key,user_id,channel,external_product_id,source,created_at)
+		VALUES($1,$2,$3,'JD',$4,$5,$6)`, record.TrackingID, "conversion:"+record.ID,
+		in.OwnerUserID, productID, "PROMOTION_CENTER", record.CreatedAt)
+	if err != nil {
+		return Record{}, err
+	}
+	_, err = tx.ExecContext(ctx, `INSERT INTO promotion_conversion_requests(`+recordColumns+`)
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, record.ID, record.OwnerUserID,
+		record.PositionID, record.PreviewID, record.TrackingID, record.IdempotencyKey,
+		record.RequestFingerprint, record.Scene, record.Status, record.CreatedAt)
+	if err != nil {
+		return Record{}, err
+	}
+	if err = tx.Commit(); err != nil {
+		return Record{}, err
+	}
+	return record, nil
+}
+
+func (r Repository) FindByID(ctx context.Context, ownerUserID, id string) (Record, error) {
+	return scanRecord(r.DB.QueryRowContext(ctx, `SELECT `+recordColumns+` FROM promotion_conversion_requests WHERE owner_user_id=$1 AND id=$2`, ownerUserID, id))
+}

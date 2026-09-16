@@ -106,7 +106,7 @@
 | promotion_positions | owner_user_id、name、scene、status、is_default、version；每人最多一个启用默认位，停用默认位需清除默认 |
 | channel_positions | 内部推广位、channel_id、account_id、external_position_id、readiness；外部标识按渠道规则约束，不单凭共享标识认定个人归属 |
 | promotion_previews | owner、解析后的商品、估算规则版本、position_id、expires_at；短期保存，不是最终资金凭证 |
-| tracking_records / promotion_links | 新增 promoter_user_id、position_id、scene、preview_id、请求指纹、处理状态、渠道请求号；历史关联不可随推广位修改而漂移 |
+| tracking_records / promotion_conversion_requests / promotion_links | 推广转链请求单独关联既有 Tracking，保存 owner_user_id、position_id、scene、preview_id、请求指纹、处理状态、渠道请求号；历史购物 Tracking 不补造推广员，归属不可随推广位修改而漂移 |
 | share_artifacts / share_records | link_id、类型 / 文案版本；事件 event_id、操作者、操作、时间；不含收件人通讯录 |
 | promoter_earning_records | order_id、beneficiary_id、rule_snapshot_id、currency、预计 / 实际金额、状态；业务奖励类型唯一键防重复 |
 | settlement_batches / settlement_items | 渠道结算证据、周期、状态；收益记录及调整唯一关联，重复结算不重复入账 |
@@ -115,6 +115,8 @@
 以上为目标模型，除已落地的部分仍需后续迁移；现有 Tracking 迁移不等于已支持这些字段。新增归属字段须兼容历史购物 Tracking，不可直接给旧记录补造推广员。索引覆盖本人 + 时间、推广位 + 时间、订单收益状态、批次明细与幂等键。
 
 预览存储进展（M2-02c-1）：`promotion_previews` 已以 `(position_id, owner_user_id)` 外键绑定本人推广位，以 `(owner_user_id, idempotency_key)` 唯一约束防重；只保存 CNY 分栏估算、规则版本、渠道证据引用和时效，不保存可分享链接，也不作为结算凭证。仓储不直接接收客户端报价，不代表已取得真实报价。
+
+转链预留进展（M2-03a）：新增 `promotion_conversion_requests`，以复合外键绑定同一用户 / 推广位的预览，并与旧 `tracking_records` 在同一事务生成；状态初始为 PENDING，回放键按用户隔离。旧购物 Tracking 模型不改写。该预留不调用渠道、不生成链接；服务端二次报价、渠道就绪和失败恢复仍属后续任务。
 
 推广员：未申请 → PENDING → ENABLED / REJECTED；REJECTED 可重新申请，ENABLED 可被 DISABLED。恢复资格须有审核和审计，不由客户端变更。
 
