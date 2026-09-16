@@ -21,6 +21,7 @@ type UserResolver interface {
 type Dependencies struct {
 	Promotion PromotionCreator
 	Users     UserResolver
+	Promoter  PromoterReader
 }
 
 type promotionLinkRequest struct {
