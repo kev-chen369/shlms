@@ -76,7 +76,7 @@ func previewDB(t *testing.T) *sql.DB {
 		}
 		_ = admin.Close()
 	})
-	for _, name := range []string{"000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews"} {
+	for _, name := range []string{"000002_promoter_applications", "000004_promotion_positions", "000005_channel_positions", "000007_promotion_previews"} {
 		b, err := os.ReadFile("../../migrations/" + name + ".up.sql")
 		if err != nil {
 			t.Fatal(err)

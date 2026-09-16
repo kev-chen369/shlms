@@ -168,6 +168,13 @@ func TestRuntimeWiresVerifiedIdentityAndDatabasePermissions(t *testing.T) {
 	if position["data"].(map[string]any)["canConvert"] != false {
 		t.Fatal(position)
 	}
+	previewBody := `{"input":"https://approved.example/item","positionId":"` + position["data"].(map[string]any)["id"].(string) + `","scene":"sharing"}`
+	call("POST", "/api/v1/promotions/preview", previewBody, "", "preview-1", 401)
+	call("POST", "/api/v1/promotions/preview", previewBody, userToken, "preview-1", 409)
+	var previewCount int
+	if err := db.QueryRow(`SELECT count(*) FROM promotion_previews`).Scan(&previewCount); err != nil || previewCount != 0 {
+		t.Fatal(previewCount, err)
+	}
 	if _, err := db.Exec(`UPDATE admin_principals SET active=false WHERE user_id='admin-1'`); err != nil {
 		t.Fatal(err)
 	}

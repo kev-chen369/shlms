@@ -106,3 +106,7 @@ func (r Repository) Save(ctx context.Context, s Snapshot) (Snapshot, error) {
 func (r Repository) FindByID(ctx context.Context, ownerUserID, id string) (Snapshot, error) {
 	return scan(r.db.QueryRowContext(ctx, `SELECT `+columns+` FROM promotion_previews WHERE owner_user_id=$1 AND id=$2`, ownerUserID, id))
 }
+
+func (r Repository) FindByKey(ctx context.Context, ownerUserID, key string) (Snapshot, error) {
+	return scan(r.db.QueryRowContext(ctx, `SELECT `+columns+` FROM promotion_previews WHERE owner_user_id=$1 AND idempotency_key=$2`, ownerUserID, key))
+}

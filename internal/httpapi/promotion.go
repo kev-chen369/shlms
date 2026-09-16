@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promotion"
 	"github.com/kev-chen369/shlms/internal/tracking"
 )
@@ -19,6 +20,7 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Preview                    PreviewCreator
 	ChannelPositions           ChannelPositionConfigurator
 	Positions                  PositionManager
 	PromoterAdminList          PromoterAdminLister
@@ -29,6 +31,10 @@ type Dependencies struct {
 	Promoter                   PromoterReader
 	PromoterApplications       PromoterApplicant
 	PromoterCurrentApplication PromoterApplicationReader
+}
+
+type PreviewCreator interface {
+	Create(context.Context, preview.Request) (preview.Snapshot, error)
 }
 
 type promotionLinkRequest struct {

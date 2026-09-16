@@ -11,6 +11,7 @@ import (
 	"github.com/kev-chen369/shlms/internal/auth"
 	"github.com/kev-chen369/shlms/internal/dbmigrate"
 	"github.com/kev-chen369/shlms/internal/httpapi"
+	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promoter"
 )
 
@@ -46,6 +47,8 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 		PromoterAdminList:          promoter.AdminListService{Repository: repo},
 		Positions:                  promoter.PositionService{Repository: repo},
 		ChannelPositions:           promoter.ChannelPositionService{Repository: repo},
+		// The route stays fail-closed until an approved resolver and channel quoter are configured.
+		Preview: preview.Service{Eligibility: preview.PostgresEligibility{DB: db}, Store: preview.NewRepository(db)},
 	}
 	return httpapi.NewRouterWithDependencies(d), nil
 }
