@@ -4,6 +4,8 @@
 
 - 用户端前缀 `/api/v1`，后台前缀 `/admin/v1`。
 - Bearer Token 鉴权；写接口支持 `Idempotency-Key`。
+
+身份验签基础已实现：目标访问令牌须由配置的 RSA 公钥验证 RS256 签名，header `typ=at+jwt`，claims 包含与配置一致的 issuer、API audience、有效 exp / nbf 及规范 sub。用户 ID 仅取已验签 sub；管理员权限再从服务端表查询。尚未配置真实签发方及接入 API 启动入口，其他格式令牌不能当作已支持。
 - 金额使用十进制定点数并携带币种；时间统一 ISO 8601 UTC。
 - 响应为 `{ "code": 0, "message": "success", "data": {}, "requestId": "..." }`。
 - 分页采用 cursor；错误码稳定，不直接暴露上游错误原文。
