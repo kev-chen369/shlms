@@ -2,6 +2,12 @@
 
 ## 文件
 
+- `home-promoter-entry-v2.png`：首页新增“AI 帮我选 / 推广赚钱”并排入口；[交互说明与提示词](./home-promoter-entry-v2.prompt.md)。
+- 推广中心用户端：[模型分析与图册](../20-promoter-model-user-ui-design.md)，4 组、16 个核心页面。
+- `promoter-onboarding-positions-v2.png`：申请开通、推广工作台、推广位管理、新建推广位。
+- `promoter-convert-share-v2.png`：万能转链、商品确认、转链结果、分享素材。
+- `promoter-activities-orders-v2.png`：推广活动、推广订单、订单收益详情、推广数据。
+- `promoter-wallet-settlement-v2.png`：我的推广、结算记录、提现申请、提现记录。
 - V1 场景补绘为 V2：[覆盖对照与图册](../18-v1-to-v2-design-coverage.md)，新增以下 4 组、14 个界面。
 - `multi-platform-client-overview-v2.png`：多平台综合导购，4 屏。
 - `expanded-ecommerce-platforms-v2.png`：扩展电商平台，4 屏。

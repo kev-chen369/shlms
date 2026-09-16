@@ -20,3 +20,9 @@
 - 钱包流水只追加，余额由事务内流水驱动，并使用版本号防并发覆盖。
 
 对订单更新时间、用户订单、Tracking、提现状态和对账日期建立组合索引。API 日志与原始订单按月分区，清理任务必须留痕。
+
+## 推广中心增量模型（待迁移）
+
+新增 `promoter_profiles`、`promoter_applications`、`promotion_positions`、`promotion_previews`、`share_artifacts`、`share_records`、`promoter_earning_records`、`settlement_batches`、`settlement_items`；扩展渠道推广位、Tracking、链接和钱包流水来源。字段和约束见[推广中心详细设计第 4 节](./21-promotion-center-detailed-design.md#4-数据与状态)。
+
+同人最多一份待审申请、最多一个启用默认推广位；收益与结算业务唯一键防重复入账。推广位停用不删历史记录，旧购物 Tracking 不伪造推广员归属。统一钱包以来源流水区分收益，新增迁移须兼容历史余额并完成对账。当前已有 Tracking 迁移不代表推广模型已落库。

@@ -4,6 +4,9 @@
 
 ## 阅读顺序
 
+- [推广中心详细设计（含首页与 16 个页面图）](./21-promotion-center-detailed-design.md)：入口、状态、接口、数据与资金边界。
+- [推广中心研发计划](./superpowers/plans/2026-09-16-promotion-center.md)：M0～M5 依赖、开发任务和验收门槛。
+- [万单宝式模型分析与推广中心用户端](./20-promoter-model-user-ui-design.md)：业务规则分析、P-01～P-16 功能关联与 16 个界面。
 - [研发功能与 V2 界面开发关联](./19-feature-v2-ui-development-map.md)：按功能编号找到画面、详细设计和开发顺序。
 - [V1 → V2 设计覆盖与补绘](./18-v1-to-v2-design-coverage.md)：原 7 张 V1 图逐项对照，新增多平台、扩展电商、生活旅行和运营后台设计。
 - [用户端 V2 补充界面图册](./17-user-ui-v2-gallery.md)：8 组、34 个页面与状态。

@@ -1,5 +1,9 @@
 # MVP Foundation Implementation Plan
 
+## Task status and commits
+
+Follow [repository execution rules](../../../AGENTS.md): mark each active task as not started, in progress, blocked, or completed; record verification evidence and commit each completed task separately with its task ID and plan update. Historical unchecked steps below require evidence review, not automatic completion marking. Use `MVP-01` through `MVP-06` for Tasks 1 through 6; split large tasks into independently verifiable numbered subtasks before implementation.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Build a runnable Go service that creates promotion Tracking records through a JD channel boundary and provides the foundation for order, commission, and wallet work.
@@ -13,6 +17,8 @@
 **Progress (2026-09-15):** Tasks 1-4 implemented and verified on `feat/mvp-foundation`; Tasks 5-6 remain. Live JD calls are paused until exposed credentials are rotated and the application permission set is confirmed.
 
 ## Global Constraints
+
+**Continuation (2026-09-16):** Tracking PostgreSQL migration, repository and concurrency-test code are now present. Production dependency wiring and the live JD client remain pending. Historical task checklists below describe the original execution steps, not a fresh completion audit. The promotion-center expansion (homepage entry, P-01–P-16, identity, positions, preview, attribution and settlement) is tracked in the [Promotion Center Plan](./2026-09-16-promotion-center.md) and [Detailed Design](../../21-promotion-center-detailed-design.md).
 
 - No real AppKey, AppSecret, PID, access token, cookie, or user credential may enter Git, logs, fixtures, or documentation.
 - Money uses integer minor units plus an explicit ISO currency code.
