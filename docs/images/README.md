@@ -6,6 +6,8 @@
 - 推广中心用户端：[模型分析与图册](../20-promoter-model-user-ui-design.md)，4 组、16 个核心页面。
 - `promoter-onboarding-positions-v2.png`：申请开通、推广工作台、推广位管理、新建推广位。
 - `promoter-states-onboarding-v2.png`：审核中、拒绝、停用、无推广位四屏状态稿；[生成与修正记录](./promoter-states-onboarding-v2.prompt.md)。
+- `promoter-states-convert-v2.png`：渠道待配置、预览过期、价格变化、生成中四屏状态稿；[提示词与边界](./promoter-states-convert-v2.prompt.md)。
+- `promoter-states-result-v2.png`：结果待核验、确定失败、展示有效期结束三屏状态稿；[提示词与修正记录](./promoter-states-convert-v2.prompt.md)。
 - `promoter-convert-share-v2.png`：万能转链、商品确认、转链结果、分享素材。
 - `promoter-activities-orders-v2.png`：推广活动、推广订单、订单收益详情、推广数据。
 - `promoter-wallet-settlement-v2.png`：我的推广、结算记录、提现申请、提现记录。

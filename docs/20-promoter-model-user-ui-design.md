@@ -118,6 +118,12 @@
 
 ![万能转链与分享](./images/promoter-convert-share-v2.png)
 
+转链异常与等待状态分两组补绘：[渠道/预览/生成中](./images/promoter-states-convert-v2.png)、[待核验/确定失败/展示过期](./images/promoter-states-result-v2.png)。结果不确定只刷新原请求，不能重新点击生成制造重复链接。
+
+![渠道、预览与生成中状态](./images/promoter-states-convert-v2.png)
+
+![转链结果与恢复状态](./images/promoter-states-result-v2.png)
+
 ### 3. 活动、推广订单与数据
 
 推广活动、推广订单、订单收益详情、推广数据。
