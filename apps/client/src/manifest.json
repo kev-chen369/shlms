@@ -1,0 +1,11 @@
+{
+  "name": "万惠宝",
+  "appid": "",
+  "description": "万惠宝消费者与推广客户端",
+  "versionName": "0.1.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "uniStatistics": { "enable": false },
+  "h5": { "router": { "mode": "hash" }, "title": "万惠宝" },
+  "mp-weixin": { "appid": "", "setting": { "urlCheck": true } }
+}

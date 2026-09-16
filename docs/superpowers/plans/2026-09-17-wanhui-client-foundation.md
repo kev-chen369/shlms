@@ -17,21 +17,21 @@
 - 保留已有 Go 与用户文件，产物和 node_modules 不入 Git。
 - 触控至少 44px；320px、390px、宽屏分别验证；微信小程序真实适配单独验收。
 
-## M0-02c：可运行前端工程【进行中】
+## M0-02c：可运行前端工程【已完成】
 
-文件：`apps/client/package.json`、锁文件、vite.config.ts、vitest.config.ts、tsconfig.json、index.html、src/main.ts、src/App.vue、src/pages.json、src/manifest.json、src/pages/home/index.vue、tests/home.test.ts、README.md、.gitignore。
+文件：`apps/client/package.json`、锁文件、vite.config.ts、vitest.config.mts、tsconfig.json、index.html、src/main.ts、src/App.vue、src/pages.json、src/manifest.json、src/pages/home/index.vue、tests/home.test.ts、README.md、.gitignore。
 
 接口：`createApp()` 返回 `{ app }`；首页默认导出 Vue 组件，由 pages.json 首项承载。后续页面复用全局暖白 / 深绿样式。
 
-- [ ] 配置官方 uni-app Vue 3 同版本包与独立 Vitest 配置，写首页品牌渲染测试：
+- [x] 配置官方 uni-app Vue 3 同版本包与独立 Vitest 配置，写首页品牌渲染测试：
 
 ```ts
 const wrapper = mount(Home)
 expect(wrapper.text()).toContain('万惠宝')
 ```
 
-- [ ] 创建空 Home 组件，运行 `npm test`，确认缺少品牌断言实际失败。
-- [ ] 实现最小首页和应用入口，运行 `npm test`、`npm run typecheck`、`npm run build:h5`；H5 浏览器加载无异常。
+- [x] 创建空 Home 组件，运行 `npm test`，确认缺少品牌断言实际失败。
+- [x] 实现最小首页和应用入口，运行 `npm test`、`npm run typecheck`、`npm run build:h5`；H5 浏览器加载无异常。
 
 ```ts
 export function createApp() {
@@ -40,7 +40,9 @@ export function createApp() {
 }
 ```
 
-- [ ] 核对锁文件、不暂存 node_modules / dist，记录验证与限制；提交 `feat(M0-02c): establish Wanhui uni-app H5 client`。
+- [x] 核对锁文件、不暂存 node_modules / dist，记录验证与限制；本地提交 `feat(M0-02c): establish Wanhui uni-app H5 client`。
+
+完成记录（2026-09-17）：Node 20.19.5，`npm ci`、`npm test`（1 项）、`npm run typecheck`、`npm run build:h5` 通过；Playwright Chrome 在 390×844 加载品牌与标题，无运行错误；favicon 404 已修复。只读审查反馈已处理，外部 Origin 请求修改前跨域允许 *、修改后无允许头，关闭 HMR / 收紧文件范围。`git diff --check` 通过。审计仍有 40 项风险，生产发布阻塞（M0-02e），不宣称安全通过。微信设备与真实业务未验收。
 
 ## M1-01：首页双卡与五栏导航【未开始】
 

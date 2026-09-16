@@ -1,0 +1,11 @@
+{
+  "pages": [
+    { "path": "pages/home/index", "style": { "navigationStyle": "custom" } }
+  ],
+  "globalStyle": {
+    "navigationBarTitleText": "万惠宝",
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#f7faf8",
+    "backgroundColor": "#f7faf8"
+  }
+}
