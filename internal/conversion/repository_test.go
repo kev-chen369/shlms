@@ -39,7 +39,7 @@ func conversionDB(t *testing.T) *sql.DB {
 		}
 		_ = admin.Close()
 	})
-	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state"} {
+	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000005_channel_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state"} {
 		b, err := os.ReadFile("../../migrations/" + name + ".up.sql")
 		if err != nil {
 			t.Fatal(err)
@@ -47,6 +47,11 @@ func conversionDB(t *testing.T) *sql.DB {
 		if _, err = db.Exec(string(b)); err != nil {
 			t.Fatal(err)
 		}
+	}
+	// READY is synthetic only in this isolated test schema. Production migration
+	// deliberately permits PENDING_VERIFICATION only, pending approved evidence.
+	if _, err = db.Exec(`ALTER TABLE channel_positions DROP CONSTRAINT channel_positions_status_check`); err != nil {
+		t.Fatal(err)
 	}
 	for _, user := range []string{"u1", "u2"} {
 		if _, err = db.Exec(`INSERT INTO promoter_profiles(user_id,status) VALUES($1,'NOT_APPLIED')`, user); err != nil {
@@ -62,6 +67,9 @@ func conversionDB(t *testing.T) *sql.DB {
 		if _, err = db.Exec(`INSERT INTO promotion_positions(id,owner_user_id,name,scene,status,version) VALUES($1,$2,'main','home','ENABLED',1)`, "pos-"+user, user); err != nil {
 			t.Fatal(err)
 		}
+		if _, err = db.Exec(`INSERT INTO channel_positions(position_id,channel,account_id,external_position_id,status,version) VALUES($1,'JD','account',$2,'READY',1)`, "pos-"+user, "position-"+user); err != nil {
+			t.Fatal(err)
+		}
 		if _, err = db.Exec(`INSERT INTO promotion_previews(id,owner_user_id,position_id,idempotency_key,request_fingerprint,scene,channel,external_product_id,product_name,currency,coupon_price_minor,promoter_estimate_minor,consumer_cashback_estimate_minor,rule_version,evidence_ref,updated_at,expires_at)
 			VALUES($1,$2,$3,'preview','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','home','JD','sku','product','CNY',1000,100,50,'v1','evidence',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP + interval '10 minutes')`, "pv-"+user, user, "pos-"+user); err != nil {
 			t.Fatal(err)
@@ -72,7 +80,8 @@ func conversionDB(t *testing.T) *sql.DB {
 
 func request() ReserveInput {
 	return ReserveInput{OwnerUserID: "u1", PositionID: "pos-u1", PreviewID: "pv-u1", IdempotencyKey: "convert-1",
-		RequestFingerprint: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", Scene: "home"}
+		RequestFingerprint: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", Scene: "home",
+		ChannelAccountID: "account", ChannelPositionID: "position-u1"}
 }
 
 func TestReserveConcurrencyAndOwnerIsolation(t *testing.T) {
@@ -117,6 +126,7 @@ func TestReserveConcurrencyAndOwnerIsolation(t *testing.T) {
 	}
 	other := request()
 	other.OwnerUserID, other.PositionID, other.PreviewID = "u2", "pos-u2", "pv-u2"
+	other.ChannelPositionID = "position-u2"
 	if _, err := repo.Reserve(ctx, other); err != nil {
 		t.Fatal(err)
 	}
@@ -178,6 +188,112 @@ func TestReserveInputValidation(t *testing.T) {
 	r.RequestFingerprint = "invalid"
 	if r.valid() {
 		t.Fatal(r)
+	}
+}
+
+func TestReserveRejectsChannelNotReadyWithoutWritingTracking(t *testing.T) {
+	for _, tc := range []struct{ name, query string }{
+		{"missing mapping", `DELETE FROM channel_positions WHERE position_id='pos-u1'`},
+		{"pending verification", `UPDATE channel_positions SET status='PENDING_VERIFICATION' WHERE position_id='pos-u1'`},
+		{"changed account", `UPDATE channel_positions SET account_id='different-account' WHERE position_id='pos-u1'`},
+		{"changed external position", `UPDATE channel_positions SET external_position_id='different-position' WHERE position_id='pos-u1'`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			db := conversionDB(t)
+			if _, err := db.Exec(tc.query); err != nil {
+				t.Fatal(err)
+			}
+			_, err := (Repository{DB: db}).Reserve(context.Background(), request())
+			if !errors.Is(err, ErrNotReady) {
+				t.Fatalf("Reserve error = %v, want ErrNotReady", err)
+			}
+			var trackingCount, requestCount int
+			if err := db.QueryRow(`SELECT (SELECT count(*) FROM tracking_records),(SELECT count(*) FROM promotion_conversion_requests)`).Scan(&trackingCount, &requestCount); err != nil {
+				t.Fatal(err)
+			}
+			if trackingCount != 0 || requestCount != 0 {
+				t.Fatalf("rejected request wrote tracking=%d requests=%d", trackingCount, requestCount)
+			}
+		})
+	}
+}
+
+func TestReserveWaitsForConcurrentChannelInvalidation(t *testing.T) {
+	db := conversionDB(t)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	update, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer update.Rollback()
+	var updaterPID int
+	if err := update.QueryRowContext(ctx, `SELECT pg_backend_pid()`).Scan(&updaterPID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := update.ExecContext(ctx, `UPDATE channel_positions SET status='PENDING_VERIFICATION',version=version+1 WHERE position_id='pos-u1'`); err != nil {
+		t.Fatal(err)
+	}
+	result := make(chan error, 1)
+	go func() {
+		_, err := (Repository{DB: db}).Reserve(ctx, request())
+		result <- err
+	}()
+	// Observe actual PostgreSQL lock contention, not timing-based goroutine order.
+	ticker := time.NewTicker(10 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		var blocked bool
+		if err := db.QueryRowContext(ctx, `SELECT EXISTS(SELECT 1 FROM pg_stat_activity WHERE $1=ANY(pg_blocking_pids(pid)))`, updaterPID).Scan(&blocked); err != nil {
+			t.Fatal(err)
+		}
+		if blocked {
+			break
+		}
+		select {
+		case err := <-result:
+			t.Fatalf("Reserve finished before mapping invalidation committed: %v", err)
+		case <-ctx.Done():
+			t.Fatal("Reserve never waited for mapping lock", ctx.Err())
+		case <-ticker.C:
+		}
+	}
+	if err := update.Commit(); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err := <-result:
+		if !errors.Is(err, ErrNotReady) {
+			t.Fatalf("Reserve after invalidation: %v, want ErrNotReady", err)
+		}
+	case <-ctx.Done():
+		t.Fatal(ctx.Err())
+	}
+	assertNoConversionWrites(t, db)
+}
+
+func TestReserveReplaysExistingRequestAfterChannelInvalidation(t *testing.T) {
+	db := conversionDB(t)
+	repo := Repository{DB: db}
+	created, err := repo.Reserve(context.Background(), request())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`DELETE FROM channel_positions WHERE position_id='pos-u1'`); err != nil {
+		t.Fatal(err)
+	}
+	replayed, err := repo.Reserve(context.Background(), request())
+	if err != nil || replayed.ID != created.ID || replayed.TrackingID != created.TrackingID {
+		t.Fatal(replayed, err)
+	}
+	changed := request()
+	changed.IdempotencyKey = "new-request"
+	if _, err := repo.Reserve(context.Background(), changed); !errors.Is(err, ErrNotReady) {
+		t.Fatalf("new request after invalidation: %v, want ErrNotReady", err)
+	}
+	var count int
+	if err := db.QueryRow(`SELECT count(*) FROM tracking_records`).Scan(&count); err != nil || count != 1 {
+		t.Fatal(count, err)
 	}
 }
 

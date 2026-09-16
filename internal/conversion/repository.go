@@ -29,6 +29,8 @@ type ReserveInput struct {
 	IdempotencyKey     string
 	RequestFingerprint string
 	Scene              string
+	ChannelAccountID   string
+	ChannelPositionID  string
 }
 
 type Record struct {
@@ -61,7 +63,8 @@ func validText(s string, max int) bool {
 func (in ReserveInput) valid() bool {
 	return validText(in.OwnerUserID, 128) && validText(in.PositionID, 128) &&
 		validText(in.PreviewID, 128) && validText(in.IdempotencyKey, 128) &&
-		validText(in.Scene, 80) && fingerprintPattern.MatchString(in.RequestFingerprint)
+		validText(in.Scene, 80) && fingerprintPattern.MatchString(in.RequestFingerprint) &&
+		validText(in.ChannelAccountID, 128) && validText(in.ChannelPositionID, 128)
 }
 
 const insertColumns = `id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,created_at,updated_at,link_url,scheme_url`
@@ -125,7 +128,7 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 		return Record{}, err
 	}
 	var positionStatus string
-	err = tx.QueryRowContext(ctx, `SELECT status FROM promotion_positions WHERE id=$1 AND owner_user_id=$2`, in.PositionID, in.OwnerUserID).Scan(&positionStatus)
+	err = tx.QueryRowContext(ctx, `SELECT status FROM promotion_positions WHERE id=$1 AND owner_user_id=$2 FOR UPDATE`, in.PositionID, in.OwnerUserID).Scan(&positionStatus)
 	if errors.Is(err, sql.ErrNoRows) || err == nil && positionStatus != "ENABLED" {
 		return Record{}, ErrPosition
 	}
@@ -146,6 +149,16 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 	}
 	if !expiresAt.After(time.Now()) {
 		return Record{}, ErrExpired
+	}
+	// Lock order matches channel configuration: owner, internal position, mapping.
+	// Keep the mapping locked until Tracking and the request commit together.
+	var channelStatus, accountID, externalPositionID string
+	err = tx.QueryRowContext(ctx, `SELECT status,account_id,external_position_id FROM channel_positions WHERE position_id=$1 AND channel='JD' FOR SHARE`, in.PositionID).Scan(&channelStatus, &accountID, &externalPositionID)
+	if errors.Is(err, sql.ErrNoRows) || err == nil && (channelStatus != "READY" || accountID != in.ChannelAccountID || externalPositionID != in.ChannelPositionID) {
+		return Record{}, ErrNotReady
+	}
+	if err != nil {
+		return Record{}, err
 	}
 	var conversionID, trackingID [16]byte
 	if _, err = rand.Read(conversionID[:]); err != nil {
