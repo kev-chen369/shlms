@@ -17,14 +17,15 @@ const (
 )
 
 type Position struct {
-	ID          string    `json:"id"`
-	OwnerUserID string    `json:"-"`
-	Name        string    `json:"name"`
-	Scene       string    `json:"scene"`
-	Status      Status    `json:"status"`
-	IsDefault   bool      `json:"isDefault"`
-	Version     int64     `json:"version"`
-	CreatedAt   time.Time `json:"createdAt"`
+	ID               string    `json:"id"`
+	OwnerUserID      string    `json:"-"`
+	Name             string    `json:"name"`
+	Scene            string    `json:"scene"`
+	Status           Status    `json:"status"`
+	IsDefault        bool      `json:"isDefault"`
+	Version          int64     `json:"version"`
+	CreatedAt        time.Time `json:"createdAt"`
+	ChannelReadiness string    `json:"-"`
 }
 
 type PositionCommand struct {

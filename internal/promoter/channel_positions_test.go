@@ -12,13 +12,6 @@ import (
 func channelPositionDB(t *testing.T) (PostgresRepository, string) {
 	t.Helper()
 	db := positionsDB(t)
-	migration, err := os.ReadFile("../../migrations/000005_channel_positions.up.sql")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err = db.Exec(string(migration)); err != nil {
-		t.Fatal(err)
-	}
 	repo := NewPostgresRepository(db)
 	p, err := (PositionService{Repository: repo}).ChangePosition(context.Background(), "u1", createPosition("position-1"))
 	if err != nil {
@@ -192,4 +185,27 @@ func TestPostgresChannelPositionOwnershipConflictAndRollback(t *testing.T) {
 	if _, err = repo.db.Exec(string(up)); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func TestChannelPositionReadinessProjection(t *testing.T) {
+	repo, id := channelPositionDB(t)
+	ctx := context.Background()
+	s := PositionService{Repository: repo}
+	read := func(want string) {
+		t.Helper()
+		page, err := s.ListPositions(ctx, "u1", PositionListInput{})
+		if err != nil || len(page.Items) != 1 || page.Items[0].ChannelReadiness != want {
+			t.Fatal(page, err, want)
+		}
+	}
+	read("WAITING_CONFIGURATION")
+	if _, err := (ChannelPositionService{Repository: repo}).Configure(ctx, configureActor(), channelInput(id)); err != nil {
+		t.Fatal(err)
+	}
+	read("WAITING_VERIFICATION")
+	// Membership suspension makes an otherwise enabled position unavailable.
+	if _, err := (AdminService{Repository: repo}).Execute(ctx, adminActor(), AdminCommand{Action: DisableAction, TargetID: "u1", Reason: "policy", Version: 2, IdempotencyKey: "suspend"}); err != nil {
+		t.Fatal(err)
+	}
+	read("UNAVAILABLE")
 }

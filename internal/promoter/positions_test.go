@@ -14,7 +14,7 @@ import (
 func positionsDB(t *testing.T) *sql.DB {
 	t.Helper()
 	db := promoterDB(t)
-	for _, name := range []string{"000003_promoter_admin_audits.up.sql", "000004_promotion_positions.up.sql"} {
+	for _, name := range []string{"000003_promoter_admin_audits.up.sql", "000004_promotion_positions.up.sql", "000005_channel_positions.up.sql"} {
 		b, err := os.ReadFile("../../migrations/" + name)
 		if err != nil {
 			t.Fatal(err)
@@ -230,8 +230,8 @@ func TestPostgresPositionPaginationAndRollback(t *testing.T) {
 	if err = db.QueryRow(`SELECT count(*) FROM promotion_positions WHERE is_default`).Scan(&defaults); err != nil || defaults != 0 {
 		t.Fatal(defaults, err)
 	}
-	for _, direction := range []string{"down", "up"} {
-		b, err := os.ReadFile("../../migrations/000004_promotion_positions." + direction + ".sql")
+	for _, name := range []string{"000005_channel_positions.down.sql", "000004_promotion_positions.down.sql", "000004_promotion_positions.up.sql", "000005_channel_positions.up.sql"} {
+		b, err := os.ReadFile("../../migrations/" + name)
 		if err != nil {
 			t.Fatal(err)
 		}

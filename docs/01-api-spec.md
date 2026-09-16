@@ -31,7 +31,7 @@
 
 写操作必须提供 Idempotency-Key 及 JSON，name / scene 去首尾空白后 1～80 字符、请求体最多 4 KiB。只有已启用推广身份可写，停用后连旧写请求重放也返回 403；同人同操作同键的输入变化返回 409。默认切换同时更新旧默认位的版本，其他页面收到版本冲突须刷新。找不到或不属于本人统一 404，不泄露他人资源。
 
-响应含 id、name、scene、status、isDefault、version、createdAt；当前渠道映射尚未实现，channels 固定标注 JD / WAITING_CONFIGURATION，canConvert=false。幂等重放返回原操作回执，实际当前默认 / 停用状态以重新查询列表为准。缺少 PositionService 或用户解析器时不注册路由，生产启动仍未接入。
+响应含 id、name、scene、status、isDefault、version、createdAt；渠道状态由数据库映射读取，京东未配置为 WAITING_CONFIGURATION、后台已配置但未通过真实核验为 WAITING_VERIFICATION、推广身份或内部位停用为 UNAVAILABLE。`canConvert=false`，直到单独完成渠道权限核验和转链能力接入。幂等重放返回原操作回执，实际当前默认 / 停用 / 渠道状态以重新查询列表为准。缺少 PositionService 或用户解析器时不注册路由，生产启动仍未接入。
 
 后台列表增量实现：`GET /admin/v1/promoter-applications` 要求独立管理员认证及 `promoter:read` 权限。参数 status 可选 PENDING / ENABLED / REJECTED / DISABLED（省略为全部），limit 默认 20、范围 1～100，cursor 为服务端返回的 nextCursor。返回 `{items: [{applicationId,userId,displayName,scene,consentedAt,status,version}],nextCursor}`，每人仅当前申请，按同意时间与申请 ID 倒序；不提供全历史审计列表。筛选变化须清空 cursor，重复 / 未知查询参数或无效游标返回 400，空结果 items 为 []。分页不冻结跨请求数据快照，审核时必须带列表中的 version，409 后刷新。缺少列表服务或管理员依赖时不注册路由，尚未生产装配。
 

@@ -20,10 +20,12 @@ type PositionManager interface {
 }
 
 func positionView(p promoter.Position) map[string]any {
-	// Channel mapping is a separate, unfinished capability. Never imply that
-	// creating an internal position has provisioned an external channel position.
+	readiness := p.ChannelReadiness
+	if readiness == "" {
+		readiness = "WAITING_CONFIGURATION"
+	}
 	return map[string]any{"id": p.ID, "name": p.Name, "scene": p.Scene, "status": p.Status, "isDefault": p.IsDefault, "version": p.Version, "createdAt": p.CreatedAt,
-		"canConvert": false, "channels": []map[string]string{{"channel": "JD", "readiness": "WAITING_CONFIGURATION"}}}
+		"canConvert": false, "channels": []map[string]string{{"channel": "JD", "readiness": readiness}}}
 }
 
 func positionError(w http.ResponseWriter, err error) {

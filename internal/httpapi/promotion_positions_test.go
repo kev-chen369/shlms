@@ -133,3 +133,33 @@ func TestPositionHTTPErrorMapping(t *testing.T) {
 		}
 	}
 }
+
+func TestPositionListExposesUnverifiedMappingWithoutEnablingConversion(t *testing.T) {
+	d := Dependencies{
+		Users: identityFunc(func(*http.Request) (string, error) { return "u1", nil }),
+		Positions: positionManagerStub{list: func(context.Context, string, promoter.PositionListInput) (promoter.PositionPage, error) {
+			return promoter.PositionPage{Items: []promoter.Position{{ID: "p1", OwnerUserID: "u1", Status: promoter.Enabled, ChannelReadiness: "WAITING_VERIFICATION"}}}, nil
+		}},
+	}
+	w := httptest.NewRecorder()
+	NewRouterWithDependencies(d).ServeHTTP(w, httptest.NewRequest("GET", "/api/v1/promotion-positions", nil))
+	if w.Code != 200 {
+		t.Fatal(w.Code, w.Body.String())
+	}
+	var response struct {
+		Data struct {
+			Items []struct {
+				CanConvert bool `json:"canConvert"`
+				Channels   []struct {
+					Readiness string `json:"readiness"`
+				} `json:"channels"`
+			} `json:"items"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &response); err != nil {
+		t.Fatal(err)
+	}
+	if len(response.Data.Items) != 1 || response.Data.Items[0].CanConvert || len(response.Data.Items[0].Channels) != 1 || response.Data.Items[0].Channels[0].Readiness != "WAITING_VERIFICATION" {
+		t.Fatal(w.Body.String())
+	}
+}

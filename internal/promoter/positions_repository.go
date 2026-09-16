@@ -112,6 +112,10 @@ func (r PostgresRepository) ChangePosition(ctx context.Context, userID string, c
 	if err != nil {
 		return Position{}, err
 	}
+	p.ChannelReadiness, err = positionChannelReadiness(ctx, tx, p)
+	if err != nil {
+		return Position{}, err
+	}
 	result, err = json.Marshal(p)
 	if err != nil {
 		return Position{}, err
@@ -124,6 +128,24 @@ func (r PostgresRepository) ChangePosition(ctx context.Context, userID string, c
 		return Position{}, err
 	}
 	return p, nil
+}
+
+func positionChannelReadiness(ctx context.Context, tx *sql.Tx, p Position) (string, error) {
+	if p.Status == Disabled {
+		return "UNAVAILABLE", nil
+	}
+	var mappingStatus string
+	err := tx.QueryRowContext(ctx, `SELECT status FROM channel_positions WHERE position_id=$1 AND channel='JD'`, p.ID).Scan(&mappingStatus)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "WAITING_CONFIGURATION", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	if mappingStatus == "PENDING_VERIFICATION" {
+		return "WAITING_VERIFICATION", nil
+	}
+	return "UNAVAILABLE", nil
 }
 
 type positionCursor struct {
@@ -149,14 +171,20 @@ func (r PostgresRepository) ListPositions(ctx context.Context, userID string, in
 		afterID = c.ID
 	}
 	// Historical reads remain available even after membership is disabled.
-	rows, err := r.db.QueryContext(ctx, `SELECT `+positionColumns+` FROM promotion_positions WHERE owner_user_id=$1 AND ($2='' OR status=$2) AND id>$3 ORDER BY id LIMIT $4`, userID, in.Status, afterID, in.Limit+1)
+	rows, err := r.db.QueryContext(ctx, `SELECT p.id,p.owner_user_id,p.name,p.scene,p.status,p.is_default,p.version,p.created_at,
+		CASE WHEN p.status='DISABLED' OR m.status<>'ENABLED' THEN 'UNAVAILABLE' WHEN c.status='PENDING_VERIFICATION' THEN 'WAITING_VERIFICATION'
+		ELSE 'WAITING_CONFIGURATION' END AS jd_readiness
+		FROM promotion_positions p JOIN promoter_profiles m ON m.user_id=p.owner_user_id
+		LEFT JOIN channel_positions c ON c.position_id=p.id AND c.channel='JD'
+		WHERE p.owner_user_id=$1 AND ($2='' OR p.status=$2) AND p.id>$3 ORDER BY p.id LIMIT $4`, userID, in.Status, afterID, in.Limit+1)
 	if err != nil {
 		return PositionPage{}, err
 	}
 	defer rows.Close()
 	page := PositionPage{Items: []Position{}}
 	for rows.Next() {
-		p, err := scanPosition(rows)
+		var p Position
+		err := rows.Scan(&p.ID, &p.OwnerUserID, &p.Name, &p.Scene, &p.Status, &p.IsDefault, &p.Version, &p.CreatedAt, &p.ChannelReadiness)
 		if err != nil {
 			return PositionPage{}, err
 		}
