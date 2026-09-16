@@ -63,7 +63,7 @@ func TestConvertHTTPContract(t *testing.T) {
 			if w.Code != tc.status || called != tc.called || w.Header().Get("Cache-Control") != "no-store" {
 				t.Fatal(w.Code, called, w.Body.String())
 			}
-			if tc.status == 202 && (!strings.Contains(w.Body.String(), `"trackingId":"tr1"`) || strings.Contains(w.Body.String(), "linkUrl")) {
+			if tc.status == 202 && (!strings.Contains(w.Body.String(), `"trackingId":"tr1"`) || !strings.Contains(w.Body.String(), `"statusUrl":"/api/v1/promotions/convert/cr1"`) || strings.Contains(w.Body.String(), "linkUrl")) {
 				t.Fatal(w.Body.String())
 			}
 		})

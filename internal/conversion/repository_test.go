@@ -180,3 +180,34 @@ func TestReserveInputValidation(t *testing.T) {
 		t.Fatal(r)
 	}
 }
+
+func TestOwnerCanReadHistoricStatusAfterDisable(t *testing.T) {
+	db := conversionDB(t)
+	repo := Repository{DB: db}
+	ctx := context.Background()
+	created, err := repo.Reserve(ctx, request())
+	if err != nil {
+		t.Fatal(err)
+	}
+	reader := ReadService{Repository: repo}
+	if _, err := reader.Get(ctx, "u2", created.ID); !errors.Is(err, ErrNotFound) {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`UPDATE promoter_profiles SET status='DISABLED' WHERE user_id='u1'`); err != nil {
+		t.Fatal(err)
+	}
+	got, err := reader.Get(ctx, "u1", created.ID)
+	if err != nil || got.ID != created.ID || got.Status != "PENDING" || got.LinkURL != "" || got.SchemeURL != "" {
+		t.Fatal(got, err)
+	}
+	if _, err := db.Exec(`UPDATE promotion_conversion_requests SET status='SUCCEEDED',link_url='https://channel.example/item',scheme_url='jd://item',updated_at=CURRENT_TIMESTAMP WHERE id=$1`, created.ID); err != nil {
+		t.Fatal(err)
+	}
+	got, err = reader.Get(ctx, "u1", created.ID)
+	if err != nil || got.Status != "SUCCEEDED" || got.LinkURL != "https://channel.example/item" || got.SchemeURL != "jd://item" {
+		t.Fatal(got, err)
+	}
+	if _, err := reader.Get(ctx, "u1", " invalid-id "); !errors.Is(err, ErrInvalid) {
+		t.Fatal(err)
+	}
+}

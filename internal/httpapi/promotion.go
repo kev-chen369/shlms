@@ -22,6 +22,7 @@ type UserResolver interface {
 
 type Dependencies struct {
 	Conversion                 ConversionCreator
+	ConversionReader           ConversionReader
 	Preview                    PreviewCreator
 	ChannelPositions           ChannelPositionConfigurator
 	Positions                  PositionManager
@@ -37,6 +38,10 @@ type Dependencies struct {
 
 type ConversionCreator interface {
 	Convert(context.Context, conversion.ConvertInput) (conversion.Record, error)
+}
+
+type ConversionReader interface {
+	Get(context.Context, string, string) (conversion.Record, error)
 }
 
 type PreviewCreator interface {

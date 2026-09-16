@@ -6,6 +6,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/kev-chen369/shlms/internal/conversion"
@@ -85,8 +86,54 @@ func promotionConvertHandler(d Dependencies) http.HandlerFunc {
 			writeError(w, 503, "CHANNEL_UNAVAILABLE", "conversion service is unavailable")
 			return
 		}
-		writeJSON(w, 202, map[string]any{"code": 0, "message": "processing", "data": map[string]any{
-			"requestId": result.ID, "trackingId": result.TrackingID, "status": result.Status,
-		}})
+		status := 202
+		message := "processing"
+		if result.Status == "SUCCEEDED" || result.Status == "FAILED_FINAL" {
+			status, message = 200, "completed"
+		}
+		writeJSON(w, status, map[string]any{"code": 0, "message": message, "data": conversionData(result)})
+	}
+}
+
+func conversionData(r conversion.Record) map[string]any {
+	data := map[string]any{
+		"requestId": r.ID, "trackingId": r.TrackingID, "status": r.Status,
+		"statusUrl": "/api/v1/promotions/convert/" + url.PathEscape(r.ID),
+		"createdAt": r.CreatedAt, "updatedAt": r.UpdatedAt,
+	}
+	if r.Status == "SUCCEEDED" {
+		data["linkUrl"] = r.LinkURL
+		if r.SchemeURL != "" {
+			data["schemeUrl"] = r.SchemeURL
+		}
+	}
+	return data
+}
+
+func promotionConvertStatusHandler(d Dependencies) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", "no-store")
+		userID, err := d.Users.ResolveUserID(r)
+		if err != nil || strings.TrimSpace(userID) == "" {
+			writeError(w, 401, "UNAUTHORIZED", "authentication required")
+			return
+		}
+		record, err := d.ConversionReader.Get(r.Context(), userID, r.PathValue("id"))
+		if err != nil {
+			switch {
+			case errors.Is(err, conversion.ErrInvalid):
+				writeError(w, 400, "INVALID_REQUEST", "conversion request ID is invalid")
+			case errors.Is(err, conversion.ErrNotFound):
+				writeError(w, 404, "CONVERSION_NOT_FOUND", "conversion request not found")
+			default:
+				writeError(w, 503, "CONVERSION_UNAVAILABLE", "conversion status is unavailable")
+			}
+			return
+		}
+		if record.OwnerUserID != userID || record.ID != r.PathValue("id") {
+			writeError(w, 404, "CONVERSION_NOT_FOUND", "conversion request not found")
+			return
+		}
+		writeJSON(w, 200, map[string]any{"code": 0, "message": "success", "data": conversionData(record)})
 	}
 }

@@ -42,6 +42,9 @@ type Record struct {
 	Scene              string
 	Status             string
 	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	LinkURL            string
+	SchemeURL          string
 }
 
 type Repository struct{ DB *sql.DB }
@@ -56,17 +59,20 @@ func (in ReserveInput) valid() bool {
 		validText(in.Scene, 80) && fingerprintPattern.MatchString(in.RequestFingerprint)
 }
 
-const recordColumns = `id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,created_at`
+const recordColumns = `id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,created_at,updated_at,link_url,scheme_url`
 
 type scanner interface{ Scan(...any) error }
 
 func scanRecord(row scanner) (Record, error) {
 	var r Record
+	var linkURL, schemeURL sql.NullString
 	err := row.Scan(&r.ID, &r.OwnerUserID, &r.PositionID, &r.PreviewID, &r.TrackingID,
-		&r.IdempotencyKey, &r.RequestFingerprint, &r.Scene, &r.Status, &r.CreatedAt)
+		&r.IdempotencyKey, &r.RequestFingerprint, &r.Scene, &r.Status, &r.CreatedAt,
+		&r.UpdatedAt, &linkURL, &schemeURL)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Record{}, ErrNotFound
 	}
+	r.LinkURL, r.SchemeURL = linkURL.String, schemeURL.String
 	return r, err
 }
 
@@ -143,6 +149,7 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 		IdempotencyKey: in.IdempotencyKey, RequestFingerprint: in.RequestFingerprint,
 		Scene: in.Scene, Status: "PENDING", CreatedAt: time.Now().UTC(),
 	}
+	record.UpdatedAt = record.CreatedAt
 	_, err = tx.ExecContext(ctx, `INSERT INTO tracking_records(id,idempotency_key,user_id,channel,external_product_id,source,created_at)
 		VALUES($1,$2,$3,'JD',$4,$5,$6)`, record.TrackingID, "conversion:"+record.ID,
 		in.OwnerUserID, productID, "PROMOTION_CENTER", record.CreatedAt)
@@ -150,9 +157,10 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 		return Record{}, err
 	}
 	_, err = tx.ExecContext(ctx, `INSERT INTO promotion_conversion_requests(`+recordColumns+`)
-		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`, record.ID, record.OwnerUserID,
+		VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, record.ID, record.OwnerUserID,
 		record.PositionID, record.PreviewID, record.TrackingID, record.IdempotencyKey,
-		record.RequestFingerprint, record.Scene, record.Status, record.CreatedAt)
+		record.RequestFingerprint, record.Scene, record.Status, record.CreatedAt, record.UpdatedAt,
+		nil, nil)
 	if err != nil {
 		return Record{}, err
 	}

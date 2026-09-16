@@ -174,6 +174,8 @@ func TestRuntimeWiresVerifiedIdentityAndDatabasePermissions(t *testing.T) {
 	convertBody := `{"previewId":"missing","positionId":"` + position["data"].(map[string]any)["id"].(string) + `","scene":"sharing"}`
 	call("POST", "/api/v1/promotions/convert", convertBody, "", "convert-1", 401)
 	call("POST", "/api/v1/promotions/convert", convertBody, userToken, "convert-1", 409)
+	call("GET", "/api/v1/promotions/convert/missing", "", "", "", 401)
+	call("GET", "/api/v1/promotions/convert/missing", "", userToken, "", 404)
 	var previewCount int
 	if err := db.QueryRow(`SELECT count(*) FROM promotion_previews`).Scan(&previewCount); err != nil || previewCount != 0 {
 		t.Fatal(previewCount, err)
