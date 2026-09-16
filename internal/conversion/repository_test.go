@@ -240,7 +240,7 @@ func TestReserveWaitsForConcurrentChannelInvalidation(t *testing.T) {
 		result <- err
 	}()
 	// Observe actual PostgreSQL lock contention, not timing-based goroutine order.
-	waitForMappingBlock(t, ctx, db, updaterPID, result)
+	waitForDatabaseBlock(t, ctx, db, updaterPID, result)
 	if err := update.Commit(); err != nil {
 		t.Fatal(err)
 	}
@@ -255,7 +255,7 @@ func TestReserveWaitsForConcurrentChannelInvalidation(t *testing.T) {
 	assertNoConversionWrites(t, db)
 }
 
-func waitForMappingBlock(t *testing.T, ctx context.Context, db *sql.DB, updaterPID int, result <-chan error) {
+func waitForDatabaseBlock(t *testing.T, ctx context.Context, db *sql.DB, updaterPID int, result <-chan error) {
 	t.Helper()
 	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
@@ -269,9 +269,9 @@ func waitForMappingBlock(t *testing.T, ctx context.Context, db *sql.DB, updaterP
 		}
 		select {
 		case err := <-result:
-			t.Fatalf("Reserve finished before mapping invalidation committed: %v", err)
+			t.Fatalf("operation finished before blocker committed: %v", err)
 		case <-ctx.Done():
-			t.Fatal("Reserve never waited for mapping lock", ctx.Err())
+			t.Fatal("operation never waited for database lock", ctx.Err())
 		case <-ticker.C:
 		}
 	}
@@ -300,7 +300,7 @@ func TestReserveRejectsPreviewExpiredWhileWaitingForMappingLock(t *testing.T) {
 		_, err := (Repository{DB: db}).Reserve(ctx, request())
 		result <- err
 	}()
-	waitForMappingBlock(t, ctx, db, pid, result)
+	waitForDatabaseBlock(t, ctx, db, pid, result)
 	timer := time.NewTimer(time.Until(expiresAt) + 10*time.Millisecond)
 	defer timer.Stop()
 	select {
