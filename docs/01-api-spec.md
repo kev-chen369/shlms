@@ -22,6 +22,17 @@
 
 ## 推广中心接口扩展（待实现）
 
+推广位增量实现（2026-09-16）：
+
+- `GET /api/v1/promotion-positions`：本人列表，status 可选 ENABLED / DISABLED，limit 默认 20、范围 1～100，cursor 绑定用户与筛选；按内部 ID 升序分页，不宣称时间排序。空列表 items=[]，返回 nextCursor。停用推广身份仍可读本人历史。
+- `POST /api/v1/promotion-positions`：name、scene、可选 isDefault；新建内部位版本为 1，未指定默认不自动选为默认。
+- `PATCH /api/v1/promotion-positions/{id}`：name、scene、version；当前按完整名称 / 场景更新，不支持通过此接口修改默认标记或渠道归属。
+- `POST /api/v1/promotion-positions/{id}/default`、`.../{id}/disable`：仅接受 version，分别切换默认 / 停用并清除默认，不删除历史。
+
+写操作必须提供 Idempotency-Key 及 JSON，name / scene 去首尾空白后 1～80 字符、请求体最多 4 KiB。只有已启用推广身份可写，停用后连旧写请求重放也返回 403；同人同操作同键的输入变化返回 409。默认切换同时更新旧默认位的版本，其他页面收到版本冲突须刷新。找不到或不属于本人统一 404，不泄露他人资源。
+
+响应含 id、name、scene、status、isDefault、version、createdAt；当前渠道映射尚未实现，channels 固定标注 JD / WAITING_CONFIGURATION，canConvert=false。幂等重放返回原操作回执，实际当前默认 / 停用状态以重新查询列表为准。缺少 PositionService 或用户解析器时不注册路由，生产启动仍未接入。
+
 后台列表增量实现：`GET /admin/v1/promoter-applications` 要求独立管理员认证及 `promoter:read` 权限。参数 status 可选 PENDING / ENABLED / REJECTED / DISABLED（省略为全部），limit 默认 20、范围 1～100，cursor 为服务端返回的 nextCursor。返回 `{items: [{applicationId,userId,displayName,scene,consentedAt,status,version}],nextCursor}`，每人仅当前申请，按同意时间与申请 ID 倒序；不提供全历史审计列表。筛选变化须清空 cursor，重复 / 未知查询参数或无效游标返回 400，空结果 items 为 []。分页不冻结跨请求数据快照，审核时必须带列表中的 version，409 后刷新。缺少列表服务或管理员依赖时不注册路由，尚未生产装配。
 
 后台增量实现：`POST /admin/v1/promoter-applications/{id}/review` 接受 `{approve: boolean, reason: string, version: integer}`；`POST /admin/v1/promoters/{id}/disable` 接受 `{reason: string, version: integer}`。均要求 JSON、Idempotency-Key 和独立管理员认证。权限分别为 promoter:review / promoter:disable，版本必须大于 0，原因去首尾空白后 1～500 字符（用户可见，不得填内部机密）。响应包含 userId、applicationId、status、version；相同请求重放返回原操作回执，当前状态需另行查询。身份缺失 401、权限不足 / 自审 403、目标不存在 404、版本 / 状态 / 幂等冲突 409、内部异常 503。缺少管理员解析器或管理服务时路由不注册，尚未接入生产启动。

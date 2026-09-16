@@ -34,5 +34,12 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 	if dependencies.Admins != nil && dependencies.PromoterAdminList != nil {
 		mux.HandleFunc("GET /admin/v1/promoter-applications", promoterAdminListHandler(dependencies))
 	}
+	if dependencies.Positions != nil && dependencies.Users != nil {
+		mux.HandleFunc("GET /api/v1/promotion-positions", positionListHandler(dependencies))
+		mux.HandleFunc("POST /api/v1/promotion-positions", positionWriteHandler(dependencies, "CREATE"))
+		mux.HandleFunc("PATCH /api/v1/promotion-positions/{id}", positionWriteHandler(dependencies, "EDIT"))
+		mux.HandleFunc("POST /api/v1/promotion-positions/{id}/default", positionWriteHandler(dependencies, "DEFAULT"))
+		mux.HandleFunc("POST /api/v1/promotion-positions/{id}/disable", positionWriteHandler(dependencies, "DISABLE"))
+	}
 	return mux
 }
