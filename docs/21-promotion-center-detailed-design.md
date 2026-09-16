@@ -154,6 +154,8 @@
 
 分享内容进展（M2-06a）：`GET /api/v1/promotion-links/{id}/share-artifacts?type=link|text` 已复用本人转链读取，`id` / 响应 `linkId` 均为成功转链请求 ID，`trackingId` 为原 Tracking。必须且只能提交一个 type；非成功返回 409，越权或不存在返回 404，qr / poster 返回 422 未开放。响应仅包含 linkId、trackingId、type、linkUrl、content、templateVersion；link 的 content 是原链接，text 的 v1 文案为「万惠宝好物推荐」加换行及原链接，不拼接个人收益或估算价格。采用 no-store 和持久化链接格式检查，不访问链接或将动态主机当成获批渠道证据。此接口与状态查询一样允许停用用户读取历史成功记录；预览过期不代表外部链接失效，也不承诺外部链接仍有效。读取不创建 Tracking、不调用转链、不记录复制 / 分享送达、不触发收益；实际渠道成功与客户端复制、事件去重仍待后续任务。
 
+分享事件进展（M2-06b）：`POST /api/v1/promotion-links/{id}/share-events` 接收 eventId、action、scene，要求 JSON、最多 4 KiB 且拒绝其他字段；Idempotency-Key 必须与 eventId 一致。action 仅 copy_link / copy_text，eventId 最多 128 字节、scene 最多 80 字节，不接受首尾空白或控制字符。身份只来自已验签用户；仅本人 SUCCEEDED 请求可记录，非成功 409、跨用户或不存在 404。000010 迁移新增 promotion_share_events，以 `(owner_user_id,event_id)` 主键去重、复合外键绑定本人转链请求，并为外键建索引。仓储短事务共享锁复核状态、原子插入；同事件同链接 / 动作 / 场景重放原 recordedAt，不同输入 409，失败完整回滚。响应仅 eventId、linkId、trackingId、action、scene、recordedAt，不改写原 Tracking、转链状态 / 版本 / 尝试次数，不记消费者、点击、送达或收益。允许对本人历史成功记录补报操作，不因身份 / 推广位停用或预览过期抹去遥测；不代表允许重新转链。此记录只证明客户端上报被存储，不证明复制真实成功或分享送达；客户端须在复制 API 成功后上报，失败 / 取消不得上报，客户端实现及真实渠道仍待后续验收。
+
 状态持久化进展（M2-03c-2a）：000009 迁移为转链请求增加版本、尝试次数、租约和脱敏失败码。待处理请求只能被一个执行者原子领取；超时不确定结果进入 QUERY_REQUIRED，恢复扫描只发现待查询项，不会自动重发。渠道请求号在领取时固定，成功和确定失败均用版本及请求号保护，终态不回退。获批渠道的请求幂等 / 结果查询能力及链接域名核验仍待接入。
 
 领取事务并发防护（M2-03c-2c）：按推广身份 → 本人内部推广位 → 转链请求顺序加锁，前两者用共享行锁复核 ENABLED，请求行锁后再复核 PENDING 和版本 CAS；资格检查与 PROCESSING 更新同事务提交，停用不可穿过检查与更新之间。执行租约在取得请求行锁后计算，避免锁等待消耗租约；失败完整回滚。此边界仅保证领取事务内资格一致，不保证提交后至外部调用期间的身份或渠道映射不变，相关防护和真实渠道验收仍待后续任务。

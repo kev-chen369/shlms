@@ -21,6 +21,7 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	ShareEvents                ShareEventRecorder
 	Conversion                 ConversionCreator
 	ConversionReader           ConversionReader
 	Preview                    PreviewCreator
@@ -34,6 +35,10 @@ type Dependencies struct {
 	Promoter                   PromoterReader
 	PromoterApplications       PromoterApplicant
 	PromoterCurrentApplication PromoterApplicationReader
+}
+
+type ShareEventRecorder interface {
+	RecordShareEvent(context.Context, conversion.ShareEventInput) (conversion.ShareRecord, error)
 }
 
 type ConversionCreator interface {

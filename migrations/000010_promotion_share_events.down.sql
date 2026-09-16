@@ -1,0 +1,2 @@
+DROP TABLE promotion_share_events;
+ALTER TABLE promotion_conversion_requests DROP CONSTRAINT promotion_conversion_owner_key;

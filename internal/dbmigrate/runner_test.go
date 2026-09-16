@@ -77,7 +77,7 @@ func TestRunActualMigrationsConcurrentlyAndRepeatedly(t *testing.T) {
 	if err := db.QueryRow(`SELECT count(*) FROM schema_migrations`).Scan(&count); err != nil || count != want {
 		t.Fatal(count, err)
 	}
-	for _, table := range []string{"tracking_records", "promoter_profiles", "promoter_applications", "promotion_positions", "promotion_previews", "promotion_conversion_requests", "channel_positions", "channel_position_config_events", "admin_principals", "admin_permissions"} {
+	for _, table := range []string{"tracking_records", "promoter_profiles", "promoter_applications", "promotion_positions", "promotion_previews", "promotion_conversion_requests", "promotion_share_events", "channel_positions", "channel_position_config_events", "admin_principals", "admin_permissions"} {
 		var exists bool
 		if err := db.QueryRow(`SELECT to_regclass($1) IS NOT NULL`, table).Scan(&exists); err != nil || !exists {
 			t.Fatal(table, err)

@@ -52,6 +52,7 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 		Preview:          preview.Service{Eligibility: preview.PostgresEligibility{DB: db}, Store: preview.NewRepository(db)},
 		Conversion:       conversion.Service{Eligibility: preview.PostgresEligibility{DB: db}, Previews: preview.NewRepository(db), Requests: conversion.Repository{DB: db}},
 		ConversionReader: conversion.ReadService{Repository: conversion.Repository{DB: db}},
+		ShareEvents:      conversion.Repository{DB: db},
 	}
 	return httpapi.NewRouterWithDependencies(d), nil
 }

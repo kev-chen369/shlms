@@ -2,6 +2,7 @@ package httpapi
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -108,7 +109,8 @@ func TestShareArtifactsRequiresDependencies(t *testing.T) {
 	}
 }
 
-func TestShareArtifactsPostgresReadOnlyAndOwnerIsolation(t *testing.T) {
+func historicShareDB(t *testing.T) *sql.DB {
+	t.Helper()
 	db := promotionCenterDB(t)
 	for _, name := range []string{"000001_tracking_records", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state"} {
 		b, err := os.ReadFile("../../migrations/" + name + ".up.sql")
@@ -135,6 +137,11 @@ func TestShareArtifactsPostgresReadOnlyAndOwnerIsolation(t *testing.T) {
 		VALUES('cr1','u1','p1','pv1','tr1','convert-key',repeat('b',64),'home','SUCCEEDED','cr1','https://channel.example/item',3,1)`); err != nil {
 		t.Fatal(err)
 	}
+	return db
+}
+
+func TestShareArtifactsPostgresReadOnlyAndOwnerIsolation(t *testing.T) {
+	db := historicShareDB(t)
 	userID := "u1"
 	router := NewRouterWithDependencies(Dependencies{
 		Users:            identityFunc(func(*http.Request) (string, error) { return userID, nil }),

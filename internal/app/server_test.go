@@ -144,6 +144,9 @@ func TestRuntimeWiresVerifiedIdentityAndDatabasePermissions(t *testing.T) {
 	}
 	call("GET", "/healthz", "", "", "", 200)
 	call("GET", "/api/v1/promoter/profile", "", "", "", 401)
+	shareBody := `{"eventId":"event1","action":"copy_link","scene":"group"}`
+	call("POST", "/api/v1/promotion-links/missing/share-events", shareBody, "", "event1", 401)
+	call("POST", "/api/v1/promotion-links/missing/share-events", shareBody, userToken, "event1", 404)
 	profile := call("GET", "/api/v1/promoter/profile", "", userToken, "", 200)
 	if profile["data"].(map[string]any)["status"] != "NOT_APPLIED" {
 		t.Fatal(profile)
