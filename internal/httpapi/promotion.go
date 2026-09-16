@@ -19,6 +19,7 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	PromoterAdminList          PromoterAdminLister
 	Admins                     AdminResolver
 	PromoterAdmin              PromoterAdministrator
 	Promotion                  PromotionCreator

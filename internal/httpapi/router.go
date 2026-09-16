@@ -31,5 +31,8 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 		mux.HandleFunc("POST /admin/v1/promoter-applications/{id}/review", promoterAdminHandler(dependencies, "REVIEW"))
 		mux.HandleFunc("POST /admin/v1/promoters/{id}/disable", promoterAdminHandler(dependencies, "DISABLE"))
 	}
+	if dependencies.Admins != nil && dependencies.PromoterAdminList != nil {
+		mux.HandleFunc("GET /admin/v1/promoter-applications", promoterAdminListHandler(dependencies))
+	}
 	return mux
 }

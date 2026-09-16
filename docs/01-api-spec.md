@@ -22,6 +22,8 @@
 
 ## 推广中心接口扩展（待实现）
 
+后台列表增量实现：`GET /admin/v1/promoter-applications` 要求独立管理员认证及 `promoter:read` 权限。参数 status 可选 PENDING / ENABLED / REJECTED / DISABLED（省略为全部），limit 默认 20、范围 1～100，cursor 为服务端返回的 nextCursor。返回 `{items: [{applicationId,userId,displayName,scene,consentedAt,status,version}],nextCursor}`，每人仅当前申请，按同意时间与申请 ID 倒序；不提供全历史审计列表。筛选变化须清空 cursor，重复 / 未知查询参数或无效游标返回 400，空结果 items 为 []。分页不冻结跨请求数据快照，审核时必须带列表中的 version，409 后刷新。缺少列表服务或管理员依赖时不注册路由，尚未生产装配。
+
 后台增量实现：`POST /admin/v1/promoter-applications/{id}/review` 接受 `{approve: boolean, reason: string, version: integer}`；`POST /admin/v1/promoters/{id}/disable` 接受 `{reason: string, version: integer}`。均要求 JSON、Idempotency-Key 和独立管理员认证。权限分别为 promoter:review / promoter:disable，版本必须大于 0，原因去首尾空白后 1～500 字符（用户可见，不得填内部机密）。响应包含 userId、applicationId、status、version；相同请求重放返回原操作回执，当前状态需另行查询。身份缺失 401、权限不足 / 自审 403、目标不存在 404、版本 / 状态 / 幂等冲突 409、内部异常 503。缺少管理员解析器或管理服务时路由不注册，尚未接入生产启动。
 
 实现进展（2026-09-16）：`GET /api/v1/promoter/profile` 已实现查询服务和可注入路由，返回 status、reason、applicationId、capabilities。未申请返回 NOT_APPLIED；未认证返回 401，读取失败返回 503 / PROMOTER_UNAVAILABLE，响应禁止缓存。只能查询鉴权本人，拒绝依赖返回的其他用户记录，不公开审核通过的内部备注。缺少身份或查询依赖时不注册路由。该接口尚未装配进生产启动入口，数据库仓储和真实认证仍待实现；其他接口仍为目标契约。
