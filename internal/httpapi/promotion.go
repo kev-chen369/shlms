@@ -6,6 +6,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/kev-chen369/shlms/internal/conversion"
 	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promotion"
 	"github.com/kev-chen369/shlms/internal/tracking"
@@ -20,6 +21,7 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Conversion                 ConversionCreator
 	Preview                    PreviewCreator
 	ChannelPositions           ChannelPositionConfigurator
 	Positions                  PositionManager
@@ -31,6 +33,10 @@ type Dependencies struct {
 	Promoter                   PromoterReader
 	PromoterApplications       PromoterApplicant
 	PromoterCurrentApplication PromoterApplicationReader
+}
+
+type ConversionCreator interface {
+	Convert(context.Context, conversion.ConvertInput) (conversion.Record, error)
 }
 
 type PreviewCreator interface {

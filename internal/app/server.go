@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/kev-chen369/shlms/internal/auth"
+	"github.com/kev-chen369/shlms/internal/conversion"
 	"github.com/kev-chen369/shlms/internal/dbmigrate"
 	"github.com/kev-chen369/shlms/internal/httpapi"
 	"github.com/kev-chen369/shlms/internal/preview"
@@ -48,7 +49,8 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 		Positions:                  promoter.PositionService{Repository: repo},
 		ChannelPositions:           promoter.ChannelPositionService{Repository: repo},
 		// The route stays fail-closed until an approved resolver and channel quoter are configured.
-		Preview: preview.Service{Eligibility: preview.PostgresEligibility{DB: db}, Store: preview.NewRepository(db)},
+		Preview:    preview.Service{Eligibility: preview.PostgresEligibility{DB: db}, Store: preview.NewRepository(db)},
+		Conversion: conversion.Service{Eligibility: preview.PostgresEligibility{DB: db}, Previews: preview.NewRepository(db), Requests: conversion.Repository{DB: db}},
 	}
 	return httpapi.NewRouterWithDependencies(d), nil
 }

@@ -171,9 +171,19 @@ func TestRuntimeWiresVerifiedIdentityAndDatabasePermissions(t *testing.T) {
 	previewBody := `{"input":"https://approved.example/item","positionId":"` + position["data"].(map[string]any)["id"].(string) + `","scene":"sharing"}`
 	call("POST", "/api/v1/promotions/preview", previewBody, "", "preview-1", 401)
 	call("POST", "/api/v1/promotions/preview", previewBody, userToken, "preview-1", 409)
+	convertBody := `{"previewId":"missing","positionId":"` + position["data"].(map[string]any)["id"].(string) + `","scene":"sharing"}`
+	call("POST", "/api/v1/promotions/convert", convertBody, "", "convert-1", 401)
+	call("POST", "/api/v1/promotions/convert", convertBody, userToken, "convert-1", 409)
 	var previewCount int
 	if err := db.QueryRow(`SELECT count(*) FROM promotion_previews`).Scan(&previewCount); err != nil || previewCount != 0 {
 		t.Fatal(previewCount, err)
+	}
+	var conversionCount, trackingCount int
+	if err := db.QueryRow(`SELECT count(*) FROM promotion_conversion_requests`).Scan(&conversionCount); err != nil || conversionCount != 0 {
+		t.Fatal(conversionCount, err)
+	}
+	if err := db.QueryRow(`SELECT count(*) FROM tracking_records`).Scan(&trackingCount); err != nil || trackingCount != 0 {
+		t.Fatal(trackingCount, err)
 	}
 	if _, err := db.Exec(`UPDATE admin_principals SET active=false WHERE user_id='admin-1'`); err != nil {
 		t.Fatal(err)

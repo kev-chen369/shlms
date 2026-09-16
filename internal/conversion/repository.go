@@ -165,3 +165,7 @@ func (r Repository) Reserve(ctx context.Context, in ReserveInput) (Record, error
 func (r Repository) FindByID(ctx context.Context, ownerUserID, id string) (Record, error) {
 	return scanRecord(r.DB.QueryRowContext(ctx, `SELECT `+recordColumns+` FROM promotion_conversion_requests WHERE owner_user_id=$1 AND id=$2`, ownerUserID, id))
 }
+
+func (r Repository) FindByKey(ctx context.Context, ownerUserID, key string) (Record, error) {
+	return scanRecord(r.DB.QueryRowContext(ctx, `SELECT `+recordColumns+` FROM promotion_conversion_requests WHERE owner_user_id=$1 AND idempotency_key=$2`, ownerUserID, key))
+}

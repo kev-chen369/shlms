@@ -118,6 +118,8 @@
 
 转链预留进展（M2-03a）：新增 `promotion_conversion_requests`，以复合外键绑定同一用户 / 推广位的预览，并与旧 `tracking_records` 在同一事务生成；状态初始为 PENDING，回放键按用户隔离。旧购物 Tracking 模型不改写。该预留不调用渠道、不生成链接；服务端二次报价、渠道就绪和失败恢复仍属后续任务。
 
+转链接口进展（M2-03b）：`POST /api/v1/promotions/convert` 已接鉴权和二次校验服务。提交仅接受预览 ID、推广位 ID、场景和幂等键；复核器须从获批渠道重新获取同一商品报价并逐项比对商品、价格、个人收益、消费者返现及规则版本。匹配后才原子预留 Tracking，返回 202 PENDING，不返回链接。当前无真实复核器、渠道位也不能 READY，生产调用不会写入或返回假链接。状态查询、真实渠道调用、超时恢复，以及渠道 readiness 在预留事务内复核仍待 M2-03c。
+
 推广员：未申请 → PENDING → ENABLED / REJECTED；REJECTED 可重新申请，ENABLED 可被 DISABLED。恢复资格须有审核和审计，不由客户端变更。
 
 交易状态沿用[订单状态机](./07-order-state-machine.md)。推广收益沿用[佣金钱包状态](./08-commission-wallet.md)：ESTIMATED → PENDING_CONFIRM → PENDING_SETTLEMENT → AVAILABLE；失效为 INVALID，到账后冲正为 CLAWED_BACK。统一钱包提现后不简单把某笔推广收益改成 WITHDRAWN；如需分来源提现报表，另建提现分摊明细。
