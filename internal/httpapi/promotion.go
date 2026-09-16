@@ -19,6 +19,7 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	ChannelPositions           ChannelPositionConfigurator
 	Positions                  PositionManager
 	PromoterAdminList          PromoterAdminLister
 	Admins                     AdminResolver
