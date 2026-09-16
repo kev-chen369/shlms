@@ -108,6 +108,10 @@
 
 ![开通、工作台与推广位](./images/promoter-onboarding-positions-v2.png)
 
+审核中、拒绝、停用和无推广位的补充状态见[四屏状态稿](./images/promoter-states-onboarding-v2.png)，交互与权限边界以[详细设计](./21-promotion-center-detailed-design.md)为准。
+
+![推广身份与推广位状态](./images/promoter-states-onboarding-v2.png)
+
 ### 2. 万能转链与分享
 
 万能转链、商品确认、转链结果、分享素材。
