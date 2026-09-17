@@ -33,7 +33,7 @@
 
 ## 2. 信息架构与角色入口
 
-首页渠道快捷入口下方设置“AI 帮我选 / 推广赚钱”并排卡片，推广入口位于推荐商品上方。[查看首页设计](./images/home-promoter-entry-v2.png)及[交互说明](./images/home-promoter-entry-v2.prompt.md)。
+以下“AI 帮我选 / 推广赚钱”双卡是 V2 历史方案，[旧图稿](./images/home-promoter-entry-v2.png)及[交互说明](./images/home-promoter-entry-v2.prompt.md)仅供追溯。当前 P-00 实施基线改为[多平台首页 V3](./images/home-platform-modules-h5-v3.png)，以平台切换、四内容模块和四栏底导航为准。
 
 ![首页推广中心入口](./images/home-promoter-entry-v2.png)
 
@@ -48,7 +48,7 @@
 | 订单 | 查看订单归属与自己的收益 | 订单筛选、收益详情、查单 |
 | 我的 | 管理推广资料与资金 | 推广资金明细、结算记录、到账账户、提现申请与记录 |
 
-保留“返回省钱首页/切回消费者版”。消费者原有五栏导航不与推广中心四栏混用。登录沿用 [简化版 V3](./images/user-ui-login-simple-v3.png)。
+推广中心内可返回消费者首页；下表是推广中心内部导航，不与消费者首页 V3 的「首页 / 领券 / 推广 / 我的」四栏混用。消费者五栏仅属 V2 历史方案。登录沿用 [简化版 V3](./images/user-ui-login-simple-v3.png)。
 
 ## 3. 功能—页面—数据关联
 
