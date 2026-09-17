@@ -20,6 +20,16 @@
   - [ ] DOC-05c【未开始】将用户端发现、搜索、商品、购买、订单、钱包、我的、登录、AI 与状态等 V2 图组逐组转为 V3，并保持新四栏导航一致。
   - [ ] DOC-05d【未开始】将推广申请、工作台、推广位、转链、活动、订单、资产及异常状态等 V2 图组逐组转为 V3；保持现有安全 / 审核状态语义。
   - [ ] DOC-05e【未开始】将跨平台电商、本地生活与后台 V2 图组逐组转为 V3；后台不强套移动端底栏。
+  - [ ] DOC-05c-1【未开始】用户端发现与多平台总览 V3：`user-ui-discovery-v2`、`mobile-ui-overview-v2`。
+  - [ ] DOC-05c-2【未开始】用户端搜索 / AI / 购买 V3：`user-ui-ai-v2`、`user-ui-purchase-v2`。
+  - [ ] DOC-05c-3【未开始】用户端订单 / 钱包 / 我的 V3：`user-ui-orders-v2`、`user-ui-wallet-v2`、`user-ui-profile-v2`。
+  - [ ] DOC-05c-4【未开始】用户端登录 / 通用状态 V3：`user-ui-auth-v2`、`user-ui-states-v2`。
+  - [ ] DOC-05d-1【未开始】推广申请、工作台与推广位 V3：`promoter-onboarding-positions-v2`、`promoter-states-onboarding-v2`。
+  - [ ] DOC-05d-2【未开始】推广转链及异常结果 V3：`promoter-convert-share-v2`、`promoter-states-convert-v2`、`promoter-states-result-v2`。
+  - [ ] DOC-05d-3【未开始】推广活动、订单、收益与结算 V3：`promoter-activities-orders-v2`、`promoter-wallet-settlement-v2`。
+  - [ ] DOC-05e-1【未开始】平台电商 / 本地生活 V3：`expanded-ecommerce-platforms-v2`、`local-life-travel-platforms-v2`、`multi-platform-client-overview-v2`。
+  - [ ] DOC-05e-2【未开始】后台总览 V3：`admin-dashboard-overview-v2`，沿用色彩和卡片语言，不使用 H5 底导航。
+  - `home-promoter-entry-v2` 已由 DOC-03 的 `home-platform-modules-h5-v3` 替代；`user-ui-discovery-v2` 的旧省钱频道由 DOC-05a 的领券一级页先行替代，完整旧图组仍待 DOC-05c-1。以上任务覆盖现存全部 21 组 V2 PNG，不原地覆盖历史稿。
 - 已有 Go HTTP / Tracking / 京东适配边界、转链服务、PostgreSQL Tracking 迁移及仓储测试，可复用；不是完整推广中心。
 - `cmd/api` 当前仅接健康检查；身份、生产依赖装配、真实渠道调用及推广前端不能视为完成。
 - 推广身份模型、申请持久化、提交与查询接口已完成独立测试，尚未接入生产认证和启动装配；推广位归属、预览、推广订单、分账和结算仍待开发。
