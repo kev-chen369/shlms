@@ -1,5 +1,7 @@
 # V3 多平台商品与活动推广界面详细设计
 
+系统模块、数据兼容迁移和分阶段接入分析见[多渠道推广系统设计复核](./24-multichannel-promotion-architecture-v3.md)。
+
 日期：2026-09-17。状态：产品 / 技术设计，不代表淘宝、美团或京东真实转链已开放。入口从底栏「推广」进入，已启用推广身份后可查看[推广选品 V3 概念稿](./images/promotion-materials-h5-v3.png)。现有[推广中心首页](./images/promotion-center-h5-v3.png)展示的是「京东渠道待配置」状态；概念商品与活动不是生产目录。
 
 ![推广选品 H5 V3](./images/promotion-materials-h5-v3.png)
