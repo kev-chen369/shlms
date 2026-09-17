@@ -17,8 +17,10 @@
 - `POST /auth/login/phone`、`POST /auth/login/wechat`、`POST /auth/refresh`
 - `GET /users/me`、`GET /home`
 - `GET /products/search`、`GET /products/{id}`、`GET /products/{id}/compare`
-- V3 领券链路拟增 `GET /coupons`、`GET /coupons/{id}`、`GET /coupons/{id}/products`、`POST /coupons/{id}/claims`、`GET /coupon-claims/{id}`；均为待实现目标契约，领取回执与商品范围由可信渠道确认，不把打开外部领券页当领取成功。详见[领券到下单设计](./22-coupon-to-purchase-design.md)。
-- 平台侧领券 / 活动拟增 `POST /coupons/{id}/outbound`，独立返回受控 App / H5 / 小程序跳转方案及跳转记录；`claims` 仅用于已获批且可核实的本站领取。券列表拟返回领取模式与动作文案；跳转成功不产生 `CLAIMED`，具体字段与鉴权范围以渠道授权核定。以上接口尚未实现。
+- V3 领券链路已有基础 `GET /coupons`；`GET /coupons/{id}`、`GET /coupons/{id}/products`、`POST /coupons/{id}/claims`、`GET /coupon-claims/{id}` 仍为待实现目标契约。领取回执与商品范围须由可信渠道确认，不把打开外部领券页当领取成功。详见[领券到下单设计](./22-coupon-to-purchase-design.md)。
+- 平台侧领券 / 活动拟增 `POST /coupons/{id}/outbound`，独立返回受控 App / H5 / 小程序跳转方案及跳转记录；`claims` 仅用于已获批且可核实的本站领取。跳转成功不产生 `CLAIMED`，具体字段与鉴权范围以渠道授权核定。外跳与领取接口尚未实现。
+
+`GET /api/v1/coupons` 已实现只读基础版：可选 `platform=JD|TB|MT`、`limit=1..100`、`cursor`，默认 20 条。仅返回 `coupon_catalog` 中启用、已核验、未过期的物料；结果包含 `items`、`nextCursor`，券卡字段包含领取模式、服务端动作文案、优惠额 / 门槛（分）、适用范围摘要、城市 / 业务和规则更新时间。游标绑定平台筛选。当前没有渠道导入与核验写入流程，生产空库返回 `items=[]`；详情、适用商品、领取和外跳接口仍待 M6 后续任务，不能凭该列表认为渠道已开通。
 - `POST /promotions/link`：创建 Tracking，返回 H5/Scheme/小程序跳转信息。
 - `GET /orders`、`GET /orders/{orderNo}`、`POST /orders/missing/claim`
 - `GET /wallet`、`GET /wallet/transactions`、`POST /withdrawals`

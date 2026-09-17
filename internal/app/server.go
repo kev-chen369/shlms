@@ -10,6 +10,7 @@ import (
 
 	"github.com/kev-chen369/shlms/internal/auth"
 	"github.com/kev-chen369/shlms/internal/conversion"
+	"github.com/kev-chen369/shlms/internal/coupon"
 	"github.com/kev-chen369/shlms/internal/dbmigrate"
 	"github.com/kev-chen369/shlms/internal/httpapi"
 	"github.com/kev-chen369/shlms/internal/preview"
@@ -40,7 +41,8 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 	}
 	repo := promoter.NewPostgresRepository(db)
 	d := httpapi.Dependencies{
-		Users: verifier, Admins: auth.AdminResolver{Verifier: verifier, Store: auth.PostgresAdminStore{DB: db}},
+		Coupons: coupon.Catalog{DB: db},
+		Users:   verifier, Admins: auth.AdminResolver{Verifier: verifier, Store: auth.PostgresAdminStore{DB: db}},
 		Promoter:                   promoter.Service{Repository: repo},
 		PromoterApplications:       promoter.ApplicationService{Repository: repo, AgreementVersion: config.AgreementVersion},
 		PromoterCurrentApplication: promoter.CurrentApplicationService{Repository: repo},

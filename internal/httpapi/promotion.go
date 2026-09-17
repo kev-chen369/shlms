@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/kev-chen369/shlms/internal/conversion"
+	"github.com/kev-chen369/shlms/internal/coupon"
 	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promotion"
 	"github.com/kev-chen369/shlms/internal/tracking"
@@ -21,6 +22,9 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Coupons interface {
+		List(context.Context, coupon.ListInput) (coupon.Page, error)
+	}
 	Conversion                 ConversionCreator
 	ConversionReader           ConversionReader
 	Preview                    PreviewCreator

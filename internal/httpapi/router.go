@@ -15,6 +15,9 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 	})
+	if dependencies.Coupons != nil {
+		mux.HandleFunc("GET /api/v1/coupons", couponListHandler(dependencies))
+	}
 	if dependencies.Promotion != nil && dependencies.Users != nil {
 		mux.HandleFunc("POST /api/v1/promotions/link", promotionLinkHandler(dependencies))
 	}
