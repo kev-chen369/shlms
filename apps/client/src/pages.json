@@ -6,6 +6,7 @@
     { "path": "pages/orders/index", "style": { "navigationStyle": "custom" } },
     { "path": "pages/profile/index", "style": { "navigationStyle": "custom" } },
     { "path": "pages/promotion/index", "style": { "navigationBarTitleText": "推广中心" } },
+    { "path": "pages/promotion/convert", "style": { "navigationBarTitleText": "准备推广链接" } },
     { "path": "pages/ai/index", "style": { "navigationBarTitleText": "AI 帮我选" } }
   ],
   "tabBar": {
