@@ -24,6 +24,8 @@ type UserResolver interface {
 type Dependencies struct {
 	Coupons interface {
 		List(context.Context, coupon.ListInput) (coupon.Page, error)
+		Get(context.Context, string, string, string) (coupon.Item, error)
+		Products(context.Context, string, string, string, string, int) (coupon.ProductPage, error)
 	}
 	Conversion                 ConversionCreator
 	ConversionReader           ConversionReader
