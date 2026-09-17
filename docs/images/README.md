@@ -6,6 +6,7 @@
 - `coupon-center-h5-v3.png`：与当前首页一致的 H5「领券」一级页，京东选中态、精选券 / 品类券 / 即将过期及四栏底导航；金额与商品均为演示，不代表真实可领。
 - `promotion-center-h5-v3.png`：与当前首页一致的 H5「推广」一级页，已开通推广身份但京东渠道位待配置，生成入口禁用，订单与收益为空态；四栏底导航选中推广。
 - `promotion-materials-h5-v3.png`：推广选品详细页，平台京东 / 淘宝 / 美团和商品 / 活动切换，每个物料独立查看 / 生成操作；示例渠道均未就绪，不展示可复制的真实链接。详见[详细设计](../23-multiplatform-promotion-ui.md)。
+- `promotion-product-confirm-v3.png`：V3 商品确认与推广位选择状态图，京东报价待核验 / 渠道位待配置，生成链接禁用；新图使用 APP 对外名称「万宝单生活」。
 
 - `home-promoter-entry-v2.png`：首页新增“AI 帮我选 / 推广赚钱”并排入口；[交互说明与提示词](./home-promoter-entry-v2.prompt.md)。
 - 推广中心用户端：[模型分析与图册](../20-promoter-model-user-ui-design.md)，4 组、16 个核心页面。
