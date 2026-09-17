@@ -18,6 +18,7 @@
 - `GET /users/me`、`GET /home`
 - `GET /products/search`、`GET /products/{id}`、`GET /products/{id}/compare`
 - V3 领券链路拟增 `GET /coupons`、`GET /coupons/{id}`、`GET /coupons/{id}/products`、`POST /coupons/{id}/claims`、`GET /coupon-claims/{id}`；均为待实现目标契约，领取回执与商品范围由可信渠道确认，不把打开外部领券页当领取成功。详见[领券到下单设计](./22-coupon-to-purchase-design.md)。
+- 平台侧领券 / 活动拟增 `POST /coupons/{id}/outbound`，独立返回受控 App / H5 / 小程序跳转方案及跳转记录；`claims` 仅用于已获批且可核实的本站领取。券列表拟返回领取模式与动作文案；跳转成功不产生 `CLAIMED`，具体字段与鉴权范围以渠道授权核定。以上接口尚未实现。
 - `POST /promotions/link`：创建 Tracking，返回 H5/Scheme/小程序跳转信息。
 - `GET /orders`、`GET /orders/{orderNo}`、`POST /orders/missing/claim`
 - `GET /wallet`、`GET /wallet/transactions`、`POST /withdrawals`
