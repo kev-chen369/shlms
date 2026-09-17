@@ -3,6 +3,7 @@
 ## 文件
 
 - `home-platform-modules-h5-v3.png`：2026-09-17 多平台切换首页 H5 新提案；京东选中态、四个内容模块和「首页 / 领券 / 推广 / 我的」四栏底导航。全部商品、店铺、价格和券额均为演示；与旧 V2 五栏方案并存，待产品评审。
+- `coupon-center-h5-v3.png`：与当前首页一致的 H5「领券」一级页，京东选中态、精选券 / 品类券 / 即将过期及四栏底导航；金额与商品均为演示，不代表真实可领。
 
 - `home-promoter-entry-v2.png`：首页新增“AI 帮我选 / 推广赚钱”并排入口；[交互说明与提示词](./home-promoter-entry-v2.prompt.md)。
 - 推广中心用户端：[模型分析与图册](../20-promoter-model-user-ui-design.md)，4 组、16 个核心页面。
