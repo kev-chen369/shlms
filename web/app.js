@@ -6,7 +6,7 @@ const platforms = [
   { id: 'ELEME', name: '饿了么', active: false },
 ];
 
-const state = { platform: 'JD', tab: 'home', request: null, couponRequest: null, detailRequest: null, nextCursor: '', activeCoupon: '' };
+const state = { platform: 'JD', cityCode: '', tab: 'home', request: null, couponRequest: null, detailRequest: null, cityRequest: null, nextCursor: '', activeCoupon: '' };
 const byId = (id) => document.getElementById(id);
 const platformName = () => platforms.find((item) => item.id === state.platform)?.name ?? '';
 const yuan = (minor) => `¥${(minor / 100).toFixed(minor % 100 === 0 ? 0 : 2)}`;
@@ -45,13 +45,54 @@ function renderPlatforms() {
 function selectPlatform(id) {
   if (state.platform === id) return;
   state.platform = id;
+  state.cityCode = '';
   renderPlatforms();
   byId('home-title').textContent = `${platformName()}优惠专区`;
   byId('hero-description').textContent = platforms.find((p) => p.id === id)?.active
     ? '查看当前平台已核验的活动' : '渠道暂未开放';
   loadHomeCoupons();
   closeDetail();
+  loadCities();
   if (state.tab === 'coupons') loadCoupons();
+}
+
+async function loadCities() {
+  state.cityRequest?.abort();
+  const controller = new AbortController();
+  state.cityRequest = controller;
+  const select = byId('coupon-city');
+  const hint = byId('city-hint');
+  select.replaceChildren(element('option', '', '不限城市活动'));
+  select.firstChild.value = '';
+  hint.textContent = '正在读取可用城市…';
+  if (!platforms.find((p) => p.id === state.platform)?.active) {
+    hint.textContent = '渠道暂未开放';
+    return;
+  }
+  try {
+    const response = await fetch(`/api/v1/coupon-cities?platform=${encodeURIComponent(state.platform)}`, { signal: controller.signal, cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const body = await response.json();
+    if (controller.signal.aborted) return;
+    const cities = body?.data?.items;
+    if (!Array.isArray(cities)) throw new Error('Invalid cities response');
+    for (const city of cities) {
+      if (!city.code || !city.name) continue;
+      const option = element('option', '', city.name);
+      option.value = city.code;
+      select.append(option);
+    }
+    hint.textContent = cities.length ? '选城市后仍包含不限城市活动' : '暂无已核验的城市专属活动';
+  } catch (error) {
+    if (error.name !== 'AbortError') hint.textContent = '城市选项暂不可用，仅展示不限城市活动';
+  }
+}
+
+function selectCity(code) {
+  state.cityCode = code;
+  closeDetail();
+  loadHomeCoupons();
+  loadCoupons();
 }
 
 function selectTab(tab) {
@@ -98,8 +139,8 @@ async function loadCoupons(reset = true) {
   const target = byId('coupon-list');
   const more = byId('coupon-more');
   const platform = platforms.find((p) => p.id === state.platform);
-  byId('coupon-subtitle').textContent = platform.id === 'MT'
-    ? '当前只展示不限城市的已核验活动' : '只展示已核验且有效的活动';
+  byId('coupon-subtitle').textContent = state.cityCode
+    ? `正在查看${byId('coupon-city').selectedOptions[0].textContent}及不限城市的已核验活动` : '当前只展示不限城市的已核验活动';
   if (reset) {
     state.nextCursor = '';
     target.replaceChildren();
@@ -117,6 +158,7 @@ async function loadCoupons(reset = true) {
   const cursor = state.nextCursor;
   try {
     const query = new URLSearchParams({ platform: platform.id, limit: '20' });
+    if (state.cityCode) query.set('cityCode', state.cityCode);
     if (cursor) query.set('cursor', cursor);
     const response = await fetch(`/api/v1/coupons?${query}`, { signal: controller.signal, cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -154,7 +196,8 @@ async function loadDetail(id) {
   byId('detail-content').replaceChildren(statusBox('正在读取规则', '正在核对券详情…'));
   byId('coupon-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
-    const response = await fetch(`/api/v1/coupons/${encodeURIComponent(id)}`, { signal: controller.signal, cache: 'no-store' });
+    const context = state.cityCode ? `?cityCode=${encodeURIComponent(state.cityCode)}` : '';
+    const response = await fetch(`/api/v1/coupons/${encodeURIComponent(id)}${context}`, { signal: controller.signal, cache: 'no-store' });
     if (controller.signal.aborted || state.activeCoupon !== id) return;
     if (response.status === 404) {
       byId('detail-content').replaceChildren(statusBox('活动已失效', '请返回列表查看其他优惠'));
@@ -174,7 +217,7 @@ async function loadDetail(id) {
       ['活动有效期', `至 ${dateText(item.expiresAt)}`], ['数据更新', dateText(item.updatedAt)],
       ['领取方式', item.actionLabel || '以平台页面为准'],
     ];
-    if (item.cityCode) fields.push(['适用城市', item.cityCode]);
+    if (item.cityCode) fields.push(['适用城市', item.cityName || item.cityCode]);
     if (item.business) fields.push(['适用业务', item.business]);
     for (const [label, value] of fields) detail.append(element('dt', '', label), element('dd', '', value));
     const notice = element('p', 'detail-notice', '领券与平台跳转尚未接通。请勿根据这里的展示判断券已领取；最终优惠以平台结算页为准。');
@@ -193,7 +236,9 @@ async function loadProducts(id, signal) {
   section.append(body);
   content.append(section);
   try {
-    const response = await fetch(`/api/v1/coupons/${encodeURIComponent(id)}/products?limit=20`, { signal, cache: 'no-store' });
+    const query = new URLSearchParams({ limit: '20' });
+    if (state.cityCode) query.set('cityCode', state.cityCode);
+    const response = await fetch(`/api/v1/coupons/${encodeURIComponent(id)}/products?${query}`, { signal, cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const result = await response.json();
     if (signal.aborted || state.activeCoupon !== id) return;
@@ -223,7 +268,9 @@ async function loadHomeCoupons() {
   }
   target.replaceChildren(statusBox('正在读取优惠', '正在核对当前平台的券活动…'));
   try {
-    const response = await fetch(`/api/v1/coupons?platform=${encodeURIComponent(platform.id)}&limit=3`, { signal: controller.signal, cache: 'no-store' });
+    const query = new URLSearchParams({ platform: platform.id, limit: '3' });
+    if (state.cityCode) query.set('cityCode', state.cityCode);
+    const response = await fetch(`/api/v1/coupons?${query}`, { signal: controller.signal, cache: 'no-store' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const body = await response.json();
     if (controller.signal.aborted) return;
@@ -249,6 +296,8 @@ async function loadHomeCoupons() {
 document.querySelectorAll('[data-tab]').forEach((button) => button.addEventListener('click', () => selectTab(button.dataset.tab)));
 byId('coupon-more').addEventListener('click', () => loadCoupons(false));
 byId('detail-close').addEventListener('click', closeDetail);
+byId('coupon-city').addEventListener('change', (event) => selectCity(event.target.value));
 renderPlatforms();
 selectTab('home');
+loadCities();
 loadHomeCoupons();

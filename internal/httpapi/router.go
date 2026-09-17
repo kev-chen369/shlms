@@ -26,6 +26,9 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 		mux.HandleFunc("GET /api/v1/coupons/{id}", couponDetailHandler(dependencies))
 		mux.HandleFunc("GET /api/v1/coupons/{id}/products", couponProductsHandler(dependencies))
 	}
+	if dependencies.CouponCities != nil {
+		mux.HandleFunc("GET /api/v1/coupon-cities", couponCitiesHandler(dependencies))
+	}
 	if dependencies.Claims != nil && dependencies.Users != nil {
 		mux.HandleFunc("POST /api/v1/coupons/{id}/claims", couponClaimHandler(dependencies))
 	}

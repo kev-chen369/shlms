@@ -57,6 +57,7 @@
 ## 接口边界（只读查询与领取请求边界已实现，真实领取和外跳待接入）
 
 - `GET /api/v1/coupons?platform=...`：已实现只读基础版，按平台、城市、业务筛选，分页返回启用、已核验且有效期内的券、适用范围摘要、`claimMode`、动作文案、更新时间；当前无渠道导入数据时为空列表。文案与模式由服务端数据决定，前端不靠平台名称猜测。
+- `GET /api/v1/coupon-cities?platform=...`：仅从当前有效、已核验且有城市名称的物料返回城市代码和名称；选择后列表与详情统一传 `cityCode`。默认空值仅展示不限城市物料，不把城市专属活动误认为全国可用。
 - `GET /api/v1/coupons/{id}`：已实现只读详情；城市 / 业务不符、过期、下架、商品券无有效商品或店铺 / 品类券无范围标识时返回 404。不返回未经校验的任意跳转 URL。
 - `POST /api/v1/coupons/{id}/claims`：可注入服务与 HTTP 路由已实现，仅用于 `IN_SITE_VERIFIED` 且有获批适配器的券；鉴权且带 `Idempotency-Key`，返回 claimId 和 `PENDING / CLAIMED / QUERY_REQUIRED / FAILED`。生产目前无适配器，POST 路由不注册。不能把模拟调用或打开平台页面当作真实 CLAIMED。
 - `GET /api/v1/coupon-claims/{id}`：已实现按已验签本人读取存储状态；跨用户统一 404。注入适配器后，结果不确定只查询原请求，不重复发起领取。

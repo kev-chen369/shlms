@@ -25,6 +25,7 @@ type Item struct {
 	DiscountMinor   int64     `json:"discountMinor"`
 	ThresholdMinor  int64     `json:"thresholdMinor"`
 	CityCode        string    `json:"cityCode"`
+	CityName        string    `json:"cityName"`
 	Business        string    `json:"business"`
 	RuleVersion     string    `json:"ruleVersion"`
 	UpdatedAt       time.Time `json:"updatedAt"`
@@ -85,7 +86,7 @@ func (c Catalog) List(ctx context.Context, in ListInput) (Page, error) {
 		}
 		after = parts[3]
 	}
-	rows, err := c.DB.QueryContext(ctx, `SELECT id,platform,claim_mode,title,scope,scope_external_id,scope_name,currency,discount_minor,threshold_minor,city_code,business,rule_version,updated_at,expires_at
+	rows, err := c.DB.QueryContext(ctx, `SELECT id,platform,claim_mode,title,scope,scope_external_id,scope_name,currency,discount_minor,threshold_minor,city_code,city_name,business,rule_version,updated_at,expires_at
 		FROM coupon_catalog c WHERE enabled AND verified_at IS NOT NULL AND verified_at <= CURRENT_TIMESTAMP
         AND updated_at <= CURRENT_TIMESTAMP AND expires_at > CURRENT_TIMESTAMP AND ($1 = '' OR platform = $1)
 		AND (city_code = '' OR city_code = $2) AND (business = '' OR business = $3)
@@ -101,7 +102,7 @@ func (c Catalog) List(ctx context.Context, in ListInput) (Page, error) {
 	for rows.Next() {
 		var item Item
 		if err := rows.Scan(&item.ID, &item.Platform, &item.ClaimMode, &item.Title, &item.Scope, &item.ScopeExternalID, &item.ScopeName, &item.Currency,
-			&item.DiscountMinor, &item.ThresholdMinor, &item.CityCode, &item.Business, &item.RuleVersion, &item.UpdatedAt, &item.ExpiresAt); err != nil {
+			&item.DiscountMinor, &item.ThresholdMinor, &item.CityCode, &item.CityName, &item.Business, &item.RuleVersion, &item.UpdatedAt, &item.ExpiresAt); err != nil {
 			return Page{}, err
 		}
 		item.ActionLabel = action(item.ClaimMode)

@@ -41,9 +41,10 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 	}
 	repo := promoter.NewPostgresRepository(db)
 	d := httpapi.Dependencies{
-		Coupons:     coupon.Catalog{DB: db},
-		ClaimReader: coupon.ClaimService{Catalog: coupon.Catalog{DB: db}, Store: coupon.ClaimStore{DB: db}},
-		Users:       verifier, Admins: auth.AdminResolver{Verifier: verifier, Store: auth.PostgresAdminStore{DB: db}},
+		Coupons:      coupon.Catalog{DB: db},
+		CouponCities: coupon.Catalog{DB: db},
+		ClaimReader:  coupon.ClaimService{Catalog: coupon.Catalog{DB: db}, Store: coupon.ClaimStore{DB: db}},
+		Users:        verifier, Admins: auth.AdminResolver{Verifier: verifier, Store: auth.PostgresAdminStore{DB: db}},
 		Promoter:                   promoter.Service{Repository: repo},
 		PromoterApplications:       promoter.ApplicationService{Repository: repo, AgreementVersion: config.AgreementVersion},
 		PromoterCurrentApplication: promoter.CurrentApplicationService{Repository: repo},

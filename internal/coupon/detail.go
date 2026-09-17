@@ -32,7 +32,7 @@ func (c Catalog) Get(ctx context.Context, id, city, business string) (Item, erro
 	}
 	var item Item
 	err := c.DB.QueryRowContext(ctx, `SELECT id,platform,claim_mode,title,scope,scope_external_id,scope_name,currency,
-		discount_minor,threshold_minor,city_code,business,rule_version,updated_at,expires_at
+		discount_minor,threshold_minor,city_code,city_name,business,rule_version,updated_at,expires_at
 		FROM coupon_catalog c WHERE id=$1 AND enabled AND verified_at <= CURRENT_TIMESTAMP
 		AND updated_at <= CURRENT_TIMESTAMP AND expires_at > CURRENT_TIMESTAMP
 		AND (city_code='' OR city_code=$2) AND (business='' OR business=$3)
@@ -40,7 +40,7 @@ func (c Catalog) Get(ctx context.Context, id, city, business string) (Item, erro
 		AND (scope <> 'PRODUCT' OR EXISTS (SELECT 1 FROM coupon_products p WHERE p.coupon_id = c.id
 			AND p.enabled AND p.verified_at <= CURRENT_TIMESTAMP AND p.updated_at <= CURRENT_TIMESTAMP AND p.expires_at > CURRENT_TIMESTAMP))`, id, city, business).Scan(
 		&item.ID, &item.Platform, &item.ClaimMode, &item.Title, &item.Scope, &item.ScopeExternalID, &item.ScopeName,
-		&item.Currency, &item.DiscountMinor, &item.ThresholdMinor, &item.CityCode, &item.Business,
+		&item.Currency, &item.DiscountMinor, &item.ThresholdMinor, &item.CityCode, &item.CityName, &item.Business,
 		&item.RuleVersion, &item.UpdatedAt, &item.ExpiresAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Item{}, ErrNotFound

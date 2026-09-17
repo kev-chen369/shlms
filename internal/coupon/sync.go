@@ -93,15 +93,15 @@ func (s Synchronizer) Sync(ctx context.Context, id string) error {
 		item := snapshot.Item
 		_, err = tx.ExecContext(ctx, `INSERT INTO coupon_catalog
 			(id,platform,claim_mode,title,scope,scope_external_id,scope_name,currency,discount_minor,threshold_minor,
-			city_code,business,rule_version,evidence_ref,verified_at,updated_at,expires_at,enabled)
-			VALUES($1,$2,$3,$4,$5,$6,$7,'CNY',$8,$9,$10,$11,$12,$13,$14,$15,$16,true)
+			city_code,city_name,business,rule_version,evidence_ref,verified_at,updated_at,expires_at,enabled)
+			VALUES($1,$2,$3,$4,$5,$6,$7,'CNY',$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,true)
 			ON CONFLICT(id) DO UPDATE SET claim_mode=EXCLUDED.claim_mode,title=EXCLUDED.title,scope=EXCLUDED.scope,
 			scope_external_id=EXCLUDED.scope_external_id,scope_name=EXCLUDED.scope_name,
-			discount_minor=EXCLUDED.discount_minor,threshold_minor=EXCLUDED.threshold_minor,city_code=EXCLUDED.city_code,
+			discount_minor=EXCLUDED.discount_minor,threshold_minor=EXCLUDED.threshold_minor,city_code=EXCLUDED.city_code,city_name=EXCLUDED.city_name,
 			business=EXCLUDED.business,rule_version=EXCLUDED.rule_version,evidence_ref=EXCLUDED.evidence_ref,
 			verified_at=EXCLUDED.verified_at,updated_at=EXCLUDED.updated_at,expires_at=EXCLUDED.expires_at,enabled=true`,
 			id, item.Platform, item.ClaimMode, item.Title, item.Scope, item.ScopeExternalID, item.ScopeName,
-			item.DiscountMinor, item.ThresholdMinor, item.CityCode, item.Business, item.RuleVersion,
+			item.DiscountMinor, item.ThresholdMinor, item.CityCode, item.CityName, item.Business, item.RuleVersion,
 			snapshot.EvidenceRef, snapshot.VerifiedAt, item.UpdatedAt, item.ExpiresAt)
 		if err != nil {
 			return err
@@ -148,6 +148,9 @@ func validSnapshot(id string, s VerifiedSnapshot) bool {
 		return false
 	}
 	if (i.Scope == "SHOP" || i.Scope == "CATEGORY") && (!validText(i.ScopeExternalID, 128) || !validText(i.ScopeName, 256)) {
+		return false
+	}
+	if (i.CityCode == "" && i.CityName != "") || (i.CityCode != "" && !validText(i.CityName, 80)) {
 		return false
 	}
 	if i.Scope == "PRODUCT" && len(s.Products) == 0 {

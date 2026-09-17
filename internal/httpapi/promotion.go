@@ -22,6 +22,9 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	CouponCities interface {
+		Cities(context.Context, string) ([]coupon.City, error)
+	}
 	Outbound interface {
 		Prepare(context.Context, coupon.OutboundInput) (coupon.OutboundResult, error)
 	}
