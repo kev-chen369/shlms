@@ -18,13 +18,57 @@ func (r Repository) Claim(ctx context.Context, id string, version int64, lease t
 	if !validText(id, 128) || version < 1 || lease <= 0 || lease > 5*time.Minute || r.DB == nil {
 		return Record{}, ErrInvalid
 	}
-	return transition(r.DB.QueryRowContext(ctx, `UPDATE promotion_conversion_requests AS cr
+	tx, err := r.DB.BeginTx(ctx, nil)
+	if err != nil {
+		return Record{}, err
+	}
+	defer tx.Rollback()
+	var ownerID, positionID string
+	err = tx.QueryRowContext(ctx, `SELECT owner_user_id,position_id FROM promotion_conversion_requests WHERE id=$1 AND version=$2 AND status='PENDING'`, id, version).Scan(&ownerID, &positionID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Record{}, ErrStateConflict
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	// Match reservation/configuration lock order. Shared eligibility locks keep
+	// concurrent disabling from passing between the check and the state change.
+	var status string
+	err = tx.QueryRowContext(ctx, `SELECT status FROM promoter_profiles WHERE user_id=$1 FOR SHARE`, ownerID).Scan(&status)
+	if errors.Is(err, sql.ErrNoRows) || err == nil && status != "ENABLED" {
+		return Record{}, ErrStateConflict
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	err = tx.QueryRowContext(ctx, `SELECT status FROM promotion_positions WHERE id=$1 AND owner_user_id=$2 FOR SHARE`, positionID, ownerID).Scan(&status)
+	if errors.Is(err, sql.ErrNoRows) || err == nil && status != "ENABLED" {
+		return Record{}, ErrStateConflict
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	// Recheck CAS after any lock wait, before starting the execution lease.
+	var lockedID string
+	err = tx.QueryRowContext(ctx, `SELECT id FROM promotion_conversion_requests WHERE id=$1 AND version=$2 AND status='PENDING' FOR UPDATE`, id, version).Scan(&lockedID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return Record{}, ErrStateConflict
+	}
+	if err != nil {
+		return Record{}, err
+	}
+	claimed, err := transition(tx.QueryRowContext(ctx, `UPDATE promotion_conversion_requests AS cr
 		SET status='PROCESSING',channel_request_id=cr.id,attempt_count=attempt_count+1,
 			lease_expires_at=$3,version=version+1,updated_at=CURRENT_TIMESTAMP
 		WHERE cr.id=$1 AND cr.version=$2 AND cr.status='PENDING'
-			AND EXISTS (SELECT 1 FROM promoter_profiles m WHERE m.user_id=cr.owner_user_id AND m.status='ENABLED')
-			AND EXISTS (SELECT 1 FROM promotion_positions p WHERE p.id=cr.position_id AND p.owner_user_id=cr.owner_user_id AND p.status='ENABLED')
 		RETURNING `+recordColumns, id, version, time.Now().Add(lease)))
+	if err != nil {
+		return Record{}, err
+	}
+	if err := tx.Commit(); err != nil {
+		return Record{}, err
+	}
+	return claimed, nil
 }
 
 // MarkUncertain records a timeout or unknown outcome. A recovery worker must
