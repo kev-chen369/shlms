@@ -60,7 +60,7 @@
 - `GET /api/v1/coupons/{id}`：已实现只读详情；城市 / 业务不符、过期、下架、商品券无有效商品或店铺 / 品类券无范围标识时返回 404。不返回未经校验的任意跳转 URL。
 - `POST /api/v1/coupons/{id}/claims`：可注入服务与 HTTP 路由已实现，仅用于 `IN_SITE_VERIFIED` 且有获批适配器的券；鉴权且带 `Idempotency-Key`，返回 claimId 和 `PENDING / CLAIMED / QUERY_REQUIRED / FAILED`。生产目前无适配器，POST 路由不注册。不能把模拟调用或打开平台页面当作真实 CLAIMED。
 - `GET /api/v1/coupon-claims/{id}`：已实现按已验签本人读取存储状态；跨用户统一 404。注入适配器后，结果不确定只查询原请求，不重复发起领取。
-- `POST /api/v1/coupons/{id}/outbound`：目标接口，用于平台领券或活动承接；受控目标生成和独立幂等记录的内部服务已实现，但生产无获批解析器，HTTP 路由仍关闭。服务端按券、场景、终端和授权生成受控跳转方案；返回地址不含领取成功语义，失败时不得复用过期地址。是否要求用户登录由实际渠道归因与业务规则确定，匿名请求只能携带合法匿名 Tracking。
+- `POST /api/v1/coupons/{id}/outbound`：受控外跳 HTTP 边界已实现，仅在配置获批解析器和身份验证时注册；生产无解析器，路由仍关闭。请求要求已认证用户、JSON 的城市 / 业务 / 终端 / 入口及 `Idempotency-Key`，不接受客户端身份或地址。返回 `READY_TO_OPEN` 和受控 HTTPS 地址，不表示已打开、已领取或已下单。当前首版要求登录，匿名 Tracking 与真实渠道终端承接仍待设计和验收。
 - `GET /api/v1/coupons/{id}/products`：已实现有效商品映射的分页查询；单商品可由前端进入商品详情，多商品先显示列表。仅提供商品标识和名称，真实价格 / 库存仍待商品接口复核。
 - 商品详情沿用 `GET /api/v1/products/{id}` 的目标接口，额外展示适用券及实时规则；购物跳转沿用购物用途 `POST /api/v1/promotions/link` 的目标边界，与推广员专用转链分开。正式路径 / 字段在渠道协议和前端技术栈确认后冻结。
 

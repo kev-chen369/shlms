@@ -22,6 +22,9 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Outbound interface {
+		Prepare(context.Context, coupon.OutboundInput) (coupon.OutboundResult, error)
+	}
 	Claims interface {
 		Create(context.Context, coupon.ClaimInput) (coupon.Claim, error)
 	}
