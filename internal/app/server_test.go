@@ -143,6 +143,11 @@ func TestRuntimeWiresVerifiedIdentityAndDatabasePermissions(t *testing.T) {
 		return result
 	}
 	call("GET", "/healthz", "", "", "", 200)
+	appPage := httptest.NewRecorder()
+	handler.ServeHTTP(appPage, httptest.NewRequest("GET", "/app/", nil))
+	if appPage.Code != 200 || !strings.Contains(appPage.Body.String(), "万宝单生活") {
+		t.Fatal("H5 home did not render", appPage.Code)
+	}
 	claimRoute := httptest.NewRecorder()
 	handler.ServeHTTP(claimRoute, httptest.NewRequest("POST", "/api/v1/coupons/JD:missing/claims", strings.NewReader(`{}`)))
 	if claimRoute.Code != 404 {

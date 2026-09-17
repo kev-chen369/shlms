@@ -3,6 +3,8 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/kev-chen369/shlms/web"
 )
 
 func NewRouter() http.Handler {
@@ -11,6 +13,10 @@ func NewRouter() http.Handler {
 
 func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 	mux := http.NewServeMux()
+	mux.Handle("GET /app/", http.StripPrefix("/app/", web.Handler()))
+	mux.HandleFunc("GET /app", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/app/", http.StatusPermanentRedirect)
+	})
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		_ = json.NewEncoder(w).Encode(map[string]string{"status": "ok"})

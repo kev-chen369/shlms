@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#e9fbf1">
+  <title>万宝单生活</title>
+  <link rel="stylesheet" href="styles.css">
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <div class="brand"><strong><span>万宝单</span>生活</strong><small>好物更省 · 生活更好</small></div>
+      <button class="search-disabled" type="button" disabled aria-label="搜索功能暂未开放"><span aria-hidden="true">⌕</span> 搜索商品、商店或优惠券</button>
+      <span class="header-note">省一点<br>让生活更好</span>
+    </header>
+
+    <nav class="platforms" aria-label="选择平台" id="platforms"></nav>
+
+    <main id="content" tabindex="-1">
+      <section id="home-view" class="view" aria-labelledby="home-title">
+        <div class="hero"><div><p class="eyebrow">多平台优惠</p><h1 id="home-title">京东优惠专区</h1><p id="hero-description">查看当前平台已核验的活动</p></div><div class="hero-mark" aria-hidden="true"><span>券</span><i></i></div></div>
+        <div class="section-card"><div class="section-heading"><span class="section-mark red"></span><h2>推广商品</h2></div><div class="module-empty"><span class="empty-icon" aria-hidden="true">▧</span><div><strong>暂无可展示商品</strong><p>商品数据接通并核验后会在这里展示</p></div></div></div>
+        <div class="section-card"><div class="section-heading"><span class="section-mark orange"></span><h2>优选商店</h2></div><div class="module-empty"><span class="empty-icon" aria-hidden="true">⌂</span><div><strong>暂无可展示商店</strong><p>商店信息接通并核验后会在这里展示</p></div></div></div>
+        <div class="section-card"><div class="section-heading"><span class="section-mark green"></span><h2>领券中心</h2><button class="text-action" type="button" data-tab="coupons">查看全部 <span aria-hidden="true">›</span></button></div><div id="home-coupons" class="coupon-preview" aria-live="polite"></div></div>
+        <div class="section-card"><div class="section-heading"><span class="section-mark blue"></span><h2>推广专区</h2></div><div class="module-empty"><span class="empty-icon" aria-hidden="true">↗</span><div><strong>推广活动暂未开放</strong><p>渠道与推广资格完成核验后开放</p></div></div></div>
+      </section>
+
+      <section id="coupons-view" class="view" hidden aria-labelledby="coupons-title"><div class="hero compact"><div><p class="eyebrow">当前平台</p><h1 id="coupons-title">领券中心</h1><p>只展示已核验且有效的活动</p></div><div class="hero-mark" aria-hidden="true"><span>%</span><i></i></div></div><div id="coupon-list" class="coupon-list" aria-live="polite"><div class="placeholder">券列表正在接入</div></div></section>
+      <section id="promotion-view" class="view" hidden aria-labelledby="promotion-title"><div class="section-card feature-empty"><h1 id="promotion-title">推广中心</h1><p>请先登录并通过推广资格审核。渠道位核验完成后，才能生成推广链接。</p><div class="notice">登录与推广工作台正在接入</div></div></section>
+      <section id="mine-view" class="view" hidden aria-labelledby="mine-title"><div class="section-card feature-empty"><h1 id="mine-title">我的</h1><p>登录后可查看订单、返现和推广中心。</p><div class="notice">登录功能正在接入</div><button class="text-action" type="button" data-tab="promotion">查看推广中心 ›</button></div></section>
+    </main>
+
+    <nav class="bottom-nav" aria-label="主导航">
+      <button type="button" data-tab="home" aria-current="page"><span class="nav-symbol" aria-hidden="true">⌂</span><span>首页</span></button>
+      <button type="button" data-tab="coupons"><span class="nav-symbol" aria-hidden="true">▣</span><span>领券</span></button>
+      <button type="button" data-tab="promotion"><span class="nav-symbol" aria-hidden="true">➤</span><span>推广</span></button>
+      <button type="button" data-tab="mine"><span class="nav-symbol" aria-hidden="true">♙</span><span>我的</span></button>
+    </nav>
+  </div>
+</body>
+</html>
