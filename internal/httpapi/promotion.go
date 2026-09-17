@@ -22,6 +22,12 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Claims interface {
+		Create(context.Context, coupon.ClaimInput) (coupon.Claim, error)
+	}
+	ClaimReader interface {
+		Get(context.Context, string, string) (coupon.Claim, error)
+	}
 	Coupons interface {
 		List(context.Context, coupon.ListInput) (coupon.Page, error)
 		Get(context.Context, string, string, string) (coupon.Item, error)

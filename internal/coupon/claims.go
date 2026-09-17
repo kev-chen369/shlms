@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	ErrClaimInvalid  = errors.New("invalid claim")
-	ErrClaimNotFound = errors.New("claim not found")
-	ErrClaimConflict = errors.New("claim idempotency conflict")
-	claimFingerprint = regexp.MustCompile(`^[0-9a-f]{64}$`)
+	ErrClaimInvalid         = errors.New("invalid claim")
+	ErrClaimNotFound        = errors.New("claim not found")
+	ErrClaimConflict        = errors.New("claim idempotency conflict")
+	claimFingerprintPattern = regexp.MustCompile(`^[0-9a-f]{64}$`)
 )
 
 type Claim struct {
@@ -49,11 +49,18 @@ func (s ClaimStore) Get(ctx context.Context, owner, id string) (Claim, error) {
 	return scanClaim(s.DB.QueryRowContext(ctx, `SELECT `+claimColumns+` FROM coupon_claims WHERE owner_user_id=$1 AND id=$2`, owner, id))
 }
 
+func (s ClaimStore) GetByKey(ctx context.Context, owner, key string) (Claim, error) {
+	if s.DB == nil || !validID(owner) || !validClaimKey(key) {
+		return Claim{}, ErrClaimInvalid
+	}
+	return scanClaim(s.DB.QueryRowContext(ctx, `SELECT `+claimColumns+` FROM coupon_claims WHERE owner_user_id=$1 AND idempotency_key=$2`, owner, key))
+}
+
 // Reserve creates one logical request. Same owner/key/fingerprint replays the
 // original row; a changed request never reuses the key or invokes the channel.
 func (s ClaimStore) Reserve(ctx context.Context, c Claim) (Claim, bool, error) {
 	if s.DB == nil || !validID(c.ID) || !validID(c.OwnerUserID) || !validID(c.CouponID) ||
-		!validClaimKey(c.IdempotencyKey) || !claimFingerprint.MatchString(c.RequestFingerprint) {
+		!validClaimKey(c.IdempotencyKey) || !claimFingerprintPattern.MatchString(c.RequestFingerprint) {
 		return Claim{}, false, ErrClaimInvalid
 	}
 	result, err := s.DB.ExecContext(ctx, `INSERT INTO coupon_claims

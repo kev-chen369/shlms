@@ -17,8 +17,8 @@
 - `POST /auth/login/phone`、`POST /auth/login/wechat`、`POST /auth/refresh`
 - `GET /users/me`、`GET /home`
 - `GET /products/search`、`GET /products/{id}`、`GET /products/{id}/compare`
-- V3 领券链路已有只读 `GET /coupons`、`GET /coupons/{id}`、`GET /coupons/{id}/products`；`POST /coupons/{id}/claims`、`GET /coupon-claims/{id}` 仍为待实现目标契约。领取回执与商品范围须由可信渠道确认，不把打开外部领券页当领取成功。详见[领券到下单设计](./22-coupon-to-purchase-design.md)。
-- 平台侧领券 / 活动拟增 `POST /coupons/{id}/outbound`，独立返回受控 App / H5 / 小程序跳转方案及跳转记录；`claims` 仅用于已获批且可核实的本站领取。跳转成功不产生 `CLAIMED`，具体字段与鉴权范围以渠道授权核定。外跳与领取接口尚未实现。
+- V3 领券链路已有只读 `GET /coupons`、`GET /coupons/{id}`、`GET /coupons/{id}/products`；`GET /coupon-claims/{id}` 已按已验签本人查询持久化状态，找不到或跨用户统一 404。`POST /coupons/{id}/claims` 有可注入服务和 HTTP 边界，仅对 `IN_SITE_VERIFIED` 券接受 JSON `{cityCode?,business?}`、`Idempotency-Key` 和鉴权身份；生产没有获批领取适配器时不注册 POST 路由。同键同输入只查询原请求，跨输入 409；未知结果返回 `QUERY_REQUIRED`，渠道回执才能置 `CLAIMED`。真实领取能力仍待接入。详见[领券到下单设计](./22-coupon-to-purchase-design.md)。
+- 平台侧领券 / 活动拟增 `POST /coupons/{id}/outbound`，独立返回受控 App / H5 / 小程序跳转方案及跳转记录；`claims` 仅用于已获批且可核实的本站领取。跳转成功不产生 `CLAIMED`，具体字段与鉴权范围以渠道授权核定。外跳与真实渠道领取尚未实现。
 
 `GET /api/v1/coupons` 已实现只读基础版：可选 `platform=JD|TB|MT`、`cityCode`、`business`、`limit=1..100`、`cursor`，默认 20 条。仅返回启用、已核验、未过期且与请求城市 / 业务匹配的物料；商品券还须至少有一个有效商品，店铺 / 品类券须有范围标识。结果包含 `items`、`nextCursor`，券卡字段包含领取模式、服务端动作文案、优惠额 / 门槛（分）、适用范围摘要、城市 / 业务和规则更新时间。游标绑定平台、城市和业务筛选。`GET /api/v1/coupons/{id}` 返回同样可见范围内的券详情；`GET /api/v1/coupons/{id}/products` 按有效商品映射分页，二者也接受 `cityCode` / `business`，商品页另接受 `limit` / `cursor`。当前没有渠道导入与核验写入流程，生产空库返回 `items=[]`；领取和外跳接口仍待 M6 后续任务，不能凭这些只读接口认为渠道已开通。
 - `POST /promotions/link`：创建 Tracking，返回 H5/Scheme/小程序跳转信息。

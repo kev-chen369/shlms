@@ -143,10 +143,17 @@ func TestRuntimeWiresVerifiedIdentityAndDatabasePermissions(t *testing.T) {
 		return result
 	}
 	call("GET", "/healthz", "", "", "", 200)
+	claimRoute := httptest.NewRecorder()
+	handler.ServeHTTP(claimRoute, httptest.NewRequest("POST", "/api/v1/coupons/JD:missing/claims", strings.NewReader(`{}`)))
+	if claimRoute.Code != 404 {
+		t.Fatal("claim POST must stay closed without approved adapter", claimRoute.Code)
+	}
 	coupons := call("GET", "/api/v1/coupons?platform=JD", "", "", "", 200)
 	if len(coupons["data"].(map[string]any)["items"].([]any)) != 0 {
 		t.Fatal("empty production catalog must not show example coupons", coupons)
 	}
+	call("GET", "/api/v1/coupon-claims/missing", "", "", "", 401)
+	call("GET", "/api/v1/coupon-claims/missing", "", runtimeToken(t, private, "user-1"), "", 404)
 	call("GET", "/api/v1/promoter/profile", "", "", "", 401)
 	profile := call("GET", "/api/v1/promoter/profile", "", userToken, "", 200)
 	if profile["data"].(map[string]any)["status"] != "NOT_APPLIED" {
