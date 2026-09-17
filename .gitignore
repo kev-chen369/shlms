@@ -1,0 +1,15 @@
+# Runtime secrets are provisioned outside Git. Only redacted examples are tracked.
+.env
+.env.*
+!.env.example
+*.env
+!*.env.example
+.secrets/
+secrets/
+*.key
+*.p12
+*.pfx
+
+# Local build and verification outputs.
+/bin/
+/coverage.out
