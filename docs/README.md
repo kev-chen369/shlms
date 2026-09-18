@@ -6,6 +6,7 @@
 
 ## 阅读顺序
 
+- [隔离 PostgreSQL 环境与实跑记录](./31-isolated-postgresql-acceptance-20260919.md)：本机私有测试库、真实数据库验证及剩余业务边界，不是生产部署。
 - [最新 GitHub 同步范围与实际页面图](./30-github-sync-materials-accessibility-20260919.md)：物料 / 能力领域模型、券与转链页面回归、五张实际截图及未完成边界。
 - [统计页面同步记录](./29-github-sync-accessibility-dashboard-20260919.md)：本人统计页面、输入与大字号修复、复验结果及未完成边界。
 
