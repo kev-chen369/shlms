@@ -88,3 +88,13 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 配置私有PG_TEST_DSN定向 / 全量Go test、vet / build / diff，独立审查后commit M7-01c-2b；完整新链up / down与仓储仍归c-3。
 
 2026-09-19【已完成】：2项新增数据库测试含30个字段边界子用例及默认 / 唯一 / FK / 不可变 / down断言。真实TRUNCATE CASCADE绕过逐行保护RED后，增加BEFORE TRUNCATE语句级拒绝触发器，定向与全量Go test -count=1 ./...、go vet ./...、go build ./...、git diff --check退出0；独立增量审查实际复跑通过，DROP TABLE不触发TRUNCATE保护，down通过。数据库只提供基本字段与关系约束，不证明引用真实性或授权，也不防有权限者禁用触发器 / DDL；读者仍须完整域验证及Evaluate。未执行生产迁移或部署。
+
+### M7-01c-2c-1：能力只读仓储
+
+创建internal/capability/repository.go / repository_test.go。Repository{DB *sql.DB}.Check(ctx context.Context, ownerID string, key Key, now time.Time) (Decision,error)。ownerID仅来自可信身份，规范小写非零UUID；无效owner / Key / zero now返回ErrInvalid及零Decision，nil / 关闭 / SQL失败返回ErrUnavailable（context取消保留context错误）与零Decision，不输出数据库原始错误。单条参数化SQL读取本人推广位与资格，再LEFT JOIN九维精确声明及复合绑定证据；无本人位 / 停用 / scene不符统一POSITION_UNAVAILABLE，本人资格非ENABLED返回NOT_ENABLED，无声明默认UNCONFIGURED。证据owner是负责人引用，不冒充推广员ID。完整记录只在内部交给Evaluate，不返回媒体、负责人或证据；字段完整不代表获批真实性。读取快照不是生成锁 / 事务授权；不装配生产服务，无READY写入或渠道调用。
+
+- [x] 写真实PG失败测试：默认拒绝、完整精确READY及各维错配、跨用户 / scene / 位与会员停用、四状态、未来 / 到期证据、数据库允许但域拒绝的Unicode空白、取消 / nil / 关闭错误安全；确认缺Repository的RED。
+- [x] 实现上述单查询读仓储，使用已有Evaluate；真实PG定向GREEN，无推广 / Tracking写入。
+- [x] 配置私有PG_TEST_DSN全量Go test / race定向 / vet / build、diff及链接检查，独立审查后commit M7-01c-2c-1。2c父项、物料仓储2及全链c-3不勾选。
+
+2026-09-19【已完成】：2项新增仓储顶层测试，九维错配及非默认淘宝活动正例、四种非启用会员状态、SQL错误脱敏和Unicode证据拒绝。缺Repository / Err接口编译RED后实现；测试fixture按pgx参数化单语句及完整UTC时间修正，不把fixture错误当产品缺陷。实际私有PostgreSQL17.11定向 / -race、最终全量go test -count=1 ./... / go vet ./... / go build ./...退出0，18个文档相对链接及git diff --check通过；独立审查实际TestRepository / diff通过，无阻断。最终非系统schema数量0，测试仅临时合成数据；零Tracking新增、两份READY声明及三份证据保留断言。只读能力仓储已实现，物料仓储 / API / 真实授权与生成事务复核不在此项完成范围。逐项本地commit，不push / 部署。

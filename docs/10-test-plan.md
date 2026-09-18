@@ -38,3 +38,5 @@
 - M7-01b：`go test -count=1 ./internal/material` 验证商品 / 无价格活动、平台类型与地域 / 业务 / 终端、起止及源更新时间、未知 / 缺项 / 字段 / JSON时间边界、零卡片拒绝与安全字段投影、slice隔离。URL仅校验HTTPS语法，不执行网络 / 证明官方授权；真实源导入、数据库唯一约束及目录API仍独立验收，不因可展示而开放转链。
 - M7-01c-1：同包查询测试验证首屏 / 后续游标、用户与五维筛选切换、limit和字段上限、UUID边界、未知 / 重复 / 重排 / 尾随JSON与非规范base64。游标仅分页位置，后续接口须可信身份解析，仓储须独立绑定本人范围；当前无SQL / HTTP装配，不构成数据库或API验收。
 - M7-01c-2a：TestMaterialSchemaConstraintsAndDown在配置PG_TEST_DSN的隔离PostgreSQL真实执行000022 up、合法商品 / 活动及身份唯一性、26项CHECK边界与合法最大城市规则、down表 / helper清理。不把DDL或引用存在当来源授权，Record.Validate及只读仓储 / API仍独立验证。
+- M7-01c-2b：能力隔离schema执行真实既有迁移及000023；字段 / 默认 / 精确唯一 / 本证据FK、Key不可变、证据UPDATE / DELETE / TRUNCATE CASCADE拒绝，停用保留及down清理。不是数据库角色 / DDL防绕过或真实审核验收。
+- M7-01c-2c-1：TestRepositoryExactScopeAndEligibility / TestRepositoryFailsClosedOnInvalidInputAndStorage真实PG读取本人资格 / 位及精确能力，覆盖九维错配、空城市业务非通配、非默认淘宝活动范围、四种非启用会员状态、能力状态、证据起止与Unicode空白、取消 / nil / SQL失败 / 关闭脱敏；返回Decision白名单，零Tracking新增及声明 / 证据保留。不是真实负责人身份或媒体授权验证、最终生成事务检查、公开目录API或物料仓储验收。

@@ -293,7 +293,9 @@ M0 规则 / 工程准备 → M1 身份与推广位 → M2 预览转链 → M3 �
     - [ ] M7-01c-2【进行中】新增目录 / 能力 / 证据迁移与只读仓储；历史迁移不改。
       - [x] M7-01c-2a【已完成】2026-09-19：新增000022物料目录up / down迁移及internal/material/schema_test.go；UUID、平台 / 类型 / 来源ID唯一，无价格字段，默认DRAFT、范围数组 / UTC有限年份与时间窗口约束。隔离PostgreSQL17.11实测缺迁移RED后实现GREEN；合法商品 / 活动、跨平台 / 类型相同来源ID、26项CHECK拒绝、64城市 / 32字节合法边界、重复身份及down表 / 函数无残留通过。独立审查实跑原21边界与down通过、无阻断，补齐minor建议。配置PG_TEST_DSN的定向 / 全量Go test、vet / build / diff退出0，真实数据库用例执行、不改历史SQL。仅结构验收，不替代Record.Validate / 来源授权，无仓储 / API / READY入口，无生产迁移或部署；逐项本地提交。
       - [x] M7-01c-2b【已完成】2026-09-19：新增000023能力与证据迁移、隔离库约束测试；默认UNCONFIGURED、精确范围唯一、推广位FK、READY绑定本声明完整证据、Key不可改义，证据UPDATE / DELETE / TRUNCATE拒绝。真实缺迁移RED及TRUNCATE CASCADE绕过RED后修复GREEN；私有PostgreSQL17.11定向及配置PG_TEST_DSN全量go test -count=1 ./...、go vet ./...、go build ./...、diff通过，独立审查与TRUNCATE增量实跑无阻断。down清除新表及函数并保留旧推广位；无普通用户READY写入口。来源真实性、时效Evaluate、角色与DDL防绕过仍是独立门槛，完整新迁移链及仓储验收不提前勾选。
-      - [ ] M7-01c-2c【未开始】物料及能力只读仓储、完整筛选 / 分页 / 停用与证据投影实测。
+      - [ ] M7-01c-2c【进行中】物料及能力只读仓储、完整筛选 / 分页 / 停用与证据投影实测。
+        - [x] M7-01c-2c-1【已完成】2026-09-19：新增internal/capability/repository.go / repository_test.go，可信规范owner / Key / now校验；单SQL本人资格 / 内部位及九维精确声明、本证据绑定后Evaluate，只返回Decision。缺声明 / 跨用户 / 停用 / scene / 四类会员非启用、能力状态、证据未来 / 到期及Unicode空白拒绝，非默认淘宝活动范围读取通过；空城市 / 业务不通配，nil / SQL失败 / 关闭脱敏、取消保留。缺接口RED后真实私有PostgreSQL17.11定向与-race、配置PG_TEST_DSN全量go test -count=1 ./... / vet / build、18文档相对链接及diff退出0；独立审查实跑无阻断，最终非系统schema数0。零Tracking新增及声明 / 证据保留断言通过，无写入口 / API / 渠道调用；来源真实性与角色 / DDL门槛、生成事务复核及2c-2 / c-3仍未完成。逐项本地提交，不自动push / 部署。
+        - [ ] M7-01c-2c-2【未开始】可信物料完整筛选、本人上下文分页及安全卡片投影；依赖2c-1，不提前开放渠道。
     - [ ] M7-01c-3【未开始】PROC-11已提供私有隔离PostgreSQL17.11，运行程序 / 数据库缺失阻塞解除；待c-2b / c-2c完成后实测全部新增迁移完整up / down与仓储一致性。000022独立up / down已由c-2a验证，不提前替代本项。
   - [ ] M7-01d【未开始】鉴权本人范围只读目录 / 详情与安全能力投影、分页 / 失效测试；无可信配置拒绝开放。
   - [ ] M7-01e【未开始】前端契约 / 状态及选品页面，平台切换清理、空 / 未开放 / 错误 / 分页；与M7-06生成流程区分。
