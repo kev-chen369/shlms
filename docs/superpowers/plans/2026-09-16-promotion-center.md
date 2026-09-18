@@ -10,6 +10,10 @@
 
 ## 分支整合
 
+- [ ] PROC-14【进行中】2026-09-19：按用户要求同步最新代码、文档与图至GitHub main；复验和本地整合完成，待非强制推送并核对远端。无视觉变更，保留V2 / V3设计稿与实际页面截图，不重标为已实现；无生产部署入口，不执行生产迁移。
+  - [x] PROC-14a【已完成】2026-09-19：fetch确认远端bd8a80e无独有提交，发布工作树快进合并4个完成提交至1ed83c3。原分支及合并树均使用私有PG_TEST_DSN运行全量go test -count=1 ./... / vet / build退出0；客户端21文件338项、typecheck、H5 / 微信构建、现有Chrome / Playwright布局7项通过，原生H5 13项通过。55张PNG签名与非零尺寸、11个相关文档相对链接、diff检查通过。图片检查首次工作目录错误已纠正；浏览器首次缺模块路径启动失败，按README指定已有模块和Chrome后全量通过，无新增依赖或产品变更。更新docs/30同步范围及索引，保留无关.DS_Store / node_modules；仅源码准备，不代表生产上线。
+  - [ ] PROC-14b【进行中】再次fetch远端并整合，非强制推送GitHub main后读取远端完整哈希核对；结果独立记录，避免自身哈希循环更新。
+
 - [x] PROC-13【已完成】2026-09-19：按用户要求更新GitHub代码、文档与图；发布工作树快进整合远端main及已完成M7-01c-1 / 2a / 2b、PROC-11 / 12，保留既有V2 / V3图稿和实际页面截图，无视觉变更不生成新图。合并后私有PG_TEST_DSN全量go test -count=1 ./... / vet / build退出0，16个相对文档链接、55张PNG签名与非零尺寸及diff检查通过。SSH非强制推送main 15c1799→4cc8d74成功，重新fetch核对FETCH_HEAD及发布HEAD均为4cc8d748f18ff487aa6df668ea38665e97cbec5e。结果记录独立提交并同步，避免自身哈希循环更新；保留原工作区.DS_Store及发布工作树node_modules，不纳入提交。无生产部署入口，不运行生产迁移，源码同步不等于生产上线。
 
 - [x] PROC-12【已完成】2026-09-19：修复internal/tracking/postgres_repository_test.go清理顺序；先仅补DROP错误断言，真实RED为sql: database is closed，再将close登记为最早t.Cleanup，schema DROP及pg_namespace无残留断言按LIFO先执行，5秒清理超时、错误不吞。私有PostgreSQL17.11定向count3及-race、配置PG_TEST_DSN全量Go test / vet / build、diff退出0；独立审查定向 / diff通过，无阻断。核对四个仅本轮合成tracking schema后逐一精确DROP（前三个旧残留及一次RED），没有删除用户 / 其他实例schema；全量结束后非系统schema数量0。更新隔离库记录与测试说明，不改生产Tracking逻辑，无push / 部署；本地逐项提交。测试样例可重新生成，非业务数据。
