@@ -14,6 +14,7 @@ import (
 	"github.com/kev-chen369/shlms/internal/dashboard"
 	"github.com/kev-chen369/shlms/internal/dbmigrate"
 	"github.com/kev-chen369/shlms/internal/httpapi"
+	"github.com/kev-chen369/shlms/internal/material"
 	"github.com/kev-chen369/shlms/internal/order"
 	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promoter"
@@ -25,6 +26,7 @@ type Config struct {
 	Audience         string
 	AgreementVersion string
 	MigrationsDir    string
+	CatalogBindings  []material.CatalogBinding
 }
 
 func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, error) {
@@ -41,8 +43,13 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 	if err = dbmigrate.Verify(ctx, db, config.MigrationsDir); err != nil {
 		return nil, err
 	}
+	materials, err := material.NewReadService(material.Repository{DB: db}, config.CatalogBindings)
+	if err != nil {
+		return nil, err
+	}
 	repo := promoter.NewPostgresRepository(db)
 	d := httpapi.Dependencies{
+		Materials:    materials,
 		Coupons:      coupon.Catalog{DB: db},
 		Orders:       order.ReadStore{DB: db},
 		Dashboard:    dashboard.ReadStore{DB: db},

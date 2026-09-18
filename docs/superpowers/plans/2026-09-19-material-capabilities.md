@@ -165,3 +165,17 @@ Dependencies新增Materials List / Get接口，两条GET只在服务和Users同�
 本任务采用读取接口测试替身验证HTTP边界，不替代真实数据库 / 签名验证器的HTTP链路，后者属d-3；不改app启动或JD渠道适配器，不push / 部署。
 
 2026-09-19：缺Materials依赖字段实际编译RED后新增实现，四项实际handler / router测试GREEN；首轮错误用例误以为error应省略data，经writeError现有统一契约证实data:null，修改测试并加强错误伴随部分数据不泄露及明确空态原因断言，未改全局契约。定向-race -count3与私有PG17.11配置PG_TEST_DSN全量Go test / vet / build、17文档相对链接 / diff退出0，独立审查四项实际通过无Critical / Important；非系统schema数0。HTTP只读范围父d-2依据a / b及最终全量证据完成，d-3真实验证器 / 仓储链路和详情UUID拒绝、运行配置及启动装配仍未验收；M7-01d及整体目标继续。本地逐任务提交，无push / 部署。
+
+### M7-01d-3a【已完成】：应用装配与签名 / PG / HTTP联测
+
+app.Config增加显式CatalogBindings，NewHandler在既有公钥 / 数据库 / 迁移验证之后创建真实material.ReadService并注入路由；非法 / 重复配置启动失败，nil绑定是合法关闭态，不读物料且不授READY。cmd/api尚未配置加载，默认传空绑定，受控文件加载属于3b；不修改认证策略、自动迁移或渠道适配器。
+
+测试使用runtimeDB独立schema和实际全部迁移、临时RSA2048密钥签发RS256 at+jwt、真实Verifier、ReadService / Repository及httptest本机HTTP服务器；经http.Client实际发GET，无reader或身份替身。合成物料和证据仅私有PG，使用服务端当前时间窗口，不声称真实授权或身份提供方验收。
+
+- [x] 缺CatalogBindings编译RED后装配；真实本人首屏 / 后页 / 详情，未登录 / 错签名、跨用户 / 跨owner游标、非法 / 零 / 大写物料UUID、伪造配置参数及missingID；白名单 / no-store、零Tracking / 请求及物料证据保留。
+- [x] 会员 / 位 / CATALOG撤销、证据到期和物料状态 / 日期 / 地域 / 业务 / 终端变更后，两API立即新请求复判，拒绝无item / cursor；错误配置、空绑定 / 错媒体默认拒绝、SQL失败安全503。
+- [x] 三轮定向race、全量Go / vet / build、文档链接 / diff与独立只读审查后逐任务提交。
+
+历史read-only快照保证完整旧读取；这里“新请求复判”不是撤销中止在途请求或生成事务最终锁。来源真实性、角色 / DDL权限、正式账户、设备、生成最终检查及前端选品仍待对应任务。
+
+2026-09-19：3项真实应用测试及九类状态子项独立实跑通过，最终私有PG_TEST_DSN定向-race -count3和全量go test -count=1 ./... / vet / build均退出0，20相关文档相对链接与diff通过。首轮Page重复JSON解码使omitempty NextCursor残留于测试对象，造成尾页误判RED；按实际生产省略字段语义重置每页解码对象后GREEN，不改生产游标或序列化。独立审查实际三项 / 九子项无Critical / Important，强化跨人 / 空配置结果必须items[]或无item，三轮race再通过；最终全量实跑后非系统schema数0。只增加应用7行装配，不改Verifier或渠道 / 历史SQL、不启用生成、不对现有数据库执行迁移。3b受控配置加载与综合父项复核未完成，本地逐任务提交，无push / 部署。

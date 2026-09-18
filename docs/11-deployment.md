@@ -19,3 +19,9 @@
 API 入口现会装配已实现的推广申请、审核与推广位路由；从仓库根目录运行 `go run ./cmd/api` 前需设置 `DATABASE_URL`、`AUTH_PUBLIC_KEY_FILE`、`AUTH_ISSUER`、`AUTH_AUDIENCE` 和 `PROMOTER_AGREEMENT_VERSION`，可选 `API_ADDR`（默认 `:8080`）。占位符见 [deploy/api.env.example](../deploy/api.env.example)。`AUTH_PUBLIC_KEY_FILE` 应指向只读的 RSA 公钥文件；身份提供方须为本 API 受众签发 RS256、`typ=at+jwt` 的访问令牌，sub 使用与数据库一致的规范用户 ID。推广协议版本只能填产品已获批版本，不能仅为通过启动检查随意填写。
 
 启动仅校验所有迁移均已应用且摘要匹配，不自动写数据库；先执行迁移命令。缺少配置、迁移或数据库连接时启动失败。管理员权限来自 `admin_principals` / `admin_permissions`，需由受控运维流程开通、撤销，不由令牌的角色字段赋权。此处是服务端装配，不代表第三方身份提供方、京东正式账户及交易闭环已验收。
+
+## 物料目录应用装配（M7-01d-3a，2026-09-19）
+
+app.Config现支持显式CatalogBindings，将平台 / 类型 / 终端 / scene精确绑定到服务端媒体并复制到真实只读服务；配置非法或歧义重复时NewHandler拒绝启动。空绑定为合法关闭态：物料GET已装配，但鉴权后只返回UNCONFIGURED安全空目录 / 无item详情，不自动采用数据库里的其他READY媒体。请求不能传媒体 / owner / READY，所选内部位仍由仓储复核本人及实际scene，读取不执行生产迁移或生成。
+
+cmd/api目前未读取部署绑定文件，默认空配置。可执行受控配置加载和格式说明属于M7-01d-3b，不能仅为显示示例商品而硬编码真实媒体。新增实测为隔离PG / 临时测试RSA签名 / 本机HTTP链路，不证明正式身份提供方、媒体来源批准、数据库最小权限或生产上线。当前全部迁移范围为000001～000023，上文早期编号是历史记录。
