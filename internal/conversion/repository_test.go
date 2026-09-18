@@ -39,7 +39,7 @@ func conversionDB(t *testing.T) *sql.DB {
 		}
 		_ = admin.Close()
 	})
-	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state"} {
+	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state", "000021_promotion_share_events"} {
 		b, err := os.ReadFile("../../migrations/" + name + ".up.sql")
 		if err != nil {
 			t.Fatal(err)

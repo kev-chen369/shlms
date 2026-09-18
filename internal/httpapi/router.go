@@ -53,6 +53,9 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 	if dependencies.ShareArtifacts != nil && dependencies.Users != nil {
 		mux.HandleFunc("GET /api/v1/promotions/convert/{id}/share-artifacts", promotionShareArtifactHandler(dependencies))
 	}
+	if dependencies.ShareEvents != nil && dependencies.Users != nil {
+		mux.HandleFunc("POST /api/v1/promotions/convert/{id}/share-events", promotionShareEventHandler(dependencies))
+	}
 	if dependencies.Promoter != nil && dependencies.Users != nil {
 		mux.HandleFunc("GET /api/v1/promoter/profile", promoterProfileHandler(dependencies))
 	}

@@ -23,6 +23,9 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	ShareEvents interface {
+		Record(context.Context, conversion.ShareEventInput) (conversion.ShareEvent, error)
+	}
 	ShareArtifacts interface {
 		GetArtifact(context.Context, string, string, string) (conversion.ShareArtifact, error)
 	}
