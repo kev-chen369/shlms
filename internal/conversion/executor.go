@@ -81,7 +81,7 @@ func (e Executor) RunPending(ctx context.Context, id string) (Record, error) {
 		// No link creation was attempted; a later worker may safely recheck.
 		return Record{}, ErrUnavailable
 	}
-	if !quoteMatches(snapshot, quote) {
+	if !snapshot.ExpiresAt.After(time.Now()) || !quoteMatches(snapshot, quote) {
 		return e.Repository.RejectPending(ctx, record.ID, record.Version)
 	}
 	if _, err = e.Eligibility.Check(ctx, record.OwnerUserID, record.PositionID); err != nil {
@@ -90,6 +90,14 @@ func (e Executor) RunPending(ctx context.Context, id string) (Record, error) {
 	claimed, err := e.Repository.Claim(ctx, record.ID, record.Version, time.Minute)
 	if err != nil {
 		return Record{}, err
+	}
+	// Requote, eligibility checks and Claim may wait. Check both expirations
+	// again before sending any create request to the channel.
+	now := time.Now()
+	if !snapshot.ExpiresAt.After(now) || !quote.ExpiresAt.After(now) {
+		persistCtx, persistCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer persistCancel()
+		return e.Repository.MarkFinal(persistCtx, claimed.ID, claimed.ChannelRequestID, claimed.Version, "INVALID_RESULT")
 	}
 	callCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
