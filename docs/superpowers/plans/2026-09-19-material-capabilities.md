@@ -98,3 +98,15 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 配置私有PG_TEST_DSN全量Go test / race定向 / vet / build、diff及链接检查，独立审查后commit M7-01c-2c-1。2c父项、物料仓储2及全链c-3不勾选。
 
 2026-09-19【已完成】：2项新增仓储顶层测试，九维错配及非默认淘宝活动正例、四种非启用会员状态、SQL错误脱敏和Unicode证据拒绝。缺Repository / Err接口编译RED后实现；测试fixture按pgx参数化单语句及完整UTC时间修正，不把fixture错误当产品缺陷。实际私有PostgreSQL17.11定向 / -race、最终全量go test -count=1 ./... / go vet ./... / go build ./...退出0，18个文档相对链接及git diff --check通过；独立审查实际TestRepository / diff通过，无阻断。最终非系统schema数量0，测试仅临时合成数据；零Tracking新增、两份READY声明及三份证据保留断言。只读能力仓储已实现，物料仓储 / API / 真实授权与生成事务复核不在此项完成范围。逐项本地commit，不push / 部署。
+
+### M7-01c-2c-2：授权物料筛选与分页仓储
+
+创建internal/material/repository.go / repository_test.go；能力仓储提取共享queryRow实现并增加CheckInTransaction(ctx,*sql.Tx,owner,key,now)，保持原Check契约。Repository{DB *sql.DB}.List(ctx,Query,capability.Key,now) (Page,error)。Page只含Items []Card、NextCursor string和Capability capability.Decision；错误返回零Page / ErrInvalid或ErrUnavailable，取消保留context错误。Query平台 / 类型 / 城市 / 业务 / 终端必须与CATALOG Key完全一致，媒体 / 位 / scene同领域字节及文本边界，now非零；owner仍是可信身份，旧游标绑定owner / 筛选。开启只读REPEATABLE READ，先CheckInTransaction按本人资格 / 位 / 完整能力及证据判定；拒绝即非nil空Items、无cursor，固定安全原因，不查询物料。允许后在同快照中按UUID递增keyset分页，SQL独立绑定owner启用状态、平台 / 类型、ACTIVE、start<=now<end、source<=now、地域 / 业务 / 终端。NATIONWIDE物料覆盖所选城市，空物料业务不限，与能力空值非通配严格区分。
+
+每批limit+1原始记录仍经CardFor完整域校验及白名单投影；非法URL / Unicode证据等不返回。跨批继续直到limit+1合法卡片或耗尽，避免非法前缀导致漏项 / 空页 / 假hasMore；NextCursor是最后一张返回卡片ID，仅确实存在后续合法卡片时生成。所有扫描 / JSON数组转换 / row关闭 / commit错误均脱敏，失败不返回部分页面。事务快照不是生成授权锁，后续调用仍最终复核；无网络 / 导入 / 写入 / API装配，来源真实性、角色权限仍独立门槛。
+
+- [x] 写真实完整迁移fixture测试：无能力空态、精确READY列表、安全字段、筛选与窗口边界、非法前缀 / 中间记录分页、游标换人换范围拒绝、资格 / 位 / 能力停用与到期、新请求可见变更、错误 / 取消零Page；缺接口RED。
+- [x] 实现只读快照能力桥接与列表，实测正例 / 拒绝 / 持久化零副作用，定向GREEN。
+- [x] 私有PG_TEST_DSN定向-race及全量Go test / vet / build、diff / 链接，独立审查后commit M7-01c-2c-2。完整up / down / 并发快照验收仍归c-3，API与真实渠道门槛不提前完成。
+
+2026-09-19【已完成】：5项目录仓储测试及1项事务生命周期测试；缺接口编译RED后实现，真实PostgreSQL17.11定向 / -race与最终配置PG_TEST_DSN全量go test -count=1 ./... / go vet ./... / go build ./...、diff退出0，18文档相对链接通过。曾因测试跨包Key位置literal导致vet失败，改具名字段；故障注入VOLATILE函数在view下形成EXPLAIN可见SubqueryScan→Sort→Limit提前抛错，禁用顺序扫描未解决，恢复默认planner并将纯只读函数正确声明STABLE，先验证前两条成功再验证后批SQL失败。临时mutation把查询错误误返已有page，真实RED捕获ID1 / READY部分返回；精确恢复fail()后GREEN，未保留变异。缺目录表且能力停用仍返回空态；Card白名单、slice独立和零新增Tracking / 请求通过。独立审查与后批故障增量实跑无阻断，最终非系统schema数0。仅私有合成数据，未执行生产迁移、渠道调用或网络；c-2 / c-2c父项等待c-3全链和并发快照综合验收，不提前勾选。下一项c-3；公开API及真实授权仍未完成。

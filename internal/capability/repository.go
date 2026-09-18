@@ -22,16 +22,38 @@ type Repository struct{ DB *sql.DB }
 // client query parameters. Evidence.OwnerID identifies its responsible person,
 // not necessarily the promoter. Source authenticity is an external audit gate.
 func (r Repository) Check(ctx context.Context, ownerID string, key Key, now time.Time) (Decision, error) {
+	var reader capabilityReader
+	if r.DB != nil {
+		reader = r.DB
+	}
+	return check(ctx, reader, ownerID, key, now)
+}
+
+// CheckInTransaction shares the caller's read snapshot without committing it.
+// The caller owns isolation and lifecycle; no write or approval is performed.
+func CheckInTransaction(ctx context.Context, tx *sql.Tx, ownerID string, key Key, now time.Time) (Decision, error) {
+	var reader capabilityReader
+	if tx != nil {
+		reader = tx
+	}
+	return check(ctx, reader, ownerID, key, now)
+}
+
+type capabilityReader interface {
+	QueryRowContext(context.Context, string, ...any) *sql.Row
+}
+
+func check(ctx context.Context, reader capabilityReader, ownerID string, key Key, now time.Time) (Decision, error) {
 	if !ownerPattern.MatchString(ownerID) || ownerID == "00000000-0000-0000-0000-000000000000" || !validKey(key) || now.IsZero() {
 		return Decision{}, ErrInvalid
 	}
-	if r.DB == nil {
+	if reader == nil {
 		return Decision{}, ErrUnavailable
 	}
 	var memberStatus, positionStatus, positionScene string
 	var status, owner, media, source, version, call sql.NullString
 	var verified, expires sql.NullTime
-	err := r.DB.QueryRowContext(ctx, `SELECT m.status,p.status,p.scene,c.status,
+	err := reader.QueryRowContext(ctx, `SELECT m.status,p.status,p.scene,c.status,
  e.owner_id,e.media_approval_ref,e.source_approval_ref,e.interface_version,e.real_call_evidence_ref,e.verified_at,e.expires_at
  FROM promotion_positions p JOIN promoter_profiles m ON m.user_id=p.owner_user_id
  LEFT JOIN channel_capabilities c ON c.position_id=p.id AND c.platform=$3 AND c.material_type=$4 AND c.kind=$5

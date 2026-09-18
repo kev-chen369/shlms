@@ -174,3 +174,38 @@ func TestRepositoryFailsClosedOnInvalidInputAndStorage(t *testing.T) {
 		t.Fatal(got, err)
 	}
 }
+
+func TestCapabilityTransactionReaderLifecycle(t *testing.T) {
+	ctx := context.Background()
+	key := Key{"JD", "PRODUCT", "CATALOG", "media1", "p1", "home", "H5", "", ""}
+	now := time.Date(2026, 9, 19, 12, 0, 0, 0, time.UTC)
+	got, err := CheckInTransaction(ctx, nil, repositoryOwner, key, now)
+	if !errors.Is(err, ErrUnavailable) || got != (Decision{}) {
+		t.Fatal(got, err)
+	}
+	got, err = CheckInTransaction(ctx, nil, "", key, now)
+	if !errors.Is(err, ErrInvalid) || got != (Decision{}) {
+		t.Fatal(got, err)
+	}
+	db := capabilitySchemaDB(t)
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tx.Rollback()
+	got, err = CheckInTransaction(ctx, tx, repositoryOwner, key, now)
+	if err != nil || got.Reason != "POSITION_UNAVAILABLE" || got.Allowed {
+		t.Fatal(got, err)
+	}
+	var one int
+	if err := tx.QueryRow(`SELECT 1`).Scan(&one); err != nil || one != 1 {
+		t.Fatal("reader ended caller transaction", err)
+	}
+	if err := tx.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	got, err = CheckInTransaction(ctx, tx, repositoryOwner, key, now)
+	if !errors.Is(err, ErrUnavailable) || got != (Decision{}) {
+		t.Fatal(got, err)
+	}
+}
