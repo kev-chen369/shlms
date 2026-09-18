@@ -1,5 +1,11 @@
 # 测试计划
 
+## M7-01e-1 物料前端数据契约（2026-09-19）
+
+`materials-api.test.ts`测试真实API适配函数，仅在网络边界提供完整合成响应；验证JD / TAOBAO / MEITUAN映射和MT仅活动、完整范围快照 / 编码、20项分页 / 1024字节安全游标及尾页省略格式、匹配详情UUID、UTF8字节与纳秒时间边界、范围匹配、白名单及数组拷贝、身份变化丢弃在途响应、401 / 404 / 失败脱敏与uni GET认证。冲突能力 / 物料可用性、越范围 / 重复卡片、未知状态及非法输入均拒绝；只返回CATALOG读取判定，不返回生成授权、价格或内部URL。
+
+缺模块RED后实现；补普通映射对象继承属性（toString / constructor / __proto__）3项实际RED，再按自有属性白名单修复；数组和String包装对象的隐式键转换2项RED后增加严格字符串类型检查。这里验证数据契约，不是后端真实HTTP联调、状态模型、选品页面或真实设备验收；M7-01e-2 / 3另验证，图稿尚无变化。
+
 ## M7-01d-3b-2 启动配置验收（2026-09-19）
 
 `TestLoadCatalogBindingsFile`验证普通绝对路径、未设置 / 空数组关闭、缺失 / 目录 / FIFO / symlink / 相对路径 / 超限 / 非法内容安全拒绝；`TestLoadAPIConfig`验证环境选择与启动配置保留，`TestMainRejectsBrokenCatalogConfig`执行真实main子进程，错误配置失败且无监听或输入泄漏。`TestRuntimeMaterialsDeploymentFileEntrypoint`编译临时API并用隔离PG / RSA签名实际HTTP读取，验证配置真正传入列表 / 详情、未设置拒绝、不热重载、数据库撤销及零Tracking / 转链请求。临时丢弃main绑定的mutation实际RED，恢复后GREEN；不是源码文本测试。
