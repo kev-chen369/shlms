@@ -6,7 +6,8 @@
 
 ## 阅读顺序
 
-- [最新 GitHub 同步范围与实际统计页面图](./29-github-sync-accessibility-dashboard-20260919.md)：本人统计页面、输入与大字号修复、复验结果及未完成边界。
+- [最新 GitHub 同步范围与实际页面图](./30-github-sync-materials-accessibility-20260919.md)：物料 / 能力领域模型、券与转链页面回归、五张实际截图及未完成边界。
+- [统计页面同步记录](./29-github-sync-accessibility-dashboard-20260919.md)：本人统计页面、输入与大字号修复、复验结果及未完成边界。
 
 - [现有 H5 页面关联与可用性验收](./28-client-accessibility-acceptance-20260919.md)：P 编号 / 页面 / API / 用例映射，七页面字体 / 键盘检查及两项回归修复；不是完整业务或微信真机验收。
 

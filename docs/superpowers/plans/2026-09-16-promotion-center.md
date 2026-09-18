@@ -10,6 +10,10 @@
 
 ## 分支整合
 
+- [ ] PROC-10【进行中】2026-09-19：按用户请求更新 GitHub 代码、文档与图；复验并归档本轮实际页面图，合并远端 main 后非强制推送。不授权生产数据库迁移，不把源码同步当生产发布。
+  - [x] PROC-10a【已完成】2026-09-19：复验 REL-01a 后续及 M7-01a / b；Go test / vet / build、客户端338项测试 / 类型检查 / H5与微信构建、Chrome浏览器7项、原生H5 13项均通过。归档五张实际320px / 200% CSS文本截图，直接查看商品和转链图，58个相对链接 / PNG签名尺寸 / diff检查通过；新增docs/30同步说明及文档 / 图索引。合成测试数据，不代表真实授权 / 设备验收；数据库用例仍因PG_TEST_DSN缺失跳过，无部署或迁移。
+  - [ ] PROC-10b【未开始】再次 fetch / merge 远端 main，非强制推送并重新 fetch 校验提交一致；失败则记录原因。
+
 - [x] PROC-09【已完成】2026-09-19：按用户要求同步已完成代码、文档与实际页面图至 GitHub main；沿用隔离发布工作树，保留原工作区 REL-01a-3b 进行中修改及 .DS_Store，不纳入未验收功能，不部署生产。
   - [x] PROC-09a【已完成】2026-09-19：隔离发布工作树快进合并六项已完成提交至 ef0e98d，merge origin/main c06ff30 返回 Already up to date；归档六张实际 320px / 200% CSS 文本订单与统计页面截图，更新同步说明及文档 / 图片索引。客户端 npm test 336 项、typecheck、build:h5、build:mp-weixin、test:layout 3 项，Go test -count=1 ./... / vet / build，原生 H5 Node 13 项，PNG 签名 / 非零尺寸、文档链接及 diff 检查通过；直接查看统计计数与订单详情图。PG_TEST_DSN 缺失，数据库集成跳过；测试端合成身份与 HTTP 数据，不代表生产身份 / 业务 / 系统字体 / 微信真机验收。保留原工作区未验收修改，不部署 / 迁移；远端同步由 PROC-09b 单独核对。
   - [x] PROC-09b【已完成】2026-09-19：再次 fetch / merge origin/main，Already up to date；使用既有 SSH 身份非强制推送 main c06ff30→80ea23c，重新 fetch 后以 git rev-parse HEAD origin/main 核对两者均为 80ea23c。六项功能提交、复验说明与六张新截图已同步，保留全部远端历史；没有生产部署或数据库迁移。本核对记录独立提交并推送，不将自身哈希循环写回自身。
