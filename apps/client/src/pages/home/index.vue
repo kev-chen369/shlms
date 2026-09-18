@@ -18,7 +18,7 @@ function search() { notice.value = '商品搜索与链接解析暂未接入，�
 <template>
   <view class="client-page home-page">
     <view class="home-header">
-      <text class="brand">万惠宝</text>
+      <text class="brand">万宝单生活</text>
       <button class="city-button" role="button" tabindex="0" @tap="notice = '城市定位暂未接入，未获取你的位置信息。'" @keydown.enter="notice = '城市定位暂未接入，未获取你的位置信息。'" @keydown.space.prevent="notice = '城市定位暂未接入，未获取你的位置信息。'">选择城市<image src="/static/icons/chevron.svg" /></button>
       <button class="notification-button" role="button" tabindex="0" aria-label="通知" @tap="notice = '通知服务暂未接入。'" @keydown.enter="notice = '通知服务暂未接入。'" @keydown.space.prevent="notice = '通知服务暂未接入。'"><image src="/static/icons/bell.svg" /></button>
     </view>

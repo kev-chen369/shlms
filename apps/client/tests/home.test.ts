@@ -4,9 +4,10 @@ import Home from '../src/pages/home/index.vue'
 
 describe('consumer home', () => {
   afterEach(() => vi.unstubAllGlobals())
-  it('identifies the client as Wanhui rather than the legacy brand', () => {
+  it('identifies the client by the currently approved public brand', () => {
     const wrapper = mount(Home)
-    expect(wrapper.text()).toContain('万惠宝')
+    expect(wrapper.text()).toContain('万宝单生活')
+    expect(wrapper.text()).not.toContain('万惠宝')
     expect(wrapper.text()).not.toContain('惠省生活')
   })
   it.each([
