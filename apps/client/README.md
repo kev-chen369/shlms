@@ -24,6 +24,8 @@ H5 产物在 `dist/build/h5`。node_modules、产物、环境文件不进入 Git
 
 ## 当前边界
 
+REL-01a-3a 扩展 `test:layout` 到真实本人订单 / 看板页面，QA-only 提供方身份与 uni HTTP 拦截；320 / 390 / 1280px 的 200% 文本、128 字符推广位、渠道 / 日期筛选、归因详情 / 错误重试 / 零态 / 401 清理。订单和统计输入外框由 50px 改 60px，原生可用高度由 24px 改 34px，避免 28px 放大文字裁切。日期仍分别 UTC 时刻范围 / 上海含首尾自然日，不改口径。可选 `CLIENT_QA_SCREENSHOT_DIR` 指向已有外部目录保存本机合成数据截图；未设置不写截图。非空券 / 适用商品的放大验收由 REL-01a-3b 继续，测试身份不代表真实 JWT / 渠道或辅助技术验收。
+
 REL-01a-2 首页标题区支持内容驱动换行，搜索区域保留布局宽度且输入至少 44px 高，避免 200% 大字号下宽度被挤至 19px 或文字被 18px 原生高度裁切。真实布局回归使用 `npm run test:layout`（Node / Playwright，不走 jsdom）；需先启动 `npm run dev:h5`，并提供已有 Playwright / Chrome。模块可由 `CLIENT_QA_PLAYWRIGHT_MODULE` 指定现有模块路径，Chrome 由 `CLIENT_QA_CHROME_EXECUTABLE` 指定，目标由 `CLIENT_QA_URL` 指定（默认 `http://127.0.0.1:5173`）；未提供且本机无依赖时测试明确失败，不自动安装或跳过。例：环境已配置上述路径后执行 `npm run test:layout`。关联与验收范围见 [七页面验收矩阵](../../docs/28-client-accessibility-acceptance-20260919.md)；200% 用户样式文本不是浏览器缩放、系统字体或完整辅助技术验收。
 
 REL-01a-1 修正链接准备页快速输入后立即清空：重建文本域以失效 uni H5 尚未同步的原生编辑与节流事件，清空后不会恢复旧文本。H5 在组件根范围监听原生节点替换并重新设置无障碍名称，退出时解除监听；不观察全局文档或属性变更。原剪贴板 pending 防护与识别未开放状态保留。实际 Chrome 320 / 390 / 1280px 快速两次输入 → 键盘清空 → network idle 仍为空且新原生节点名称正确；不是微信真机或辅助技术全量验收。

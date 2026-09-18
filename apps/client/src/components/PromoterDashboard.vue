@@ -97,7 +97,7 @@ button:focus-visible, input:focus-visible { outline: 3px solid #f0ad63; outline-
 .selected { background: #e5f4ed; }
 .field { display: block; margin: 12px 0; }
 .field > text { display: block; margin-bottom: 6px; }
-input { border: 1px solid #d6e5dc; border-radius: 10px; padding: 12px; height: 50px; min-height: 50px; font-size: 14px; }
+input { border: 1px solid #d6e5dc; border-radius: 10px; padding: 12px; height: 60px; min-height: 60px; font-size: 14px; }
 .actions button { flex: 1; }
 .error { display: block; color: #a44320; margin: 12px 0; }
 .metric { border-top: 1px solid #dbe8e1; padding: 14px 0; }
