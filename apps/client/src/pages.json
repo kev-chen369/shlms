@@ -7,6 +7,7 @@
     { "path": "pages/orders/index", "style": { "navigationStyle": "custom" } },
     { "path": "pages/profile/index", "style": { "navigationStyle": "custom" } },
     { "path": "pages/promotion/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/promotion/materials", "style": { "navigationStyle": "custom" } },
     { "path": "pages/promotion/orders", "style": { "navigationStyle": "custom" } },
     { "path": "pages/promotion/dashboard", "style": { "navigationStyle": "custom" } },
     { "path": "pages/promotion/convert", "style": { "navigationBarTitleText": "准备推广链接" } },

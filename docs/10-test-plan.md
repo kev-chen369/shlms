@@ -1,5 +1,9 @@
 # 测试计划
 
+## M7-01e-3b-2 选品页与本人位选择（2026-09-19）
+
+`materials-workbench.test.ts`实际positions-api与materials-model链路验证：未登录零请求、不自动选择默认位、显式位与服务端scene、目录范围查询、非法/字节超限位保持列表但不可选、城市 / 业务边界、平台 / 类型清选择、JD-only映射、分页故障恢复、401清双模型且锁拒重试、身份切换不自动读与ABA、迟到同会话 / 旧会话401及目录401。`materials-page.test.ts`真实页面和uni边界验证注册、四底栏、键盘入口及显式选位再确认；不填模拟商品或生产身份。`tests/browser/materials-page.browser.cjs`已有Chrome / Playwright在390px验证实际推广入口、无身份零调用、同一页面测试端提供方session、本人与scene确认、快速城市 / 业务原生输入最新query、目录拒绝、淘宝未开放和身份丢失，console / pageerror / overlay / 横溢出与Bearer GET断言。是本机合成HTTP状态验收，不替代正式登录、渠道权限、真实物料 / 订单或真机；完整布局及实际图册3c继续。
+
 ## M7-01e-3b-1 选品组件（2026-09-19）
 
 `materials-component.test.ts`真实挂载Vue组件和materials-model / materials-api，仅HTTP响应合成；覆盖未登录 / 未选位零请求、安全事实卡片、目录READY仍禁用生成、Enter / Space最新详情及关闭、平台 / 类型清scope、MT商品键盘显式拒绝、empty / blocked差异、分页503保留与Space成功重试、失效详情和会话清理。禁用按钮用直接DOM事件回归，不让VT trigger自动跳过掩盖bug。`tests/browser/materials-component.browser.cjs`使用测试host挂载同一组件 / 模型 / uni GET，390px验证目录 / 查看 / 关闭 / MT切换、Bearer和仅GET、无框架覆盖 / 横溢出 / console及运行错误；可用CLIENT_QA_SCREENSHOT_DIR保存Git外合成截图。不是注册选品页面 / 推广位编排 / 真实JWT、业务或完整设备验收；b-2 / c继续。

@@ -4,6 +4,16 @@
 
 **Goal:** 按已确认V3设计建立可信平台能力与商品 / 活动物料边界，最终提供本人只读目录，不提前解锁取链。
 
+## M7-01e-3b-2 选品页面与本人位编排（已完成，2026-09-19）
+
+新增`materials-workbench.ts` / 编排测试，创建并复用materials-model与positions-api；新增`pages/promotion/materials.vue` / 页面测试、pages.json注册及推广页可键盘入口，底栏保持原四项。H5 / 微信编译选择对应terminal，无可用session时不请求、不展示位或伪造身份。默认位也不自动选择，必须显式选择接口返回本人位并确认其服务端scene；城市 / 业务为本地草稿，blur / confirm提交最终原生值，身份 / 平台 / 类型变化以key重建清草稿，不复用旧位。位/scene不满足物料字节限制显示不适用原因，保留合法位列表；UNAVAILABLE映射不可选，JD配置等待不代替独立CATALOG判定。
+
+本人位分页失败保留选择并显式重试，重复位及游标循环不追加；刷新清物料scope。会话及请求epoch隔离迟到响应/ABA，迟到同会话401仍拒绝，新会话不受旧401影响；物料接口401也清位并锁拒同session重试。平台 / 类型切换清所有选择，当前JD-only映射对淘宝 / 美团显示未开放且不请求 / 借用京东位；生成保持关闭。
+
+- [x] 缺编排 / 页面模块分别RED后13项GREEN；独立13项实际复审无Critical / Important，按Minor补同会话迟到401、旧会话401与目录401清位三项，最终16新增项。
+- [x] Browser插件不可用，用已有Chrome / Playwright实际路由入口→登录缺失零请求→测试端挂载同一注册页面并供应合成身份→uni GET本人位→Space显式选位→快速编辑城市/business→Enter确认范围→目录UNCONFIGURED→淘宝未开放→会话丢失清位，390×844浏览器1项通过，仅本人Bearer GET；query含H5终端 / 当前位 / scene / 最新输入，无横溢出 / 框架覆盖 / console或pageerror。Git外实际页面截图已view_image查看；全量多宽度 / 图册与真机仍由3c负责。
+- [x] 最终全量27文件485项、`npm run typecheck`、`npm run build:h5`、`npm run build:mp-weixin`退出0，15文档相对链接 / diff通过；独立13项实跑复审无阻断，后仅补三项回归及快速输入浏览器断言，无生产改动，最终全量再跑通过。更新状态逐项本地提交，不自动push /部署；3c及父项仍继续。
+
 ## M7-01e-3b-1 选品展示组件（已完成，2026-09-19）
 
 新增`PromotionMaterials.vue`与`materials-component.test.ts`，接真实materials-model；本人推广位放在命名position slot，下一b-2编排实际positions-api与页面入口，不在组件构造位、身份或物料。三平台、商品 / 活动切换由模型清scope；MT商品显式禁用、tabindex=-1及事件guard。卡片和最新详情展示来源、类型、时效、地域、终端、业务、来源更新时间与规则；每次查看重新GET，目录READY仍禁用全部生成。空目录 / 能力拒绝 / 故障区分，分页失败保留项并用按钮重试追加，失效详情移除卡片，会话丢失清理全部展示。
