@@ -59,3 +59,12 @@ Card字段白名单：ID / Platform / Type / Title / StartsAt / EndsAt / SourceU
 2026-09-19：7 个顶层测试通过，JSON 超范围年份回归先失败再修复；全量 Go test / vet / build 退出0，独立及增量审查无阻断。链接检查通过。数据库依赖测试因 PG_TEST_DSN 未配置跳过；此项不构成真实来源、网络 URL 安全、目录 API 或生成能力验收。
 
 M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 / API / 前端接口及失败测试步骤，不能拿本项判定实现当目录或真实能力验收。迁移验收需要隔离PostgreSQL，真实能力验收需要负责人和获批账号；缺少时如实阻塞对应项，不阻断可独立领域建模。现有订单 / 预览 / 转链路径保持原义。
+
+### M7-01c-1：仓储查询与游标契约
+
+文件：internal/material/query.go、query_test.go。Query含OwnerID（可信身份解析后规范非零UUID）、Scope Context、Limit1～100、Cursor；ParseQuery返回AfterID，不接受客户端作为身份来源。平台 / 类型组合、终端及可选城市业务使用领域字段边界。游标使用版本1 JSON的raw URL base64编码，仅保存owner / scope / afterID，最多1024字符，拒绝未知字段、尾随JSON、无效UTF-8及非规范编码。用户 / 任意筛选上下文切换旧游标拒绝；Limit可以改变，不改变范围。EncodeCursor须先验证查询及规范非零UUID afterID，不嵌套旧游标。游标不是签名或授权；篡改after只影响本人范围分页位置，后续仓储 / API必须独立鉴权。
+
+- [x] 失败测试：合法首屏与游标往返、跨用户与五种筛选切换、缺身份 / 组合 / limit、坏游标 / nil UUID / 未知字段。
+- [x] 定向RED后实现最小协议，全量Go验证；独立审查后以M7-01c-1提交。不声明数据库仓储完成。
+
+2026-09-19：4组新增查询测试通过，缺接口RED后GREEN；补齐实际重复键、空白 / 重排、nil afterID与最大字段往返。Go test -count=1 ./internal/material及全量test / vet / build、diff检查退出0。独立审查无阻断；仓储、迁移、API及生产授权未实现，PG_TEST_DSN未配置的数据库测试跳过。M7-01c-2继续，c-3隔离库阻塞，不将本协议当端到端目录。
