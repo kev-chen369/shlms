@@ -78,3 +78,13 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 定向 / 全量Go及完整迁移验证，记录DB版本与实跑 / 跳过范围，审查并提交M7-01c-2a。
 
 2026-09-19：PostgreSQL17.11私有Unixsocket实例，真实缺迁移RED后GREEN；26个CHECK拒绝用例、最大城市数量 / 字节边界、身份命名空间及唯一性与down表 / helper无残留通过。时间fixture显式Z避免上海时区将10000年转换为9999年UTC；没有放宽约束。独立审查无阻断，审查者实跑原21边界，新增minor边界主执行复验通过。配置PG_TEST_DSN全量Go test / vet / build和diff退出0；既有迁移链up / 并发 / 重复验证随全量执行，本新增迁移独立up / down实测。全部新迁移完整up / down与仓储一致性仍属于c-3，不提前勾选。未执行生产迁移 / 部署，未开放目录或生成。
+
+### M7-01c-2b：能力与不可变证据结构
+
+文件：migrations/000023_channel_capabilities.up.sql / down.sql，internal/capability/schema_test.go。沿用Key / Evidence：channel_capabilities含非零UUID id、platform / material_type / kind / media_id / position_id / scene / terminal / city_code / business完整唯一范围，position_id引用既有promotion_positions，默认UNCONFIGURED，状态四种，evidence_id可空。channel_capability_evidence含非零UUID id、capability_id外键、五个必填128字节脱敏引用字段、verified_at / expires_at有限JSON年份且递增、recorded_by / recorded_at provenance。READY必须非空evidence_id，复合FK(id,evidence_id)绑定本声明证据；先插声明，再追加证据，最后受控指向。Key与ID禁止UPDATE改义，证据UPDATE / DELETE拒绝，停用仍保留证据历史；down先解除循环FK再删新表 / 函数，不碰旧表。DB只保证字段及绑定，不证明来源真实性 / 管理员资格，不用CURRENT_TIMESTAMP CHECK自动批准；读者仍须Evaluate核验时效。无应用写入口、角色授权或真实READY装配。
+
+- [x] 在独立schema使用真实既有000001～000022迁移，再执行000023 up，写声明默认 / 唯一 / 平台类型能力 / 字段 / 推广位FK及READY本证据测试；缺迁移真实RED。
+- [x] 实现新增表 / 精确唯一 / 复合FK / Key及证据不可变触发器，验证跨声明证据拒绝、缺字段及无效时间、停用保留及down新表 / 函数无残留、旧推广位保留。
+- [x] 配置私有PG_TEST_DSN定向 / 全量Go test、vet / build / diff，独立审查后commit M7-01c-2b；完整新链up / down与仓储仍归c-3。
+
+2026-09-19【已完成】：2项新增数据库测试含30个字段边界子用例及默认 / 唯一 / FK / 不可变 / down断言。真实TRUNCATE CASCADE绕过逐行保护RED后，增加BEFORE TRUNCATE语句级拒绝触发器，定向与全量Go test -count=1 ./...、go vet ./...、go build ./...、git diff --check退出0；独立增量审查实际复跑通过，DROP TABLE不触发TRUNCATE保护，down通过。数据库只提供基本字段与关系约束，不证明引用真实性或授权，也不防有权限者禁用触发器 / DDL；读者仍须完整域验证及Evaluate。未执行生产迁移或部署。
