@@ -8,6 +8,7 @@
     "build:h5": "uni build",
     "build:mp-weixin": "uni build -p mp-weixin",
     "test": "vitest run",
+    "test:materials": "node --test tests/browser/materials-component.browser.cjs tests/browser/materials-page.browser.cjs tests/browser/materials-acceptance.browser.cjs",
     "test:layout": "node --test tests/browser/home-text-resize.browser.cjs tests/browser/promotion-text-resize.browser.cjs tests/browser/coupon-business.browser.cjs tests/browser/coupon-text-resize.browser.cjs tests/browser/link-input-text-resize.browser.cjs tests/browser/client-route-smoke.browser.cjs",
     "typecheck": "vue-tsc --noEmit"
   },

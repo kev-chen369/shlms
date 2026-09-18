@@ -58,6 +58,8 @@ M3-02c-1 提供 `src/features/promotion/orders-api.ts`：仅本人推广订单�
 
 REL-01a-5 的 `tests/browser/client-route-smoke.browser.cjs` 重复验证七个现有页面默认状态、320 / 390 / 1280px、默认 / 200% CSS 文本及实际 Space 操作 / 导航，默认无身份不请求推广 API；coupon HTTP 空目录仅在浏览器测试端提供。结合非空 / 错误 / QA身份回归，`test:layout` 当前共7项；父任务仅本机已实现范围，不等于完整产品或真实业务发布验收。
 
+M7-01e-3c-1 增量选品验收使用 `npm run test:materials`，沿用上述现有 Playwright / Chrome 环境与运行中的 H5 服务。共6项：组件与入口基础流程、320 / 390 / 1280px 默认及200% CSS文本、真实页面分页错误恢复、详情复核 / 失效、键盘，以及实际 uni HTTP 请求被延迟时的平台切换、旧身份401隔离、同身份401清理、身份ABA和原生输入草稿清理。仅测试端提供合成身份和 HTTP 响应，不修改生产身份提供方，不是真实登录 / 渠道 / 微信设备验收；`test:layout` 原7项继续单独运行。可选外部截图由 M7-01e-3c-2 查看归档，不因自动测试通过提前完成视觉对应或父任务。
+
 REL-01a-4 新增 `tests/browser/link-input-text-resize.browser.cjs`，真实准备页 / LinkInput，测试浏览器只替换 uni 剪贴板边界，不访问系统剪贴板。三宽度 / 200% CSS 文本验证长文案、读取失败 / 空 / 超限保留原输入、等待读取禁用 / 恢复、动态原生输入名称、键盘清空与识别关闭；无 API 请求。该任务完成时 `test:layout` 共 6 项，不等于微信权限 / 真实系统剪贴板验收。
 
 REL-01a-3b-1 修复业务代码快速修改后应用旧值：按钮应用通过 uni blur 提交最新值，输入 Enter 使用包含最新值的 uni confirm，不提前在 keydown 应用节流旧值；上下文改变重建输入，避免旧输入回填。组件 blur / confirm 回归及 `tests/browser/coupon-business.browser.cjs` 三宽度快速输入 / 平台重置回归归入 `test:layout`。仅本机 HTTP 测试数据，不代表渠道或微信真机验收。
