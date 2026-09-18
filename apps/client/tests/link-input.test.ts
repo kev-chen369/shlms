@@ -3,6 +3,22 @@ import { describe, expect, it } from 'vitest'
 import LinkInput from '../src/components/LinkInput.vue'
 
 describe('local product link input', () => {
+  it('labels asynchronously replaced native textareas within its component only', async () => {
+    const wrapper = mount(LinkInput, { props: { ready: false, readClipboard: async () => '' } })
+    const replacement = document.createElement('textarea')
+    wrapper.get('textarea').element.replaceWith(replacement)
+    await flushPromises()
+    expect(replacement.getAttribute('aria-label')).toBe('商品链接或文案')
+    wrapper.unmount()
+  })
+  it('clears native text even before throttled input has reached the model', async () => {
+    const wrapper = mount(LinkInput, { props: { ready: false, readClipboard: async () => '' } })
+    // Native editing precedes uni H5's throttled v-model notification.
+    ;(wrapper.get('textarea').element as HTMLTextAreaElement).value = '尚未同步的链接'
+    await wrapper.get('[data-action=clear]').trigger('keydown', { key: ' ' })
+    expect((wrapper.get('textarea').element as HTMLTextAreaElement).value).toBe('')
+    wrapper.unmount()
+  })
   it('rejects input beyond the server 4096-byte UTF-8 limit without replacing original content', async () => {
     const wrapper = mount(LinkInput, { props: { ready: true, readClipboard: async () => '中'.repeat(1366) } })
     await wrapper.get('textarea').setValue('原输入')

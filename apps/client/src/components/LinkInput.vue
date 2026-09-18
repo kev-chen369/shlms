@@ -1,23 +1,34 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // #ifdef H5
-import { onMounted, onUpdated } from 'vue'
-const inputRef = ref<HTMLElement | { $el: HTMLElement } | null>(null)
+import { onMounted, onUnmounted } from 'vue'
+const rootRef = ref<HTMLElement | { $el: HTMLElement } | null>(null)
+let inputObserver: MutationObserver | undefined
 // uni-app puts fallthrough attributes on uni-textarea, not its native input.
 function labelNativeInput() {
-  const value = inputRef.value
+  const value = rootRef.value
   const wrapper = value && ('$el' in value ? value.$el : value)
-  const input = wrapper?.querySelector('textarea') ?? wrapper
+  const input = wrapper?.querySelector('textarea')
   input?.setAttribute('aria-label', '商品链接或文案')
 }
-onMounted(labelNativeInput)
-// Apple WebKit replaces the native node when its disabled state changes.
-onUpdated(labelNativeInput)
+onMounted(() => {
+  const value = rootRef.value
+  const root = value && ('$el' in value ? value.$el : value)
+  if (root) {
+    // uni replaces the native node after clear / disabled changes; observe
+    // this component's subtree, never the whole document or attribute changes.
+    inputObserver = new MutationObserver(labelNativeInput)
+    inputObserver.observe(root, { childList: true, subtree: true })
+  }
+  labelNativeInput()
+})
+onUnmounted(() => inputObserver?.disconnect())
 // #endif
 
 const props = defineProps<{ ready: boolean; readClipboard: () => Promise<string> }>()
 const emit = defineEmits<{ preview: [content: string] }>()
 const content = ref('')
+const inputVersion = ref(0)
 const pending = ref(false)
 const message = ref('')
 function inputBytes(value: string) {
@@ -42,6 +53,8 @@ async function paste() {
 }
 function clear() {
   if (pending.value) return
+  // Dispose the native edit and its pending throttled uni input notification.
+  inputVersion.value++
   content.value = ''
   message.value = ''
 }
@@ -56,9 +69,9 @@ function preview() {
 </script>
 
 <template>
-  <view class="link-input" :aria-busy="pending">
+  <view ref="rootRef" class="link-input" :aria-busy="pending">
     <label for="product-content" class="input-label">商品链接或文案</label>
-    <textarea ref="inputRef" id="product-content" v-model="content" aria-label="商品链接或文案" placeholder="粘贴商品链接或包含链接的文案" :maxlength="4096" :disabled="pending" />
+    <textarea :key="inputVersion" id="product-content" v-model="content" aria-label="商品链接或文案" placeholder="粘贴商品链接或包含链接的文案" :maxlength="4096" :disabled="pending" />
     <view class="input-actions">
       <button data-action="paste" role="button" tabindex="0" :aria-disabled="pending" :disabled="pending" @click="paste" @keydown.enter.prevent="paste" @keydown.space.prevent="paste">{{ pending ? '正在读取…' : '粘贴' }}</button>
       <button data-action="clear" role="button" tabindex="0" :aria-disabled="pending" :disabled="pending" @click="clear" @keydown.enter.prevent="clear" @keydown.space.prevent="clear">清空</button>
