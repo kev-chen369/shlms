@@ -10,7 +10,7 @@
 
 ## 分支整合
 
-- [ ] PROC-13【进行中】2026-09-19：按用户要求更新GitHub代码、文档与图；复验并快进整合已完成M7-01c-1 / 2a / 2b及PROC-11 / 12，保留既有V2 / V3图稿和实际页面截图。非强制推送后重新fetch核对；无生产部署入口，不运行生产迁移。
+- [x] PROC-13【已完成】2026-09-19：按用户要求更新GitHub代码、文档与图；发布工作树快进整合远端main及已完成M7-01c-1 / 2a / 2b、PROC-11 / 12，保留既有V2 / V3图稿和实际页面截图，无视觉变更不生成新图。合并后私有PG_TEST_DSN全量go test -count=1 ./... / vet / build退出0，16个相对文档链接、55张PNG签名与非零尺寸及diff检查通过。SSH非强制推送main 15c1799→4cc8d74成功，重新fetch核对FETCH_HEAD及发布HEAD均为4cc8d748f18ff487aa6df668ea38665e97cbec5e。结果记录独立提交并同步，避免自身哈希循环更新；保留原工作区.DS_Store及发布工作树node_modules，不纳入提交。无生产部署入口，不运行生产迁移，源码同步不等于生产上线。
 
 - [x] PROC-12【已完成】2026-09-19：修复internal/tracking/postgres_repository_test.go清理顺序；先仅补DROP错误断言，真实RED为sql: database is closed，再将close登记为最早t.Cleanup，schema DROP及pg_namespace无残留断言按LIFO先执行，5秒清理超时、错误不吞。私有PostgreSQL17.11定向count3及-race、配置PG_TEST_DSN全量Go test / vet / build、diff退出0；独立审查定向 / diff通过，无阻断。核对四个仅本轮合成tracking schema后逐一精确DROP（前三个旧残留及一次RED），没有删除用户 / 其他实例schema；全量结束后非系统schema数量0。更新隔离库记录与测试说明，不改生产Tracking逻辑，无push / 部署；本地逐项提交。测试样例可重新生成，非业务数据。
 
