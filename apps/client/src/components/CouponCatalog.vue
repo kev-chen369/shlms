@@ -4,6 +4,7 @@ import { useCouponCatalog } from '../features/coupons/catalog'
 defineProps<{ compact?: boolean }>()
 const catalog = useCouponCatalog(), state = catalog.state
 const cityOpen = ref(false), businessDraft = ref(state.context.business)
+const businessVersion = ref(0)
 let expiryTimer: ReturnType<typeof setInterval> | undefined
 watch(() => state.items.length, length => {
   if (length && !expiryTimer) expiryTimer = setInterval(() => catalog.pruneExpired(), 1000)
@@ -11,10 +12,15 @@ watch(() => state.items.length, length => {
 }, { immediate: true })
 onUnmounted(() => { if (expiryTimer) clearInterval(expiryTimer) })
 const cityName = computed(() => state.cities.find(city => city.code === state.context.cityCode)?.name || state.context.cityCode || '不限城市活动')
-watch(() => state.context, () => { businessDraft.value = state.context.business; cityOpen.value = false })
+watch(() => state.context, () => { businessVersion.value++; businessDraft.value = state.context.business; cityOpen.value = false }, { flush: 'sync' })
 function toggleCities() { cityOpen.value = !cityOpen.value }
 function chooseCity(cityCode: string) { catalog.setContext({ ...state.context, cityCode }); cityOpen.value = false }
 function applyBusiness() { catalog.setContext({ ...state.context, business: businessDraft.value.trim() }) }
+function commitBusiness(event: unknown) {
+  const value = (event as { detail?: { value?: unknown } })?.detail?.value
+  if (typeof value === 'string') businessDraft.value = value
+}
+function confirmBusiness(event: unknown) { commitBusiness(event); applyBusiness() }
 function money(minor: number) { return `¥${Math.floor(minor / 100)}.${String(minor % 100).padStart(2, '0')}` }
 function scopeName(scope: string) { return ({ PRODUCT: '商品', CATEGORY: '品类', SHOP: '店铺', ACTIVITY: '活动' } as Record<string, string>)[scope] }
 function dateText(date: string) { return new Date(date).toLocaleString('zh-CN', { hour12: false }) }
@@ -32,7 +38,7 @@ const statusText = computed(() => state.error || state.expiredNotice || ({ idle:
       </view>
       <text v-if="state.citiesStatus === 'loading'" role="status" class="hint">正在读取可用城市…</text>
       <view v-else-if="['error', 'unavailable'].includes(state.citiesStatus)" class="city-error"><text class="hint">城市选项暂不可用；未选城市时只展示不限城市活动。</text><button role="button" tabindex="0" @tap="catalog.loadCities" @keydown.enter.prevent="catalog.loadCities" @keydown.space.prevent="catalog.loadCities">重试城市</button></view>
-      <view class="business-control"><input v-model="businessDraft" data-test="coupon-business" aria-label="适用业务代码，可选" placeholder="适用业务代码（可选）" maxlength="40" @confirm="applyBusiness" @keydown.enter.prevent="applyBusiness" /><button role="button" tabindex="0" data-test="coupon-business-apply" @tap="applyBusiness" @keydown.enter.prevent="applyBusiness" @keydown.space.prevent="applyBusiness">应用</button></view>
+      <view class="business-control"><input :key="businessVersion" v-model="businessDraft" data-test="coupon-business" aria-label="适用业务代码，可选" placeholder="适用业务代码（可选）" maxlength="40" @blur="commitBusiness" @confirm="confirmBusiness" /><button role="button" tabindex="0" data-test="coupon-business-apply" @tap="applyBusiness" @keydown.enter.prevent="applyBusiness" @keydown.space.prevent="applyBusiness">应用</button></view>
       <text class="hint">选择城市仍包含不限城市活动；业务留空仅展示不限业务活动。</text>
     </view>
     <view v-if="state.status !== 'ready'" class="catalog-status" role="status" aria-live="polite" data-test="coupon-status">{{ statusText }}<text v-if="state.status === 'empty'" class="hint">{{ state.nextCursor ? '本页优惠已到期，可加载更多或刷新目录。' : '当前已读取范围没有可用券活动，不展示演示券。' }}</text></view>

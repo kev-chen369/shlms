@@ -8,7 +8,7 @@
     "build:h5": "uni build",
     "build:mp-weixin": "uni build -p mp-weixin",
     "test": "vitest run",
-    "test:layout": "node --test tests/browser/home-text-resize.browser.cjs tests/browser/promotion-text-resize.browser.cjs",
+    "test:layout": "node --test tests/browser/home-text-resize.browser.cjs tests/browser/promotion-text-resize.browser.cjs tests/browser/coupon-business.browser.cjs",
     "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {

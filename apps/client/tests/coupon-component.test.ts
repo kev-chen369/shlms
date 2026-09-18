@@ -43,6 +43,16 @@ it('applies server-provided city and explicit business scope using accessible co
   await wrapper.get('[data-test="coupon-business-apply"]').trigger('keydown', { key: ' ' }); await flushPromises()
   expect(request.mock.calls.at(-1)?.[0]).toContain('cityCode=110100&business=food')
 })
+it.each(['blur', 'confirm'])('commits the latest native business value on %s before applying', async event => {
+  const { wrapper, catalog, request } = mountCatalog()
+  await flushPromises()
+  await wrapper.get('[data-test="coupon-business"]').setValue('old')
+  wrapper.get('[data-test="coupon-business"]').element.dispatchEvent(new CustomEvent(event, { detail: { value: '  latest  ' } }))
+  if (event === 'blur') await wrapper.get('[data-test="coupon-business-apply"]').trigger('keydown', { key: 'Enter' })
+  await flushPromises()
+  expect(catalog.state.context.business).toBe('latest')
+  expect(request.mock.calls.at(-1)?.[0]).toContain('business=latest')
+})
 it('renders empty catalog and unopened platform without invented coupon amounts', async () => {
   const request = vi.fn(async () => ({ statusCode: 200, data: { code: 0, message: 'success', data: { items: [], nextCursor: '' } } }))
   const { wrapper } = mountCatalog(request)
