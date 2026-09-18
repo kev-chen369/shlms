@@ -1,6 +1,6 @@
 # GitHub 代码、文档与图同步（2026-09-19，第二轮）
 
-任务：PROC-07。同步目标为 GitHub main，不是生产服务器部署。
+任务：PROC-07，已完成。同步目标为 GitHub main，不是生产服务器部署。
 
 ## 本轮功能范围
 
@@ -9,7 +9,7 @@
 - M3-02c-1（f270330）：本人推广订单列表 / 详情只读 API，显式注入身份，校验脱敏编号、归因、状态历史及分页；不包含收益金额。
 - M3-02c-2a（f4ebb62）：推广订单状态模型，退出 / 换会话 / 401 清理缓存，筛选与详情响应隔离、分页保护、生命周期销毁。
 
-已 fetch 并合并 origin/main 8e4edaa，结果 Already up to date。完整保留既有历史，不覆盖另一 Codex 的京东推广研发。推送与远端一致性由计划 PROC-07b 单独记录；本文件不把自身提交哈希循环写回。
+已 fetch 并合并 origin/main 8e4edaa，结果 Already up to date。完整保留既有历史，不覆盖另一 Codex 的京东推广研发。通过 SSH 非强制推送 main 至 e9a3590 后重新 fetch，`git rev-parse HEAD origin/main` 确认一致；该核对结果由 PROC-07b 独立提交并推送，本文件不把自身提交哈希循环写回。
 
 ## 当前实现与设计的区别
 
