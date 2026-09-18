@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import PlatformTabs from '../../components/PlatformTabs.vue'
+import CouponCatalog from '../../components/CouponCatalog.vue'
 import { selectedPlatform, selectedPlatformName } from '../../features/platform'
 
 const query = ref('')
@@ -35,7 +36,7 @@ function explain(kind: string) { notice.value = `${selectedPlatformName.value}${
     </view>
     <view class="home-module" data-test="coupon-entry">
       <view class="module-heading"><text class="module-title coupons">领券中心</text><button role="button" tabindex="0" @tap="openCoupons" @keydown.enter.prevent="openCoupons" @keydown.space.prevent="openCoupons">查看更多<image src="/static/icons/chevron.svg" /></button></view>
-      <view class="module-empty" role="status"><text>{{ selectedPlatformName }}客户端券目录未接入</text><text class="module-description">可进入领券页面查看当前接入状态；暂不能领取。</text></view>
+      <CouponCatalog compact />
     </view>
     <view class="home-module" data-test="promotion-entry">
       <view class="module-heading"><text class="module-title promotion">推广专区</text></view>
