@@ -3,7 +3,7 @@ import { copyPromotionShare } from './share.mjs';
 const safeId = (value) => typeof value === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(value);
 const path = (id) => `/api/v1/promotions/convert/${encodeURIComponent(id)}`;
 
-export function createPromotionFlow({ accessToken, request = fetch, clipboard = navigator.clipboard, newId = () => crypto.randomUUID(), onChange = () => {} }) {
+export function createPromotionFlow({ accessToken, request = fetch, clipboard = globalThis.navigator?.clipboard, newId = () => crypto.randomUUID(), onChange = () => {} }) {
   if (!accessToken) throw new Error('AUTH_REQUIRED');
   const state = { stage: 'EDITING', input: '', positionId: '', scene: 'home', preview: null, previewKey: '', convertKey: '', requestId: '', copyMessage: '' };
   let busy = false;

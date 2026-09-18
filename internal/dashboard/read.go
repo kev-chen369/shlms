@@ -49,8 +49,8 @@ func (s ReadStore) Get(ctx context.Context, f Filter) (Counts, error) {
 	if err != nil {
 		return Counts{}, err
 	}
-	err = tx.QueryRowContext(ctx, `SELECT count(*) FROM promotion_share_events e JOIN promotion_conversion_requests c ON c.id=e.conversion_request_id JOIN promotion_previews p ON p.id=c.preview_id
-  WHERE e.owner_user_id=$1 AND e.recorded_at >= $2 AND e.recorded_at < $3 AND e.action='COPY_REPORTED'
+	err = tx.QueryRowContext(ctx, `SELECT count(*) FROM promotion_share_events e JOIN promotion_conversion_requests c ON c.id=e.conversion_id JOIN promotion_previews p ON p.id=c.preview_id
+	  WHERE e.owner_user_id=$1 AND e.recorded_at >= $2 AND e.recorded_at < $3 AND e.action IN ('copy_link','copy_text')
   AND ($4='' OR p.channel=$4) AND ($5='' OR c.position_id=$5)`, f.OwnerUserID, f.From, f.To, f.Channel, f.PositionID).Scan(&out.CopyReports)
 	if err != nil {
 		return Counts{}, err

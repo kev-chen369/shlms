@@ -47,16 +47,17 @@ func (s ShareEventStore) Record(ctx context.Context, in ShareEventInput) (ShareE
 	if status != "SUCCEEDED" {
 		return ShareEvent{}, ErrShareNotReady
 	}
+	storedAction := "copy_" + in.ArtifactType
 	var recordedAt time.Time
-	err = s.DB.QueryRowContext(ctx, `INSERT INTO promotion_share_events(owner_user_id,event_id,conversion_request_id,action,artifact_type,scene)
-  VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT (owner_user_id,event_id) DO NOTHING RETURNING recorded_at`, in.OwnerUserID, in.EventID, in.RequestID, in.Action, in.ArtifactType, in.Scene).Scan(&recordedAt)
+	err = s.DB.QueryRowContext(ctx, `INSERT INTO promotion_share_events(owner_user_id,event_id,conversion_id,action,scene)
+  VALUES($1,$2,$3,$4,$5) ON CONFLICT (owner_user_id,event_id) DO NOTHING RETURNING recorded_at`, in.OwnerUserID, in.EventID, in.RequestID, storedAction, in.Scene).Scan(&recordedAt)
 	if errors.Is(err, sql.ErrNoRows) {
 		var existing ShareEvent
-		err = s.DB.QueryRowContext(ctx, `SELECT conversion_request_id,action,artifact_type,scene,recorded_at FROM promotion_share_events WHERE owner_user_id=$1 AND event_id=$2`, in.OwnerUserID, in.EventID).Scan(&existing.RequestID, &existing.Action, &existing.ArtifactType, &existing.Scene, &existing.RecordedAt)
+		err = s.DB.QueryRowContext(ctx, `SELECT conversion_id,action,scene,recorded_at FROM promotion_share_events WHERE owner_user_id=$1 AND event_id=$2`, in.OwnerUserID, in.EventID).Scan(&existing.RequestID, &existing.Action, &existing.Scene, &existing.RecordedAt)
 		if err != nil {
 			return ShareEvent{}, err
 		}
-		if existing.RequestID != in.RequestID || existing.Action != in.Action || existing.ArtifactType != in.ArtifactType || existing.Scene != in.Scene {
+		if existing.RequestID != in.RequestID || existing.Action != storedAction || existing.Scene != in.Scene {
 			return ShareEvent{}, ErrIdempotencyConflict
 		}
 		recordedAt = existing.RecordedAt

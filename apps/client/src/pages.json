@@ -1,0 +1,34 @@
+{
+  "pages": [
+    { "path": "pages/home/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/category/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/savings/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/orders/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/profile/index", "style": { "navigationStyle": "custom" } },
+    { "path": "pages/promotion/index", "style": { "navigationBarTitleText": "推广中心" } },
+    { "path": "pages/promotion/convert", "style": { "navigationBarTitleText": "准备推广链接" } },
+    { "path": "pages/ai/index", "style": { "navigationBarTitleText": "AI 帮我选" } }
+  ],
+  "tabBar": {
+    "color": "#65716e",
+    "selectedColor": "#07594b",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "height": "60px",
+    "fontSize": "12px",
+    "iconWidth": "24px",
+    "list": [
+      { "pagePath": "pages/home/index", "text": "首页", "iconPath": "static/icons/home.svg", "selectedIconPath": "static/icons/home-active.svg" },
+      { "pagePath": "pages/category/index", "text": "分类", "iconPath": "static/icons/category.svg", "selectedIconPath": "static/icons/category-active.svg" },
+      { "pagePath": "pages/savings/index", "text": "省钱", "iconPath": "static/icons/savings.svg", "selectedIconPath": "static/icons/savings-active.svg" },
+      { "pagePath": "pages/orders/index", "text": "订单", "iconPath": "static/icons/orders.svg", "selectedIconPath": "static/icons/orders-active.svg" },
+      { "pagePath": "pages/profile/index", "text": "我的", "iconPath": "static/icons/profile.svg", "selectedIconPath": "static/icons/profile-active.svg" }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTitleText": "万惠宝",
+    "navigationBarTextStyle": "black",
+    "navigationBarBackgroundColor": "#f7faf8",
+    "backgroundColor": "#f7faf8"
+  }
+}

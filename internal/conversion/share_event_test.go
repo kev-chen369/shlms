@@ -67,3 +67,28 @@ func TestShareEventOwnedSuccessfulAndConcurrentDedup(t *testing.T) {
 		t.Fatal(count, err)
 	}
 }
+
+func TestShareEventContractsShareIdempotency(t *testing.T) {
+	db := conversionDB(t)
+	repo := Repository{DB: db}
+	link := succeededShareRequest(t, repo, request())
+	ctx := context.Background()
+	native := NativeShareEventInput{OwnerUserID: "u1", LinkID: link.ID, EventID: "shared-event", Action: "copy_link", Scene: "home"}
+	first, err := repo.RecordShareEvent(ctx, native)
+	if err != nil {
+		t.Fatal(err)
+	}
+	legacy := ShareEventInput{OwnerUserID: "u1", RequestID: link.ID, EventID: native.EventID, ArtifactType: "link", Scene: "home", Action: "COPY_REPORTED"}
+	second, err := (ShareEventStore{DB: db}).Record(ctx, legacy)
+	if err != nil || !second.RecordedAt.Equal(first.RecordedAt) {
+		t.Fatal(second, err)
+	}
+	legacy.ArtifactType = "text"
+	if _, err := (ShareEventStore{DB: db}).Record(ctx, legacy); !errors.Is(err, ErrIdempotencyConflict) {
+		t.Fatal(err)
+	}
+	var count int
+	if err := db.QueryRow(`SELECT count(*) FROM promotion_share_events WHERE owner_user_id='u1' AND event_id='shared-event'`).Scan(&count); err != nil || count != 1 {
+		t.Fatal(count, err)
+	}
+}

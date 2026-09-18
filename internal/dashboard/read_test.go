@@ -50,7 +50,7 @@ func TestCountsOwnRecordsAndDates(t *testing.T) {
 			{`INSERT INTO promotion_previews(id,owner_user_id,position_id,idempotency_key,request_fingerprint,scene,channel,external_product_id,product_name,currency,coupon_price_minor,promoter_estimate_minor,consumer_cashback_estimate_minor,rule_version,evidence_ref,updated_at,expires_at) VALUES($1,$2,$3,'preview','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','home','JD','sku','product','CNY',100,10,0,'v1','evidence',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP + interval '1 day')`, []any{"pv-" + owner, owner, "pos-" + owner}},
 			{`INSERT INTO tracking_records(id,idempotency_key,user_id,channel,external_product_id,source,created_at) VALUES($1,$2,$3,'JD','sku','PROMOTION_CENTER',CURRENT_TIMESTAMP)`, []any{"tr-" + owner, "key-" + owner, owner}},
 			{`INSERT INTO promotion_conversion_requests(id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,channel_request_id,link_url,created_at,updated_at) VALUES($1,$2,$3,$4,$5,'convert','bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb','home','SUCCEEDED',$1,'https://approved.example/item',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`, []any{"cr-" + owner, owner, "pos-" + owner, "pv-" + owner, "tr-" + owner}},
-			{`INSERT INTO promotion_share_events(owner_user_id,event_id,conversion_request_id,action,artifact_type,scene) VALUES($1,'event-1',$2,'COPY_REPORTED','link','home')`, []any{owner, "cr-" + owner}},
+			{`INSERT INTO promotion_share_events(owner_user_id,event_id,conversion_id,action,scene) VALUES($1,'event-1',$2,'copy_link','home')`, []any{owner, "cr-" + owner}},
 		}
 		for _, s := range stmts {
 			if _, err := db.Exec(s.q, s.args...); err != nil {

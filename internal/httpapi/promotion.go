@@ -30,6 +30,9 @@ type Dependencies struct {
 	ShareEvents interface {
 		Record(context.Context, conversion.ShareEventInput) (conversion.ShareEvent, error)
 	}
+	NativeShareEvents interface {
+		RecordShareEvent(context.Context, conversion.NativeShareEventInput) (conversion.ShareRecord, error)
+	}
 	ShareArtifacts interface {
 		GetArtifact(context.Context, string, string, string) (conversion.ShareArtifact, error)
 	}

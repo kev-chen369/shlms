@@ -39,7 +39,7 @@ func conversionDB(t *testing.T) *sql.DB {
 		}
 		_ = admin.Close()
 	})
-	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state", "000021_promotion_share_events"} {
+	for _, name := range []string{"000001_tracking_records", "000002_promoter_applications", "000004_promotion_positions", "000005_channel_positions", "000007_promotion_previews", "000008_promotion_conversion_requests", "000009_conversion_state", "000010_promotion_share_events"} {
 		b, err := os.ReadFile("../../migrations/" + name + ".up.sql")
 		if err != nil {
 			t.Fatal(err)
@@ -47,6 +47,10 @@ func conversionDB(t *testing.T) *sql.DB {
 		if _, err = db.Exec(string(b)); err != nil {
 			t.Fatal(err)
 		}
+	}
+	// READY is synthetic only in this isolated test schema.
+	if _, err = db.Exec(`ALTER TABLE channel_positions DROP CONSTRAINT channel_positions_status_check`); err != nil {
+		t.Fatal(err)
 	}
 	for _, user := range []string{"u1", "u2"} {
 		if _, err = db.Exec(`INSERT INTO promoter_profiles(user_id,status) VALUES($1,'NOT_APPLIED')`, user); err != nil {
@@ -62,6 +66,9 @@ func conversionDB(t *testing.T) *sql.DB {
 		if _, err = db.Exec(`INSERT INTO promotion_positions(id,owner_user_id,name,scene,status,version) VALUES($1,$2,'main','home','ENABLED',1)`, "pos-"+user, user); err != nil {
 			t.Fatal(err)
 		}
+		if _, err = db.Exec(`INSERT INTO channel_positions(position_id,channel,account_id,external_position_id,status,version) VALUES($1,'JD','account',$2,'READY',1)`, "pos-"+user, "position-"+user); err != nil {
+			t.Fatal(err)
+		}
 		if _, err = db.Exec(`INSERT INTO promotion_previews(id,owner_user_id,position_id,idempotency_key,request_fingerprint,scene,channel,external_product_id,product_name,currency,coupon_price_minor,promoter_estimate_minor,consumer_cashback_estimate_minor,rule_version,evidence_ref,updated_at,expires_at)
 			VALUES($1,$2,$3,'preview','aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa','home','JD','sku','product','CNY',1000,100,50,'v1','evidence',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP + interval '10 minutes')`, "pv-"+user, user, "pos-"+user); err != nil {
 			t.Fatal(err)
@@ -72,7 +79,7 @@ func conversionDB(t *testing.T) *sql.DB {
 
 func request() ReserveInput {
 	return ReserveInput{OwnerUserID: "u1", PositionID: "pos-u1", PreviewID: "pv-u1", IdempotencyKey: "convert-1",
-		RequestFingerprint: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", Scene: "home"}
+		RequestFingerprint: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", Scene: "home", ChannelAccountID: "account", ChannelPositionID: "position-u1"}
 }
 
 func TestReserveConcurrencyAndOwnerIsolation(t *testing.T) {
@@ -117,6 +124,7 @@ func TestReserveConcurrencyAndOwnerIsolation(t *testing.T) {
 	}
 	other := request()
 	other.OwnerUserID, other.PositionID, other.PreviewID = "u2", "pos-u2", "pv-u2"
+	other.ChannelPositionID = "position-u2"
 	if _, err := repo.Reserve(ctx, other); err != nil {
 		t.Fatal(err)
 	}

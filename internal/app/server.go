@@ -57,11 +57,12 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 		Positions:                  promoter.PositionService{Repository: repo},
 		ChannelPositions:           promoter.ChannelPositionService{Repository: repo},
 		// The route stays fail-closed until an approved resolver and channel quoter are configured.
-		Preview:          preview.Service{Eligibility: preview.PostgresEligibility{DB: db}, Store: preview.NewRepository(db)},
-		Conversion:       conversion.Service{Eligibility: preview.PostgresEligibility{DB: db}, Previews: preview.NewRepository(db), Requests: conversion.Repository{DB: db}},
-		ConversionReader: conversion.ReadService{Repository: conversion.Repository{DB: db}},
-		ShareArtifacts:   conversion.ShareReader{DB: db},
-		ShareEvents:      conversion.ShareEventStore{DB: db},
+		Preview:           preview.Service{Eligibility: preview.PostgresEligibility{DB: db}, Store: preview.NewRepository(db)},
+		Conversion:        conversion.Service{Eligibility: preview.PostgresEligibility{DB: db}, Previews: preview.NewRepository(db), Requests: conversion.Repository{DB: db}},
+		ConversionReader:  conversion.ReadService{Repository: conversion.Repository{DB: db}},
+		ShareArtifacts:    conversion.ShareReader{DB: db},
+		ShareEvents:       conversion.ShareEventStore{DB: db},
+		NativeShareEvents: conversion.Repository{DB: db},
 	}
 	return httpapi.NewRouterWithDependencies(d), nil
 }

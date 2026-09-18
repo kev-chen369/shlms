@@ -108,6 +108,7 @@ func (s Service) Convert(ctx context.Context, in ConvertInput) (Record, error) {
 		OwnerUserID: in.OwnerUserID, PositionID: in.PositionID,
 		PreviewID: in.PreviewID, Scene: in.Scene,
 		IdempotencyKey: in.IdempotencyKey, RequestFingerprint: fingerprint,
+		ChannelAccountID: position.AccountID, ChannelPositionID: position.ExternalPositionID,
 	})
 }
 

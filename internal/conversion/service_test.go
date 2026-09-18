@@ -2,6 +2,7 @@ package conversion
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -13,6 +14,43 @@ type eligibilityFunc func(context.Context, string, string) (preview.ChannelPosit
 
 func (f eligibilityFunc) Check(ctx context.Context, owner, position string) (preview.ChannelPosition, error) {
 	return f(ctx, owner, position)
+}
+
+type changedMappingStore struct{ Repository }
+
+func (s changedMappingStore) Reserve(ctx context.Context, in ReserveInput) (Record, error) {
+	if _, err := s.DB.ExecContext(ctx, `UPDATE channel_positions SET external_position_id='changed-position',version=version+1 WHERE position_id=$1`, in.PositionID); err != nil {
+		return Record{}, err
+	}
+	return s.Repository.Reserve(ctx, in)
+}
+
+func TestConvertRejectsMappingChangedAfterRequoteWithoutWrites(t *testing.T) {
+	db := conversionDB(t)
+	s := Service{
+		Eligibility: preview.PostgresEligibility{DB: db},
+		Previews:    preview.NewRepository(db), Requests: changedMappingStore{Repository{DB: db}},
+		Requoter: requoterFunc(func(context.Context, string, preview.ChannelPosition) (preview.Quote, error) {
+			return preview.Quote{ExternalProductID: "sku", ProductName: "product", CouponPriceMinor: 1000,
+				PromoterEstimateMinor: 100, ConsumerCashbackEstimateMinor: 50, RuleVersion: "v1", ExpiresAt: time.Now().Add(time.Minute)}, nil
+		}),
+	}
+	_, err := s.Convert(context.Background(), ConvertInput{OwnerUserID: "u1", PositionID: "pos-u1", PreviewID: "pv-u1", Scene: "home", IdempotencyKey: "changed-mapping"})
+	if !errors.Is(err, ErrNotReady) {
+		t.Fatalf("mapping changed after quote: got %v, want ErrNotReady", err)
+	}
+	assertNoConversionWrites(t, db)
+}
+
+func assertNoConversionWrites(t *testing.T, db *sql.DB) {
+	t.Helper()
+	var trackingCount, requestCount int
+	if err := db.QueryRow(`SELECT (SELECT count(*) FROM tracking_records),(SELECT count(*) FROM promotion_conversion_requests)`).Scan(&trackingCount, &requestCount); err != nil {
+		t.Fatal(err)
+	}
+	if trackingCount != 0 || requestCount != 0 {
+		t.Fatalf("rejected request wrote tracking=%d requests=%d", trackingCount, requestCount)
+	}
 }
 
 type previewFunc func(context.Context, string, string) (preview.Snapshot, error)
@@ -175,7 +213,7 @@ func TestConvertWithPostgresPersistsOnlyAfterMatchingQuote(t *testing.T) {
 	previews := preview.NewRepository(db)
 	s := Service{
 		Eligibility: eligibilityFunc(func(context.Context, string, string) (preview.ChannelPosition, error) {
-			return preview.ChannelPosition{AccountID: "account", ExternalPositionID: "position"}, nil
+			return preview.ChannelPosition{AccountID: "account", ExternalPositionID: "position-u1"}, nil
 		}),
 		Previews: previews, Requests: Repository{DB: db},
 	}
