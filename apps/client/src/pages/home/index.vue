@@ -1,77 +1,76 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import FeatureCard from '../../components/FeatureCard.vue'
-import UnavailableState from '../../components/UnavailableState.vue'
+import { ref, watch } from 'vue'
+import PlatformTabs from '../../components/PlatformTabs.vue'
+import { selectedPlatform, selectedPlatformName } from '../../features/platform'
 
 const query = ref('')
 const notice = ref('')
-const channels = [
-  { id: 'jd', name: '京东', mark: '京', tone: 'jd' },
-  { id: 'pdd', name: '拼多多', mark: '拼', tone: 'pdd' },
-  { id: 'meituan', name: '美团', mark: '美', tone: 'meituan' },
-  { id: 'eleme', name: '饿了么', mark: '饿', tone: 'eleme' },
-]
-function open(url: string) { uni.navigateTo({ url }) }
+watch(selectedPlatform, () => { notice.value = '' })
 function search() { notice.value = '商品搜索与链接解析暂未接入，当前不会生成商品结果。' }
+function openCoupons() { uni.switchTab({ url: '/pages/coupons/index' }) }
+function openPromotion() { uni.switchTab({ url: '/pages/promotion/index' }) }
+function explain(kind: string) { notice.value = `${selectedPlatformName.value}${kind}未接入，授权与数据核验完成前不可跳转购买。` }
 </script>
 
 <template>
   <view class="client-page home-page">
     <view class="home-header">
-      <text class="brand">万宝单生活</text>
-      <button class="city-button" role="button" tabindex="0" @tap="notice = '城市定位暂未接入，未获取你的位置信息。'" @keydown.enter="notice = '城市定位暂未接入，未获取你的位置信息。'" @keydown.space.prevent="notice = '城市定位暂未接入，未获取你的位置信息。'">选择城市<image src="/static/icons/chevron.svg" /></button>
-      <button class="notification-button" role="button" tabindex="0" aria-label="通知" @tap="notice = '通知服务暂未接入。'" @keydown.enter="notice = '通知服务暂未接入。'" @keydown.space.prevent="notice = '通知服务暂未接入。'"><image src="/static/icons/bell.svg" /></button>
+      <view class="brand-block"><text class="brand">万宝单生活</text><text class="brand-caption">好物更省 · 生活更美好</text></view>
+      <view class="search-bar">
+        <image src="/static/icons/search.svg" class="search-icon" />
+        <input v-model="query" placeholder="搜商品、商店或优惠券" aria-label="搜索商品、商店或优惠券" confirm-type="search" @confirm="search" />
+        <button role="button" tabindex="0" data-test="search-submit" @tap="search" @keydown.enter.prevent="search" @keydown.space.prevent="search">搜索</button>
+      </view>
     </view>
-    <view class="search-bar">
-      <image src="/static/icons/search.svg" class="search-icon" />
-      <input v-model="query" placeholder="搜商品，或粘贴商品链接" aria-label="搜索商品或商品链接" confirm-type="search" @confirm="search" />
-      <button role="button" tabindex="0" data-test="search-submit" @tap="search" @keydown.enter="search" @keydown.space.prevent="search">搜索</button>
-    </view>
-    <view class="channel-row">
-      <button v-for="channel in channels" :key="channel.id" role="button" tabindex="0" class="channel-button" :class="channel.tone" :data-test="`channel-${channel.id}`" @tap="notice = `${channel.name}渠道暂未接入，授权验证完成前不可跳转购买。`" @keydown.enter="notice = `${channel.name}渠道暂未接入，授权验证完成前不可跳转购买。`" @keydown.space.prevent="notice = `${channel.name}渠道暂未接入，授权验证完成前不可跳转购买。`">
-        <text class="channel-mark">{{ channel.mark }}</text><text class="channel-name">{{ channel.name }}</text>
-      </button>
-    </view>
-    <view class="feature-row">
-      <FeatureCard data-test="ai-entry" title="AI 帮我选" description="说出需求，帮你比价" action="去试试" tone="mint" icon="/static/icons/sparkles.svg" @activate="open('/pages/ai/index')" />
-      <FeatureCard data-test="promotion-entry" title="推广赚钱" description="分享好物，查看收益" action="进入推广中心" tone="peach" icon="/static/icons/share.svg" @activate="open('/pages/promotion/index')" />
-    </view>
+    <PlatformTabs />
+    <view class="platform-hero"><text class="hero-title">{{ selectedPlatformName }}精选</text><text class="hero-description">授权完成后展示真实商品与优惠</text></view>
     <view v-if="notice" class="notice" role="status" aria-live="polite" data-test="notice">{{ notice }}</view>
-    <view class="section-heading"><text>今天值得买</text><button role="button" tabindex="0" @tap="notice = '商品推荐暂未接入，暂无可核验的商品和优惠。'" @keydown.enter="notice = '商品推荐暂未接入，暂无可核验的商品和优惠。'" @keydown.space.prevent="notice = '商品推荐暂未接入，暂无可核验的商品和优惠。'">查看更多<image src="/static/icons/chevron.svg" /></button></view>
-    <UnavailableState title="商品推荐暂未接入" description="真实商品与优惠接入后展示，不使用演示价格或返现。" />
-    <view class="takeaway-strip" role="button" tabindex="0" @tap="notice = '外卖优惠暂未接入，暂不可领取。'" @keydown.enter="notice = '外卖优惠暂未接入，暂不可领取。'" @keydown.space.prevent="notice = '外卖优惠暂未接入，暂不可领取。'">
-      <view><text class="takeaway-title">外卖红包</text><text class="takeaway-description">先领券，再下单</text></view><image src="/static/icons/chevron.svg" />
+    <view class="home-module">
+      <view class="module-heading"><text class="module-title products">推广商品</text><button role="button" tabindex="0" data-test="products-entry" @tap="explain('商品目录')" @keydown.enter.prevent="explain('商品目录')" @keydown.space.prevent="explain('商品目录')">查看更多<image src="/static/icons/chevron.svg" /></button></view>
+      <view class="module-empty" role="status"><text>{{ selectedPlatformName }}商品目录未接入</text><text class="module-description">接入获批商品后展示，不使用演示价格或返现。</text></view>
+    </view>
+    <view class="home-module">
+      <view class="module-heading"><text class="module-title stores">优选商店</text><button role="button" tabindex="0" data-test="stores-entry" @tap="explain('店铺目录')" @keydown.enter.prevent="explain('店铺目录')" @keydown.space.prevent="explain('店铺目录')">查看更多<image src="/static/icons/chevron.svg" /></button></view>
+      <view class="module-empty" role="status"><text>{{ selectedPlatformName }}店铺目录未接入</text><text class="module-description">没有可核验的店铺与优惠，暂不可进店。</text></view>
+    </view>
+    <view class="home-module" data-test="coupon-entry">
+      <view class="module-heading"><text class="module-title coupons">领券中心</text><button role="button" tabindex="0" @tap="openCoupons" @keydown.enter.prevent="openCoupons" @keydown.space.prevent="openCoupons">查看更多<image src="/static/icons/chevron.svg" /></button></view>
+      <view class="module-empty" role="status"><text>{{ selectedPlatformName }}客户端券目录未接入</text><text class="module-description">可进入领券页面查看当前接入状态；暂不能领取。</text></view>
+    </view>
+    <view class="home-module" data-test="promotion-entry">
+      <view class="module-heading"><text class="module-title promotion">推广专区</text></view>
+      <view class="promotion-panel"><view><text class="promotion-title">分享优质商品</text><text class="module-description">让更多人发现好物</text><text class="module-description">渠道开通后可用</text></view><button role="button" tabindex="0" @tap="openPromotion" @keydown.enter.prevent="openPromotion" @keydown.space.prevent="openPromotion">进入推广<image src="/static/icons/arrow.svg" /></button></view>
     </view>
   </view>
 </template>
 
 <style scoped>
-.home-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-.city-button { display: flex; align-items: center; gap: 4px; min-height: 44px; margin: 0; padding: 0 4px; font-size: 13px; background: none; color: #344b42; line-height: 44px; }
-.city-button image { width: 14px; height: 14px; transform: rotate(90deg); }
-.notification-button { display: flex; align-items: center; justify-content: center; margin: 0 0 0 auto; padding: 0; width: 44px; height: 44px; background: none; }
-.notification-button image { width: 24px; height: 24px; }
+.home-page { padding: 0 14px calc(94px + env(safe-area-inset-bottom)); background: #f8faf8; }
+.home-header { display: flex; align-items: center; gap: 14px; margin: 0 -14px; padding: 22px 14px; background: linear-gradient(110deg, #f4fff9, #e5fbed); }
+.brand-block { flex-shrink: 0; }
+.brand { font-size: 23px; letter-spacing: -.6px; }
+.brand-caption { display: block; margin-top: 5px; font-size: 10px; color: #6d7e74; }
+.search-bar { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; min-height: 48px; padding: 0 8px; border: 1px solid #dce4df; border-radius: 28px; background: white; }
+.search-icon { width: 20px; height: 20px; flex-shrink: 0; }
+.search-bar input { width: 0; min-width: 0; flex: 1; font-size: 13px; }
+button { margin: 0; background: transparent; min-height: 44px; color: #66786b; font-size: 13px; line-height: 44px; }
 button::after { border: none; }
-.search-bar { display: flex; align-items: center; gap: 9px; height: 50px; padding: 0 12px; background: white; border: 1px solid #dce4df; border-radius: 14px; }
-.search-icon { width: 22px; height: 22px; flex-shrink: 0; }
-.search-bar input { flex: 1; width: 0; font-size: 14px; min-width: 0; }
-.search-bar button { padding: 0 3px; margin: 0; min-width: 44px; min-height: 44px; flex-shrink: 0; background: none; color: #07594b; font-size: 13px; line-height: 44px; }
-.channel-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 16px 0 12px; }
-.channel-button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; width: 100%; height: 90px; margin: 0; padding: 0; border-radius: 16px; line-height: 1.4; }
-.channel-mark { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 11px; font-size: 18px; font-weight: 750; color: white; }
-.channel-name { font-size: 14px; font-weight: 600; color: #243b32; }
-.jd { background: #ffeded; } .jd .channel-mark { background: #ee3b3e; }
-.pdd { background: #fff0ef; } .pdd .channel-mark { background: #e84448; }
-.meituan { background: #fff8df; } .meituan .channel-mark { background: #f6c529; color: #423907; }
-.eleme { background: #eaf5ff; } .eleme .channel-mark { background: #149de0; }
-.feature-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.notice { margin-top: 16px; padding: 12px 14px; border-radius: 12px; background: #eaf6f0; color: #466357; font-size: 13px; }
-.section-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 20px 0 12px; }
-.section-heading > text { font-size: 23px; font-weight: 750; }
-.section-heading button { display: flex; align-items: center; gap: 3px; min-height: 44px; padding: 0; margin: 0; color: #6b756f; font-size: 13px; background: none; line-height: 44px; }
-.section-heading image { width: 14px; height: 14px; }
-.takeaway-strip { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 18px; min-height: 94px; border-radius: 18px; background: #e5f3ed; color: #07594b; }
-.takeaway-title { display: block; font-size: 21px; font-weight: 750; }
-.takeaway-description { display: block; font-size: 14px; color: #6d7e74; margin-top: 3px; }
-.takeaway-strip > image { width: 24px; height: 24px; }
+.search-bar button { min-width: 44px; padding: 0; color: #07594b; flex-shrink: 0; }
+.platform-hero { min-height: 136px; padding: 26px 22px; margin-bottom: 14px; border-radius: 18px; background: linear-gradient(110deg, #def8ec, #e8fbef); }
+.hero-title { display: block; font-size: 28px; line-height: 1.3; color: #07583a; font-weight: 750; }
+.hero-description { display: block; font-size: 13px; color: #287858; margin-top: 8px; }
+.home-module { padding: 14px; margin-bottom: 12px; border-radius: 18px; border: 1px solid #eef2ef; background: white; }
+.module-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
+.module-title { padding-left: 11px; border-left: 4px solid; font-size: 19px; font-weight: 750; line-height: 1.3; }
+.products { border-color: #e63946; } .stores { border-color: #f49b30; } .coupons { border-color: #0b9a5a; } .promotion { border-color: #3989ee; }
+.module-heading button { display: flex; align-items: center; padding: 0; gap: 3px; flex-shrink: 0; }
+.module-heading image { width: 14px; height: 14px; }
+.module-empty { padding: 18px 14px; margin-top: 8px; border: 1px dashed #dce7df; border-radius: 12px; background: #fcfefd; font-size: 14px; color: #344b42; }
+.module-description { display: block; margin-top: 6px; font-size: 12px; line-height: 1.6; color: #78847e; }
+.promotion-panel { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 0 4px; }
+.promotion-title { display: block; font-size: 18px; font-weight: 650; }
+.promotion-panel button { display: flex; align-items: center; gap: 6px; flex-shrink: 0; min-height: 44px; padding: 0 14px; border: 1px solid #0b9a5a; color: #07594b; border-radius: 24px; }
+.promotion-panel image { width: 18px; height: 18px; }
+.notice { padding: 12px 14px; margin-bottom: 12px; background: #eaf6f0; border-radius: 12px; font-size: 13px; }
+@media (max-width: 360px) { .home-header { flex-wrap: wrap; } .search-bar { flex-basis: 100%; } .promotion-panel { flex-wrap: wrap; } }
 </style>
