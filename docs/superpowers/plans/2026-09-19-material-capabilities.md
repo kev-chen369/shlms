@@ -40,4 +40,22 @@ Record含Key、Status(UNCONFIGURED/PENDING_VERIFICATION/READY/SUSPENDED)、Evide
 
 ## 后续任务与验收依赖
 
+### M7-01b：物料身份、适用范围与卡片投影
+
+Files：创建 `internal/material/model.go` / `model_test.go`；更新主计划、架构及测试记录。接口 `Validate(record Record) error`、`CardFor(record Record, context Context, now time.Time) (Card, Decision)`。Card可展示不等于可生成；调用方仍须独立检查身份、能力与推广位。
+
+Record：ID为规范小写UUID，Platform JD / TB / MT，Type PRODUCT / ACTIVITY，ExternalMaterialID(128字节)、CanonicalURL(2048，仅内部)、Title(256)、Status DRAFT / ACTIVE / SUSPENDED / REMOVED，StartsAt / EndsAt / SourceUpdatedAt，RuleVersion80 / EvidenceRef128，Region{Mode NATIONWIDE / CITIES, CityCodes最多64个唯一非空32字节code}，Business可选40字节，Terminals至少1个、最多2个唯一H5 / WX_MINI。首期MT只活动；商品与活动不要求价格，不把活动external ID解释成SKU。
+
+所有文本UTF-8有效、无首尾空白或控制字符。CanonicalURL只校验HTTPS绝对URL语法、无userinfo / 反斜杠 / 字面空白，不声明DNS / 重定向 / 官方白名单已验证，且永不在Card中公开。SourceUpdatedAt与EndsAt必填，活动StartsAt必填，非空窗口必须start<end；三个时间须可序列化为JSON时间，防止超出年份 / 时区范围。历史 / 待开始材料可保存，卡片判断按start<=now<end、源更新时间不在未来、状态ACTIVE。
+
+Context含Platform / Type / CityCode / Business / Terminal。NATIONWIDE明确覆盖所选城市，CITIES要求明确匹配城市；Business为空表示业务不限，地域仍由Region独立决定，否则业务精确匹配。终端必须显式包含。此物料范围与M7-01a能力Key非通配的语义不同，能力必须另外查可信声明。
+
+Card字段白名单：ID / Platform / Type / Title / StartsAt / EndsAt / SourceUpdatedAt / RuleVersion / Region / Business / Terminals；PRODUCT未设置StartsAt时使用可省略pointer，不输出0001年伪开始时间；不包含CanonicalURL / EvidenceRef / ExternalMaterialID / 价格 / 预计收益。任何拒绝都返回零Card和固定Reason：INVALID_MATERIAL / INVALID_CONTEXT / SCOPE_MISMATCH / NOT_ACTIVE / NOT_STARTED / EXPIRED / SOURCE_NOT_CURRENT / REGION_MISMATCH / BUSINESS_MISMATCH / TERMINAL_MISMATCH。复制slice及StartsAt值防止调用方改写内部规则。
+
+- [x] 写失败测试：商品正常卡片、无价格活动、MT商品拒绝、平台 / 类型 / 日期 / 状态 / 地域 / 业务 / 终端不适用、未知与缺失字段、URL / 证据不公开。
+- [x] `go test -count=1 ./internal/material` 观察缺少接口RED；实现Record / Context / Card / Decision及校验 / 投影，不改京东适配器或数据库。
+- [x] 补边界、无价格字段与slice隔离、序列化安全证据，全量Go test / vet / build与链接 / diff检查，独立审查后逐项commit `feat(M7-01b): add typed material scope and safe card projection`。
+
+2026-09-19：7 个顶层测试通过，JSON 超范围年份回归先失败再修复；全量 Go test / vet / build 退出0，独立及增量审查无阻断。链接检查通过。数据库依赖测试因 PG_TEST_DSN 未配置跳过；此项不构成真实来源、网络 URL 安全、目录 API 或生成能力验收。
+
 M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 / API / 前端接口及失败测试步骤，不能拿本项判定实现当目录或真实能力验收。迁移验收需要隔离PostgreSQL，真实能力验收需要负责人和获批账号；缺少时如实阻塞对应项，不阻断可独立领域建模。现有订单 / 预览 / 转链路径保持原义。
