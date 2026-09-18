@@ -4,6 +4,16 @@
 
 **Goal:** 按已确认V3设计建立可信平台能力与商品 / 活动物料边界，最终提供本人只读目录，不提前解锁取链。
 
+## M7-01e-3a 本人推广位读取（已完成，2026-09-19）
+
+沿用现有功能分支且无其他tracked修改，保留其他工作树及.DS_Store，不新增依赖。新增`positions-api.ts`、`positions-api.test.ts`，真实GET `/api/v1/promotion-positions?status=ENABLED&limit=20`及安全分页，不发送owner / media / channel授权字段。可信session供应Bearer，缺身份零请求，401清晰要求登录，404未接入，其余网络 / 响应失败脱敏；身份变化不接受旧响应。公开选择只包含id / name / scene / isDefault和当前实际JD映射，不保留owner / 外部位 / generation权限。
+
+真实后端当前仅返回JD，readiness为WAITING_CONFIGURATION / WAITING_VERIFICATION / UNAVAILABLE，canConvert恒false；未知READY、其他平台及冲突响应拒绝，不把位存在当目录授权。安全投影使用后端Unicode字符上限ID256、name / scene80；物料scope的ID128字节、scene80字节限制是另一契约，后续页面必须在选择边界解释不适用范围，不能导致合法位目录整体失败。选品页面 / 入口、浏览器与实际图仍由3b / 3c实现，不勾父项。
+
+- [x] 缺模块RED后初版28项GREEN；补uni认证GET / timeout、网络脱敏、UTF8 / envelope边界。
+- [x] 独立审查指出字节 / 字符混淆；中文80字符 / ID256合法回归实见RED，改按code-point后重新全量验证。readiness先严格类型后枚举，防对象隐式String转换异常。
+- [x] 最终39项定向及独立复审无阻断；全量24文件456项、`npm run typecheck`、`npm run build:h5`、`npm run build:mp-weixin`退出0，文档相对链接 / diff检查通过。更新完成状态并逐项本地commit；不自动push或部署。
+
 ## M7-01e-2 选品状态与隔离（已完成，2026-09-19）
 
 现有功能分支无其他tracked改动，仅新增Vue模型与测试，保留.DS_Store / 其他工作树。选择平台或类型必须清scope及推广位，MT默认活动；随后显式setScope选择位与场景，setScope不隐式变更平台。所有范围变化立即清卡片 / cursor / 详情，版本隔离迟到结果；session同步watch清scope，不自动复用旧身份位，401记录拒绝session，即使旧视图迟到401也清同身份数据。退出effectScope / dispose停止watch并取消结果消费。

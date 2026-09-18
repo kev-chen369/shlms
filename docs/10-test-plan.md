@@ -1,5 +1,9 @@
 # 测试计划
 
+## M7-01e-3a 本人推广位契约（2026-09-19）
+
+`positions-api.test.ts`仅替换HTTP边界，测试真实读取函数和uni GET认证 / timeout配置；覆盖缺失或非法身份零请求、身份变化丢弃旧响应、401 / 404 / 故障脱敏、status=ENABLED分页、空目录、重复位 / 超量 / 非法游标 / envelope拒绝、安全字段投影和数组隔离。已启用位与JD配置readiness不是生成授权；未知READY / TB / MT映射拒绝。现有后端文本按Unicode字符计数，中文80 / ID256合法与81 / 257非法独立测试，不把物料scope字节限制误用在位响应。初版字节误用由独立审查发现，新增合法中文回归实见RED后修正；页面选择需另验收物料范围限制。本阶段无页面改动或实际图，不代表真实身份、位授权或业务验收。
+
 ## M7-01e-2 选品状态模型（2026-09-19）
 
 `materials-model.test.ts`使用真实Vue reactive / watch / effectScope与实际materials-api，只替换HTTP边界并提供完整合成响应。覆盖身份 / 位未选零请求，空 / blocked / error区分、平台 / 类型清空scope、位 / scene / 城市 / 业务 / 终端范围复制及旧结果隔离、相同scope不重读、未开放平台或MT商品零请求、分页失败恢复 / 并发去重 / 游标循环拒绝、能力撤销清所有cache与待响应、失效详情移除 / 旧页不可恢复、鲜详情更新摘要 / 游标作废、三路径401锁拒session、迟到同session401、身份切换清scope / watcher同步、关闭详情 / dispose / effectScope清理。
