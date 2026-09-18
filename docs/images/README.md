@@ -2,6 +2,8 @@
 
 ## 文件
 
+- `client-promoter-orders-login-390-20260919.png`、`client-promoter-orders-list-390-20260919.png`、`client-promoter-orders-detail-390-20260919.png`：实际 H5 本人推广订单未登录 / 列表 / 详情页面。列表与详情使用 QA 测试身份及本机 HTTP 测试数据，无收益金额，不代表真实订单或生产身份验收；见[当前同步说明](../27-github-sync-dashboard-orders-20260919.md)。
+
 - `client-coupon-products-390-20260919.png`、`client-coupon-products-320-20260919.png`：M6-02b-3b 实际 H5 券详情适用商品区域，390 / 320px 视口；本机 HTTP 测试数据，只读，没有实时价格 / 购买入口，不代表真实渠道或领券验收。详见[最新同步记录](../26-github-sync-products-orders-20260919.md)。
 - `client-home-readonly-20260919.png`、`client-coupons-readonly-20260919.png`：2026-09-19 实际 uni-app H5 首页与领券页，390px 屏宽。本机 HTTP 测试服务经真实 uni 请求和开发代理提供测试券，非真实可领优惠；用于 M1-01d-2 页面验收，不取代 V3 概念稿或微信真机验收。券只读，领取与购买未接通。详见[同步记录](../25-github-sync-20260919.md)。
 
