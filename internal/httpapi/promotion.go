@@ -9,6 +9,7 @@ import (
 	"github.com/kev-chen369/shlms/internal/conversion"
 	"github.com/kev-chen369/shlms/internal/coupon"
 	"github.com/kev-chen369/shlms/internal/dashboard"
+	"github.com/kev-chen369/shlms/internal/material"
 	"github.com/kev-chen369/shlms/internal/order"
 	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promotion"
@@ -24,6 +25,10 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Materials interface {
+		List(context.Context, material.ReadInput, string, int) (material.Page, error)
+		Get(context.Context, material.ReadInput, string) (material.Detail, error)
+	}
 	Dashboard interface {
 		Get(context.Context, dashboard.Filter) (dashboard.Counts, error)
 	}

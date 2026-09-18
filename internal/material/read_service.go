@@ -21,6 +21,11 @@ type ReadInput struct {
 	PositionID, Scene string
 }
 
+// Valid checks request shape only, never eligibility or channel permission.
+func (in ReadInput) Valid() bool {
+	return validQuery(Query{OwnerID: in.OwnerID, Scope: in.Scope, Limit: 1}) && text(in.PositionID, 128, false) && text(in.Scene, 80, false)
+}
+
 type bindingScope struct{ platform, kind, terminal, scene string }
 
 // ReadService holds a copied, immutable configuration. No binding means no
@@ -53,7 +58,7 @@ func (s *ReadService) key(ctx stdcontext.Context, in ReadInput) (capability.Key,
 	if s == nil || s.repo.DB == nil || s.now == nil {
 		return capability.Key{}, false, ErrUnavailable
 	}
-	if !validQuery(Query{OwnerID: in.OwnerID, Scope: in.Scope, Limit: 1}) || !text(in.PositionID, 128, false) || !text(in.Scene, 80, false) {
+	if !in.Valid() {
 		return capability.Key{}, false, ErrInvalid
 	}
 	if err := ctx.Err(); err != nil {

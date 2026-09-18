@@ -60,3 +60,16 @@
 `GET /api/v1/promoter/dashboard` 已实现计数基础版，要求已验证用户令牌。可选 `from`、`to` 为 Asia/Shanghai 的 `YYYY-MM-DD`，均按自然日包含，默认最近 30 天且跨度最多 366 天；可选 `channel=JD|TB|MT`、`positionId`。返回 `timeZone`、起止时间（`toExclusive` 为次日零点）、数据库快照 `asOf`（三项时间戳均以 UTC / RFC3339Nano 输出，统计日历仍为 Asia/Shanghai，避免历史秒级时差被时区分钟编码截断）、`successfulLinks`、`copyReports`、`validOrders`。成功转链按当前成功状态及请求更新时间；复制按服务端去重后的客户端上报事件；有效订单按最早订单时间、当前已归因且未取消 / 无效 / 全额退款状态计数。复制数不是送达数，订单数不代表收益；目前无可信点击和收益快照，响应不含转化率或金额。
 
 保留购物用途的 `POST /promotions/link`，推广用途新增 `POST /promotions/preview` 和 `POST /promotions/convert`，共享领域能力但不绕过推广权限。身份来自鉴权上下文，所有推广位和链接需验证所有权。写请求同键同输入幂等，不同输入返回 409；处理中状态可查询，不因上游超时盲目重复发起。金额对外为十进制定点字符串与币种，内部按最小货币单位整数处理。
+
+## 本人推广物料只读API（M7-01d-2b，2026-09-19）
+
+同时注入Materials读取服务和Users身份解析器才注册：
+
+- `GET /api/v1/promoter/materials`：必填platform（JD / TB / MT）、type（PRODUCT / ACTIVITY，美团仅活动）、terminal（H5 / WX_MINI）、positionId（内部位）及scene；可选cityCode、business、cursor、limit（默认20，1～100）。
+- `GET /api/v1/promoter/materials/{id}`：规范非零小写UUID物料ID；同样必填上述五项范围 / 位 / 场景，可选cityCode、business；禁止cursor或limit。
+
+身份只由Users解析，媒体由服务端精确绑定配置决定，内部位 / scene仍由仓储复核本人归属和实际状态。未知、重复或畸形参数均拒绝，包括ownerId、mediaId、status、kind、now或READY输入。城市32字节、业务40字节、位128字节、scene80字节边界按领域规则校验，不做首尾空白归一化；游标按owner和五维Scope绑定，只是分页位置，不携带缓存授权。换身份 / 筛选清空游标；换位 / 场景前端也清理，服务仍逐次重新检查完整Key。
+
+所有已注册读取响应均`Cache-Control: no-store`。成功元数据读取使用`{code:0,message:"success",data:...}`；列表data含items、可选nextCursor及capability（allowed / reason）；详情含可选item、capability及availability（available / reason）。缺配置或能力拒绝返回200安全空态，items为[]或详情省略item；同平台类型缺失与跨平台类型ID统一MATERIAL_UNAVAILABLE。找到同范围记录但失效仍200无item及安全原因（如EXPIRED / NOT_ACTIVE），不将其冒报为可用。认证失败401 UNAUTHORIZED，形状 / 游标 / UUID错误400 INVALID_REQUEST，存储失败或取消503 MATERIALS_UNAVAILABLE；错误data为null，不输出原始错误或部分数据。
+
+Card白名单仅物料ID、平台 / 类型、标题、有效期、来源更新时间、规则版本、地域、业务及终端；无内部URL / 来源ID / 审核证据、价格、收益或canGenerate。此处只实现路由和契约测试，真实验证器 / 仓储HTTP集成及cmd/api启动装配属于M7-01d-3，真实来源批准和生成事务最终校验仍未验收；HTTP200或CATALOG允许不是生成推广链接权限。

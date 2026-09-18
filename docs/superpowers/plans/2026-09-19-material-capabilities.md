@@ -152,3 +152,16 @@ CatalogBinding以平台 / 类型 / 终端 / 场景四维精确映射服务端Med
 M7-01d-2b仍负责HTTP鉴权与参数白名单，d-3负责启动装配与验证器集成；当前服务未注册路由或配置真实媒体，不push / 部署。
 
 2026-09-19：缺CatalogBinding / NewReadService / ReadInput真实编译RED后新增服务和3项真实PG测试GREEN；私有PG17.11定向-race -count3及配置PG_TEST_DSN全量go test -count=1 ./... / vet / build均退出0，11计划相对链接及diff通过。独立审查实际三项通过，无Critical / Important；修正文档真实性边界minor措辞，未改变策略或源批准。全量及审查完成后非系统schema数0。服务输入不含media / READY / now，复制静态部署映射、精确无通配，逐次数据库复核，无API / 新迁移 / 真实渠道 / 前端装配。逐任务本地提交，M7-01d-2和父项继续，下一项d-2b。
+
+### M7-01d-2b【已完成】：鉴权HTTP契约
+
+Dependencies新增Materials List / Get接口，两条GET只在服务和Users同时存在时注册。handler先鉴权，再严格url.ParseQuery白名单和每字段唯一校验；公共参数platform / type / terminal / cityCode / business / positionId / scene，列表另允许cursor / limit，详情拒绝分页。ReadInput.Valid提取既有请求形状判定供服务与HTTP共用，ParseQuery校验规范owner、Scope与分页；UUID详情检查仍由读取服务保证。无客户端owner / media / READY / now输入，无默认平台 / 类型 / 场景或位。列表limit默认20，详情校验范围使用1但不接受分页参数。
+
+成功与安全空态200，认证失败401、无效输入400、存储 / context失败503 MATERIALS_UNAVAILABLE，错误data为null。所有读取响应no-store；不返回错误伴随的部分数据，不补造price / URL / 生成权限。路由缺依赖404，无POST写入。完整请求响应边界见[API说明](../../01-api-spec.md)。
+
+- [x] handler契约测试缺Dependencies.Materials先RED，最小实现后覆盖真实路由默认 / 显式分页、可信owner与Scope传递、依赖 / 身份缺失、鉴权错误不泄露、POST拒绝、严格参数、空态与脱敏错误 / 部分结果丢弃。
+- [x] 定向race及配置PG_TEST_DSN全量Go / vet / build，文档链接 / diff与独立审查后逐任务提交。
+
+本任务采用读取接口测试替身验证HTTP边界，不替代真实数据库 / 签名验证器的HTTP链路，后者属d-3；不改app启动或JD渠道适配器，不push / 部署。
+
+2026-09-19：缺Materials依赖字段实际编译RED后新增实现，四项实际handler / router测试GREEN；首轮错误用例误以为error应省略data，经writeError现有统一契约证实data:null，修改测试并加强错误伴随部分数据不泄露及明确空态原因断言，未改全局契约。定向-race -count3与私有PG17.11配置PG_TEST_DSN全量Go test / vet / build、17文档相对链接 / diff退出0，独立审查四项实际通过无Critical / Important；非系统schema数0。HTTP只读范围父d-2依据a / b及最终全量证据完成，d-3真实验证器 / 仓储链路和详情UUID拒绝、运行配置及启动装配仍未验收；M7-01d及整体目标继续。本地逐任务提交，无push / 部署。

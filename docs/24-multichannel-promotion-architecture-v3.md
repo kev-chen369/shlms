@@ -80,3 +80,5 @@ H5（四栏 + 推广内部路由）
 物料Repository.Get只接可信本人 / 范围 / CATALOG Key和规范物料UUID；REPEATABLE READ只读事务先检查本人资格、位与精确能力，再读取同平台 / 类型物料并执行CardFor。Detail只有可选白名单item、capability和availability；拒绝时无item，无能力不查询物料，缺失 / 跨平台类型统一MATERIAL_UNAVAILABLE，物料失效仅安全原因。零网络 / Tracking / 转链写入，不泄露内部URL、来源ID或审核证据。HTTP可信配置与鉴权装配、选品前端、真实来源和最终生成事务复核尚未完成，目录读取不能当作生成授权。
 
 M7-01d-2a增量：ReadService通过可信部署配置的精确平台 / 类型 / 终端 / 场景映射选择MediaID，输入不能提供媒体、状态或时间。配置复制到私有map，不设通配 / 默认媒体，歧义重复拒绝；无绑定是安全UNCONFIGURED空目录 / 无item详情。有绑定只构造CATALOG完整Key，每次以服务端时间重新走本人资格 / 内部位scene / 有效证据仓储判定，不缓存READY。所选内部位或scene仍是待校验筛选，不是授权凭据；没有真实配置、HTTP路由或来源批准装配。
+
+M7-01d-2b增量：httpapi新增本人目录 / 详情GET，只有Materials和Users依赖同时存在才注册，先解析身份再校验严格白名单及请求范围；媒体和READY不来自客户端。成功或安全域拒绝200，认证401、无效400、存储503，全部读取no-store，错误data:null丢弃部分结果。实现证据是实际路由配合读取接口替身的HTTP契约测试；cmd/api尚未装配物料服务，真实签名验证器 / PG读取链路与部署媒体配置属于d-3，不因此开放真实选品或生成。
