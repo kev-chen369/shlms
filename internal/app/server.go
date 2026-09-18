@@ -11,6 +11,7 @@ import (
 	"github.com/kev-chen369/shlms/internal/auth"
 	"github.com/kev-chen369/shlms/internal/conversion"
 	"github.com/kev-chen369/shlms/internal/coupon"
+	"github.com/kev-chen369/shlms/internal/dashboard"
 	"github.com/kev-chen369/shlms/internal/dbmigrate"
 	"github.com/kev-chen369/shlms/internal/httpapi"
 	"github.com/kev-chen369/shlms/internal/order"
@@ -44,6 +45,7 @@ func NewHandler(ctx context.Context, db *sql.DB, config Config) (http.Handler, e
 	d := httpapi.Dependencies{
 		Coupons:      coupon.Catalog{DB: db},
 		Orders:       order.ReadStore{DB: db},
+		Dashboard:    dashboard.ReadStore{DB: db},
 		CouponCities: coupon.Catalog{DB: db},
 		ClaimReader:  coupon.ClaimService{Catalog: coupon.Catalog{DB: db}, Store: coupon.ClaimStore{DB: db}},
 		Users:        verifier, Admins: auth.AdminResolver{Verifier: verifier, Store: auth.PostgresAdminStore{DB: db}},

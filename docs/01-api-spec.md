@@ -57,4 +57,6 @@
 
 新增推广身份 / 申请、推广位、只读商品预览、转链状态、分享事件、推广订单 / 收益 / 看板、结算批次以及提现查询；完整方法、路径和输入输出以[推广中心详细设计第 3 节](./21-promotion-center-detailed-design.md#3-接口契约)为准。后台补申请审核与推广员停用审计。
 
+`GET /api/v1/promoter/dashboard` 已实现计数基础版，要求已验证用户令牌。可选 `from`、`to` 为 Asia/Shanghai 的 `YYYY-MM-DD`，均按自然日包含，默认最近 30 天且跨度最多 366 天；可选 `channel=JD|TB|MT`、`positionId`。返回 `timeZone`、起止时间（`toExclusive` 为次日零点）、数据库快照 `asOf`、`successfulLinks`、`copyReports`、`validOrders`。成功转链按当前成功状态及请求更新时间；复制按服务端去重后的客户端上报事件；有效订单按最早订单时间、当前已归因且未取消 / 无效 / 全额退款状态计数。复制数不是送达数，订单数不代表收益；目前无可信点击和收益快照，响应不含转化率或金额。
+
 保留购物用途的 `POST /promotions/link`，推广用途新增 `POST /promotions/preview` 和 `POST /promotions/convert`，共享领域能力但不绕过推广权限。身份来自鉴权上下文，所有推广位和链接需验证所有权。写请求同键同输入幂等，不同输入返回 409；处理中状态可查询，不因上游超时盲目重复发起。金额对外为十进制定点字符串与币种，内部按最小货币单位整数处理。

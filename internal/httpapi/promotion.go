@@ -8,6 +8,7 @@ import (
 
 	"github.com/kev-chen369/shlms/internal/conversion"
 	"github.com/kev-chen369/shlms/internal/coupon"
+	"github.com/kev-chen369/shlms/internal/dashboard"
 	"github.com/kev-chen369/shlms/internal/order"
 	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promotion"
@@ -23,6 +24,9 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Dashboard interface {
+		Get(context.Context, dashboard.Filter) (dashboard.Counts, error)
+	}
 	ShareEvents interface {
 		Record(context.Context, conversion.ShareEventInput) (conversion.ShareEvent, error)
 	}
