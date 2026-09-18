@@ -1,0 +1,1 @@
+DROP INDEX promotion_conversion_channel_request_unique;

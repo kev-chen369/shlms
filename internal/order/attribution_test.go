@@ -87,6 +87,52 @@ func TestAttributionUnknownEvidenceWaitsForReview(t *testing.T) {
 	}
 }
 
+func TestAttributionLinkRequestRequiresSuccessAndUniqueRequestID(t *testing.T) {
+	db := orderTestDB(t)
+	ctx := context.Background()
+	store, err := NewStore(db, "test-v1", bytes.Repeat([]byte{33}, 32))
+	if err != nil {
+		t.Fatal(err)
+	}
+	saveOrder := func(eventID, orderID string) string {
+		t.Helper()
+		raw, _, err := store.Save(ctx, RawEvent{Channel: "JD", EventID: eventID, ExternalOrderID: orderID,
+			EventType: "ORDER", OccurredAt: time.Now().UTC(), Payload: []byte(`{"order":"` + orderID + `"}`)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := (ProjectionStore{DB: db}).Apply(ctx, ProjectionInput{EvidenceID: raw.ID, Status: "PAID"}); err != nil {
+			t.Fatal(err)
+		}
+		return raw.ID
+	}
+	first := saveOrder("link-event-1", "link-order-1")
+	second := saveOrder("link-event-2", "link-order-2")
+	seedAttributionFixture(t, db, "owner-link", "position-link", "tracking-link", "conversion-link")
+	if _, err := db.Exec(`UPDATE promotion_conversion_requests SET channel_request_id='approved-request-1' WHERE id='conversion-link'`); err != nil {
+		t.Fatal(err)
+	}
+	result, err := (AttributionStore{DB: db}).Apply(ctx, AttributionInput{EvidenceID: first, Method: AttributionLinkRequest, Value: "approved-request-1"})
+	if err != nil || result.Status != "PENDING_REVIEW" {
+		t.Fatal("pending conversion attributed", result, err)
+	}
+	if _, err := db.Exec(`UPDATE promotion_conversion_requests SET status='SUCCEEDED',link_url='https://example.com/approved' WHERE id='conversion-link'`); err != nil {
+		t.Fatal(err)
+	}
+	result, err = (AttributionStore{DB: db}).Apply(ctx, AttributionInput{EvidenceID: second, Method: AttributionLinkRequest, Value: "approved-request-1"})
+	if err != nil || result.Status != "ATTRIBUTED" || result.ConversionRequestID != "conversion-link" {
+		t.Fatal(result, err)
+	}
+	if _, err := db.Exec(`INSERT INTO tracking_records(id,idempotency_key,user_id,channel,external_product_id,source,created_at)
+		VALUES('tracking-link-2','key-tracking-link-2','owner-link','JD','sku','PROMOTION_CENTER',CURRENT_TIMESTAMP)`); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := db.Exec(`INSERT INTO promotion_conversion_requests(id,owner_user_id,position_id,preview_id,tracking_id,idempotency_key,request_fingerprint,scene,status,channel_request_id,created_at,updated_at)
+		VALUES('conversion-link-2','owner-link','position-link','preview-attribution','tracking-link-2','conversion-key-2','cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc','share','PENDING','approved-request-1',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)`); err == nil {
+		t.Fatal("duplicate channel request id accepted")
+	}
+}
+
 func seedAttributionFixture(t *testing.T, db interface {
 	Exec(string, ...any) (sql.Result, error)
 }, owner, position, trackingID, conversionID string) {
