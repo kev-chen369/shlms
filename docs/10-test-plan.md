@@ -1,5 +1,9 @@
 # 测试计划
 
+## M7-01e-3b-1 选品组件（2026-09-19）
+
+`materials-component.test.ts`真实挂载Vue组件和materials-model / materials-api，仅HTTP响应合成；覆盖未登录 / 未选位零请求、安全事实卡片、目录READY仍禁用生成、Enter / Space最新详情及关闭、平台 / 类型清scope、MT商品键盘显式拒绝、empty / blocked差异、分页503保留与Space成功重试、失效详情和会话清理。禁用按钮用直接DOM事件回归，不让VT trigger自动跳过掩盖bug。`tests/browser/materials-component.browser.cjs`使用测试host挂载同一组件 / 模型 / uni GET，390px验证目录 / 查看 / 关闭 / MT切换、Bearer和仅GET、无框架覆盖 / 横溢出 / console及运行错误；可用CLIENT_QA_SCREENSHOT_DIR保存Git外合成截图。不是注册选品页面 / 推广位编排 / 真实JWT、业务或完整设备验收；b-2 / c继续。
+
 ## M7-01e-3a 本人推广位契约（2026-09-19）
 
 `positions-api.test.ts`仅替换HTTP边界，测试真实读取函数和uni GET认证 / timeout配置；覆盖缺失或非法身份零请求、身份变化丢弃旧响应、401 / 404 / 故障脱敏、status=ENABLED分页、空目录、重复位 / 超量 / 非法游标 / envelope拒绝、安全字段投影和数组隔离。已启用位与JD配置readiness不是生成授权；未知READY / TB / MT映射拒绝。现有后端文本按Unicode字符计数，中文80 / ID256合法与81 / 257非法独立测试，不把物料scope字节限制误用在位响应。初版字节误用由独立审查发现，新增合法中文回归实见RED后修正；页面选择需另验收物料范围限制。本阶段无页面改动或实际图，不代表真实身份、位授权或业务验收。

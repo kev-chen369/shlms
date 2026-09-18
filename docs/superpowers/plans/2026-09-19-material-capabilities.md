@@ -4,6 +4,16 @@
 
 **Goal:** 按已确认V3设计建立可信平台能力与商品 / 活动物料边界，最终提供本人只读目录，不提前解锁取链。
 
+## M7-01e-3b-1 选品展示组件（已完成，2026-09-19）
+
+新增`PromotionMaterials.vue`与`materials-component.test.ts`，接真实materials-model；本人推广位放在命名position slot，下一b-2编排实际positions-api与页面入口，不在组件构造位、身份或物料。三平台、商品 / 活动切换由模型清scope；MT商品显式禁用、tabindex=-1及事件guard。卡片和最新详情展示来源、类型、时效、地域、终端、业务、来源更新时间与规则；每次查看重新GET，目录READY仍禁用全部生成。空目录 / 能力拒绝 / 故障区分，分页失败保留项并用按钮重试追加，失效详情移除卡片，会话丢失清理全部展示。
+
+- [x] 缺组件模块RED后初版11项GREEN；独立审查发现disabled自定义按钮键盘边界，直接DOM KeyboardEvent两项实际RED（VT trigger会跳过disabled），增加handler guard后GREEN；补Space分页成功恢复。
+- [x] Browser插件不可用，已有Chrome / Playwright在127.0.0.1:5173、390×844测试端host挂载真实组件 / 模型 / uni GET，合成HTTP目录→Enter最新详情→Space关闭→MT清scope通过，生成一直禁用，仅两次本人Bearer GET，无文档横溢出 / 框架覆盖 / console或pageerror。临时截图位于Git外，不冒充已注册页面图。
+- [x] 最终13组件项及独立13项复审无阻断；全量25文件469项、typecheck、H5 / 微信构建退出0，15文档相对链接 / diff检查通过，逐项本地commit，不自动push /部署。页面入口与完整多宽度图验收仍由b-2 / c完成。
+
+视觉复核已直接查看V3概念稿和390px真实组件截图：保留绿色渐变标题区、三平台在上 / 两类型在下、白色独立卡片、绿色查看与灰色生成、清晰标题与次级事实。概念稿的旧品牌 / 搜索栏属既有外壳，不在组件另建；接口缺图片 / 价格字段，不放概念商品图片；“一键生成”文案替换为核对信息及生成未接入说明，避免误导。当前是详情事实展示状态，不是概念稿默认商品目录，尚不能宣称完整图稿10/10或真实设备验收；后续页面和c处理对应状态 / 多宽度 / 图册。
+
 ## M7-01e-3a 本人推广位读取（已完成，2026-09-19）
 
 沿用现有功能分支且无其他tracked修改，保留其他工作树及.DS_Store，不新增依赖。新增`positions-api.ts`、`positions-api.test.ts`，真实GET `/api/v1/promotion-positions?status=ENABLED&limit=20`及安全分页，不发送owner / media / channel授权字段。可信session供应Bearer，缺身份零请求，401清晰要求登录，404未接入，其余网络 / 响应失败脱敏；身份变化不接受旧响应。公开选择只包含id / name / scene / isDefault和当前实际JD映射，不保留owner / 外部位 / generation权限。
