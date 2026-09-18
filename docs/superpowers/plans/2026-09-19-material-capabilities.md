@@ -110,3 +110,12 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 私有PG_TEST_DSN定向-race及全量Go test / vet / build、diff / 链接，独立审查后commit M7-01c-2c-2。完整up / down / 并发快照验收仍归c-3，API与真实渠道门槛不提前完成。
 
 2026-09-19【已完成】：5项目录仓储测试及1项事务生命周期测试；缺接口编译RED后实现，真实PostgreSQL17.11定向 / -race与最终配置PG_TEST_DSN全量go test -count=1 ./... / go vet ./... / go build ./...、diff退出0，18文档相对链接通过。曾因测试跨包Key位置literal导致vet失败，改具名字段；故障注入VOLATILE函数在view下形成EXPLAIN可见SubqueryScan→Sort→Limit提前抛错，禁用顺序扫描未解决，恢复默认planner并将纯只读函数正确声明STABLE，先验证前两条成功再验证后批SQL失败。临时mutation把查询错误误返已有page，真实RED捕获ID1 / READY部分返回；精确恢复fail()后GREEN，未保留变异。缺目录表且能力停用仍返回空态；Card白名单、slice独立和零新增Tracking / 请求通过。独立审查与后批故障增量实跑无阻断，最终非系统schema数0。仅私有合成数据，未执行生产迁移、渠道调用或网络；c-2 / c-2c父项等待c-3全链和并发快照综合验收，不提前勾选。下一项c-3；公开API及真实授权仍未完成。
+
+### M7-01c-3a：完整迁移链回归
+
+修改internal/dbmigrate/runner_test.go的新表存在核对；新增chain_test.go使用既有isolatedDB及真实readMigrations / Run。先Run全部23版、Verify，逐一逆序读取同名down，在测试事务中执行down并删除对应测试账本行（非生产down runner），确认仅保留空schema_migrations，无业务表 / 视图 / 序列或函数，再Run全部up、Verify及重复Run零应用；全部版数动态读取不硬编码未来版本。现有4路并发执行也核对三张新表。此项只测DDL及临时账本，已有23 populated proof/down证据另见2b，不声称生产无损回滚。私有PG_TEST_DSN定向count3 / -race及全量test / vet / build、diff / 链接，独立审查后逐项commit；3b快照并发及父项仍未完成。
+
+- [x] 实际完整up / reverse down / up断言和新表核对，不用文件文本存在当执行证据。
+- [x] 配置私有PG_TEST_DSN定向重复 / race与全量Go验证，独立审查后以M7-01c-3a提交。
+
+2026-09-19【已完成】：真实PostgreSQL17.11两个定向测试-race -count3全部通过，全量配置PG_TEST_DSN go test -count=1 ./... / go vet ./... / go build ./...与diff退出0，14相对文档链接通过；独立审查实际复跑完整链与四路并发通过，无阻断。没有新生产实现或修复，无虚构RED，新增测试是既有迁移的综合验收。无生产down / 账本修改或部署，3b及父项仍未完成。

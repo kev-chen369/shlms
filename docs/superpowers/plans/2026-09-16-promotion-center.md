@@ -296,7 +296,9 @@ M0 规则 / 工程准备 → M1 身份与推广位 → M2 预览转链 → M3 �
       - [ ] M7-01c-2c【进行中】能力读取及物料目录筛选 / 分页子项已实现并验证；完整并发快照与仓储一致性综合复核待c-3，不提前勾选父项。
         - [x] M7-01c-2c-1【已完成】2026-09-19：新增internal/capability/repository.go / repository_test.go，可信规范owner / Key / now校验；单SQL本人资格 / 内部位及九维精确声明、本证据绑定后Evaluate，只返回Decision。缺声明 / 跨用户 / 停用 / scene / 四类会员非启用、能力状态、证据未来 / 到期及Unicode空白拒绝，非默认淘宝活动范围读取通过；空城市 / 业务不通配，nil / SQL失败 / 关闭脱敏、取消保留。缺接口RED后真实私有PostgreSQL17.11定向与-race、配置PG_TEST_DSN全量go test -count=1 ./... / vet / build、18文档相对链接及diff退出0；独立审查实跑无阻断，最终非系统schema数0。零Tracking新增及声明 / 证据保留断言通过，无写入口 / API / 渠道调用；来源真实性与角色 / DDL门槛、生成事务复核及2c-2 / c-3仍未完成。逐项本地提交，不自动push / 部署。
         - [x] M7-01c-2c-2【已完成】2026-09-19：新增material.Repository.List / Page及5项真实数据库目录测试，capability.CheckInTransaction复用原判定查询，增加caller事务生命周期测试。只读REPEATABLE READ同快照资格 / 位 / 精确CATALOG证据及所有物料筛选，CardFor白名单投影；非法前缀 / 中间项跨批跳过、稳定UUID游标 / limit改变 / 真hasMore、商品和JD / TB / MT无价格活动、停用 / 到期、换人换范围拒绝与安全错误。缺物料表但SUSPENDED仍空态证明先gate；实际后批SQL故障不返回部分Page，误返部分页mutation被真实RED捕获后恢复GREEN。修正测试跨包Key具名字段govet错误；EXPLAIN确认VOLATILE故障fixture下推屏障，改正确STABLE函数并验证前批成功，无planner强制设置。私有PG_TEST_DSN定向-race及最终全量go test -count=1 ./... / vet / build、18文档链接 / diff退出0，独立及增量审查实跑无阻断；最终非系统schema数0。零新增Tracking / 转链请求，无网络 / 写入 / 公开API / 真实渠道；父项综合验收仍待c-3，逐项本地提交不自动push / 部署。
-    - [ ] M7-01c-3【未开始】PROC-11已提供私有隔离PostgreSQL17.11，运行程序 / 数据库缺失阻塞解除；待c-2b / c-2c完成后实测全部新增迁移完整up / down与仓储一致性。000022独立up / down已由c-2a验证，不提前替代本项。
+    - [ ] M7-01c-3【进行中】私有PostgreSQL17.11综合验收完整迁移链及仓储一致性，不提前替代生产或真实渠道验收。
+      - [x] M7-01c-3a【已完成】2026-09-19：新增internal/dbmigrate/chain_test.go，真实000001～000023完整Run / Verify→逐版逆序down与精确测试账本删除同事务→无业务关系 / 函数残留→完整up / Verify / 重复零应用，动态版本数；既有4路并发核对新物料 / 能力 / 证据表。私有PG_TEST_DSN定向-race -count3及全量go test -count=1 ./... / vet / build、14相对文档链接 / diff退出0；独立审查实跑无阻断。只改测试及计划 / 测试记录，down与账本清理仅临时合成schema，不提供生产down/reset或声称无损回滚；3b及父项仍未完成，逐项本地提交。
+      - [ ] M7-01c-3b【未开始】观察真实数据库阻塞，验证目录读取跨能力 / 资格 / 位与物料变更仍同快照、后续请求可见变更及零写副作用。
   - [ ] M7-01d【未开始】鉴权本人范围只读目录 / 详情与安全能力投影、分页 / 失效测试；无可信配置拒绝开放。
   - [ ] M7-01e【未开始】前端契约 / 状态及选品页面，平台切换清理、空 / 未开放 / 错误 / 分页；与M7-06生成流程区分。
   - [ ] M7-01f【阻塞】真实获批目录和逐能力脱敏证据、负责人验收；依赖渠道权限和测试账号，模型 / 模拟测试不代表READY。
