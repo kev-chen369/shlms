@@ -114,13 +114,17 @@ func (s ProjectionStore) Apply(ctx context.Context, in ProjectionInput) (Project
 	result := ProjectionResult{Channel: channel, ExternalOrderID: externalID, PreviousStatus: current, Status: current}
 	if in.Status != "" {
 		if !orderExists {
-			_, err = tx.ExecContext(ctx, `INSERT INTO normalized_orders(channel,external_order_id,status,status_at,latest_evidence_id)
-				VALUES($1,$2,$3,$4,$5)`, channel, externalID, in.Status, occurredAt, in.EvidenceID)
+			_, err = tx.ExecContext(ctx, `INSERT INTO normalized_orders(channel,external_order_id,status,status_at,order_occurred_at,latest_evidence_id)
+				VALUES($1,$2,$3,$4,$4,$5)`, channel, externalID, in.Status, occurredAt, in.EvidenceID)
 			if err != nil {
 				return ProjectionResult{}, err
 			}
 			result.Status, result.Disposition = in.Status, "APPLIED"
 		} else {
+			if _, err = tx.ExecContext(ctx, `UPDATE normalized_orders SET order_occurred_at=LEAST(order_occurred_at,$3)
+				WHERE channel=$1 AND external_order_id=$2`, channel, externalID, occurredAt); err != nil {
+				return ProjectionResult{}, err
+			}
 			switch {
 			case in.Status == current:
 				result.Disposition = "DUPLICATE"

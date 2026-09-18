@@ -116,6 +116,7 @@ P-00 首页按已确认的 [H5 V3 多平台图稿](./images/home-platform-module
 | POST /promotion-links/{id}/share-events | eventId、action、scene | 去重记操作，不宣称送达，不触发收益 |
 | GET /promoter/orders | cursor、from、to、channel、positionId、orderStatus、earningStatus | 脱敏订单与独立状态 |
 | GET /promoter/orders/{id} | 本人归因订单 | 归因证据摘要、规则版本、金额和状态历史 |
+
 | GET /promoter/dashboard | from、to、channel、positionId | 指标、时区、数据截止时间；无数据返回 0 或未接入说明 |
 | GET /promoter/earnings | cursor、status、from、to | 个人收益记录，不是渠道总佣金 |
 | GET /promoter/settlements | cursor、status | 批次、已入账和待结算分列 |
@@ -123,6 +124,8 @@ P-00 首页按已确认的 [H5 V3 多平台图稿](./images/home-platform-module
 | GET /wallet、POST /withdrawals | 沿用钱包契约 | 同人同币种统一钱包，不新建重复提现通道 |
 | GET /withdrawals、GET /withdrawals/{id} | cursor / 本人记录 | 冻结、付款、失败解冻状态 |
 | GET /promoter/activities | channel、cursor | M5：仅有效且已授权活动 |
+
+只读订单接口进展（M3-02a）：实际 API 路径为 `GET /api/v1/promoter/orders` 和 `GET /api/v1/promoter/orders/{id}`。已验签用户只可读取本人已精确归因的订单；支持 `from`、`to`、`channel`、`positionId`、`orderStatus`、`cursor`、`limit`。日期按最早渠道订单事件时间筛选，采用 RFC3339 且结束时间不包含在区间内；归因时间另列。详情 ID 为随机公开 UUID，订单号仅显示末四位，响应不包含原始渠道报文、买家身份或尚未确认的收益。图稿所需金额、收益状态筛选和页面仍待渠道订单与规则快照接入。
 
 新增后台 `/admin/v1/promoter-applications` 列表与 `/{id}/review` 审核（POST）、`/promoters/{id}/disable`（POST），要求权限、reason、version、审计记录；渠道映射配置复用渠道管理员权限，不允许推广员直接填写外部账户归属。
 

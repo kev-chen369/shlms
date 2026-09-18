@@ -53,6 +53,10 @@ func NewRouterWithDependencies(dependencies Dependencies) http.Handler {
 	if dependencies.Promoter != nil && dependencies.Users != nil {
 		mux.HandleFunc("GET /api/v1/promoter/profile", promoterProfileHandler(dependencies))
 	}
+	if dependencies.Orders != nil && dependencies.Users != nil {
+		mux.HandleFunc("GET /api/v1/promoter/orders", promoterOrderListHandler(dependencies))
+		mux.HandleFunc("GET /api/v1/promoter/orders/{id}", promoterOrderDetailHandler(dependencies))
+	}
 	if dependencies.PromoterApplications != nil && dependencies.Users != nil {
 		mux.HandleFunc("POST /api/v1/promoter/applications", promoterApplicationHandler(dependencies))
 	}

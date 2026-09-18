@@ -8,6 +8,7 @@ import (
 
 	"github.com/kev-chen369/shlms/internal/conversion"
 	"github.com/kev-chen369/shlms/internal/coupon"
+	"github.com/kev-chen369/shlms/internal/order"
 	"github.com/kev-chen369/shlms/internal/preview"
 	"github.com/kev-chen369/shlms/internal/promotion"
 	"github.com/kev-chen369/shlms/internal/tracking"
@@ -22,6 +23,10 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	Orders interface {
+		ListOwned(context.Context, order.OrderFilter) (order.OrderPage, error)
+		GetOwned(context.Context, string, string) (order.OrderDetail, error)
+	}
 	CouponCities interface {
 		Cities(context.Context, string) ([]coupon.City, error)
 	}
