@@ -119,3 +119,12 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 配置私有PG_TEST_DSN定向重复 / race与全量Go验证，独立审查后以M7-01c-3a提交。
 
 2026-09-19【已完成】：真实PostgreSQL17.11两个定向测试-race -count3全部通过，全量配置PG_TEST_DSN go test -count=1 ./... / go vet ./... / go build ./...与diff退出0，14相对文档链接通过；独立审查实际复跑完整链与四路并发通过，无阻断。没有新生产实现或修复，无虚构RED，新增测试是既有迁移的综合验收。无生产down / 账本修改或部署，3b及父项仍未完成。
+
+### M7-01c-3b：读取阻塞期间的快照一致性
+
+新增internal/material/snapshot_test.go，复用真实catalogDB及当前Repository.List，无模拟仓储 / 时钟或生产同步hook。各case三条实际材料：ID1合法、ID2域非法证据、ID3合法，limit1须跨批读ID3才能返回真NextCursor。writer事务持有promotion_materials ACCESS EXCLUSIVE锁，启动List；用pg_locks实际目标relation OID / 未granted及pg_blocking_pids观察List阻塞，证明其能力读取已先完成，不以sleep猜测。writer分别提交能力SUSPENDED、会员DISABLED、位DISABLED、未来新证据指向、物料SUSPENDED / 地域 / 业务 / 终端 / 到期 / 标题变化，释放锁；当前List必须仍旧ID1 / 原标题及真hasMore，后续新请求分别安全拒绝、目录空或新标题。每case检查三条材料 / 证据保留与零Tracking / 转链请求，context20秒、buffered结果、事务回滚收尾。此证据是只读快照一致性，不表示撤销瞬间取消所有进行中读取或生成锁；真实渠道 / 生产门槛仍独立。
+
+- [x] 实跑10种变更的真实锁观察、跨批旧快照与新请求可见断言。
+- [x] 私有PG_TEST_DSN定向-race -count3与全量Go验证 / 文档链接 / diff，独立审查并提交M7-01c-3b后复核c-2 / c-3父项。
+
+2026-09-19【已完成】：真实PostgreSQL17.11十case定向-race -count3全部通过，旧游标续页新增断言同样三轮通过；最终配置PG_TEST_DSN全量go test -count=1 ./... / go vet ./... / go build ./...、diff退出0，18相对文档链接通过，独立审查实际十case通过无阻断。临时降为READ COMMITTED的mutation实际捕获会员变更后READY / 空页、标题变更后READY / 新标题混合快照RED；精确恢复原RepeatableRead，未保留生产变更。最后非系统schema数0，测试合成数据已清理。结合3a及c-1 / c-2各子项现有与本轮全量实跑证据，父c-2 / c-2c / c-3 / M7-01c范围复核完成，仅结构、只读目录列表仓储及隔离验证；详情 / 目录HTTP、前端、生产角色 / 来源批准、真实渠道与生成最终复核仍未完成。下一项M7-01d，不push / 部署。
