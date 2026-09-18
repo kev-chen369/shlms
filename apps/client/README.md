@@ -28,6 +28,12 @@ H5 产物在 `dist/build/h5`。node_modules、产物、环境文件不进入 Git
 
 工程阶段不内置演示订单、商品、返现、收益或成功转链。真实身份提供方、协议内容、获批渠道和资金规则未提供时，对应功能明确显示未接入，不可提交真实业务。
 
+## 只读券接口契约
+
+M1-01d-1 提供 `src/features/coupons/api.ts`：目录 `/api/v1/coupons`、地域 `/api/v1/coupon-cities`、详情 `/api/v1/coupons/{id}`，仅 GET，uni-app 请求超时 10 秒，无内置令牌或授权头。平台映射 JD / TAOBAO / MEITUAN → JD / TB / MT；PDD / ELEME 保持未开放，不发请求。只接受成功信封、完整字段、当前平台与地域 / 业务范围、非过期材料及一致的领取模式标签；错误不展示服务器内部信息。
+
+这只是可独立测试的传输契约，尚未连接页面，也不提供领取 / 购买能力。开发代理、页面加载 / 错误 / 空态、上下文变更时请求失效、分页和详情交互仍由 M1-01d-2 完成；跨端编译不表示相对 API 路径、微信合法域名或实际设备已验收。
+
 `npm run build:mp-weixin` 仅供后续编译检查，不能代替真实微信 AppID、合法域名配置、开发者工具和设备验收；manifest 中不填假 AppID。
 
 规范与任务见 `docs/superpowers/specs/2026-09-17-wanhui-client-design.md`、`docs/superpowers/plans/2026-09-17-wanhui-client-foundation.md`。
