@@ -10,7 +10,7 @@
 
 ## 分支整合
 
-- [ ] PROC-12【未开始】修复tracking隔离测试schema清理与错误吞掉。PROC-11审计发现3个本轮tracking_test_*残留，根因defer db.Close先于t.Cleanup的DROP执行；下一步先加入清理错误断言在私有库观察RED，再改为有序cleanup、复验零新增残留。不得删除其他实例 / 用户schema，不改生产Tracking逻辑。
+- [x] PROC-12【已完成】2026-09-19：修复internal/tracking/postgres_repository_test.go清理顺序；先仅补DROP错误断言，真实RED为sql: database is closed，再将close登记为最早t.Cleanup，schema DROP及pg_namespace无残留断言按LIFO先执行，5秒清理超时、错误不吞。私有PostgreSQL17.11定向count3及-race、配置PG_TEST_DSN全量Go test / vet / build、diff退出0；独立审查定向 / diff通过，无阻断。核对四个仅本轮合成tracking schema后逐一精确DROP（前三个旧残留及一次RED），没有删除用户 / 其他实例schema；全量结束后非系统schema数量0。更新隔离库记录与测试说明，不改生产Tracking逻辑，无push / 部署；本地逐项提交。测试样例可重新生成，非业务数据。
 
 - [x] PROC-11【已完成】2026-09-19：私有目录重定位已下载Homebrew PostgreSQL17.11 / ICU / krb5包，initdb及pg_ctl启动成功；SQL与status核对新data目录、Asia/Shanghai及空TCP监听地址。自己的全局安装在下载阶段取消（非安装成功），没有升级现有readline8.3.3 / xz5.8.3或停止其他任务。PG_TEST_DSN指向私有socket，全量Go JSON实跑489 pass事件含子用例 / 0 fail / 0 skip；补物料边界后定向 / 全量test及vet / build / diff再次通过，订单 / 看板原11项（9数据库）全部RUN / PASS。新增docs/31环境 / 复验记录，解除数据库缺失阻塞但不补勾新增联测或业务验收；未连接业务 / 生产库、不启用系统服务。环境供后续验证，本地逐项提交，无push或部署。
 

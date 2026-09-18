@@ -24,7 +24,12 @@ func TestPostgresTrackingMigrationAndConcurrentIdempotency(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	// Cleanup is LIFO: the later schema cleanup must run before closing DB.
+	t.Cleanup(func() {
+		if err := db.Close(); err != nil {
+			t.Errorf("close tracking test database: %v", err)
+		}
+	})
 	db.SetMaxOpenConns(1)
 	ctx := context.Background()
 	if err := db.PingContext(ctx); err != nil {
@@ -36,7 +41,16 @@ func TestPostgresTrackingMigrationAndConcurrentIdempotency(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() {
-		_, _ = db.ExecContext(context.Background(), "DROP SCHEMA "+schema+" CASCADE")
+		cleanupCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if _, err := db.ExecContext(cleanupCtx, "DROP SCHEMA "+schema+" CASCADE"); err != nil {
+			t.Errorf("cleanup tracking schema: %v", err)
+			return
+		}
+		var remains bool
+		if err := db.QueryRowContext(cleanupCtx, `SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname=$1)`, schema).Scan(&remains); err != nil || remains {
+			t.Errorf("tracking schema remains after cleanup: %v (query error: %v)", remains, err)
+		}
 	})
 	if _, err := db.ExecContext(ctx, "SET search_path TO "+schema); err != nil {
 		t.Fatal(err)

@@ -22,6 +22,8 @@
 
 额外清理审计发现3个仅本轮tracking_test_*合成schema残留：tracking测试defer db.Close先于t.Cleanup执行，随后DROP错误被忽略。此缺陷未被既有PASS断言覆盖，已编号PROC-12，需真实失败回归后修正清理顺序；本记录不宣称全实例零残留。物料schema的down表 / helper及其schema清理已独立验证。
 
+PROC-12随后完成：先加入DROP错误断言，在本实例真实观察 `sql: database is closed` RED；改用有序t.Cleanup后count3及-race通过，DROP错误及pg_namespace存在性均纳入断言、5秒清理超时。独立审查通过。精确核对并清理旧三个及RED产生的第四个合成tracking_test schema，不操作用户数据库或其他进程。配置PG_TEST_DSN全量Go test / vet / build退出0，最终SQL审计非系统schema数量为0。本机合成测试数据可重跑生成；不等于生产数据删除或生产验收。
+
 ## 本机复验方式
 
 下面仅适用于仍存在的本轮私有实例。临时目录可能被系统清理；不可将命令改指向保留业务数据的库。若实例停止，先检查 pg_ctl status / 进程，不因一次观察超时重启。
