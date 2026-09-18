@@ -56,9 +56,11 @@ M3-02c-1 提供 `src/features/promotion/orders-api.ts`：仅本人推广订单�
 
 ## 只读券接口契约
 
+REL-01a-4 新增 `tests/browser/link-input-text-resize.browser.cjs`，真实准备页 / LinkInput，测试浏览器只替换 uni 剪贴板边界，不访问系统剪贴板。三宽度 / 200% CSS 文本验证长文案、读取失败 / 空 / 超限保留原输入、等待读取禁用 / 恢复、动态原生输入名称、键盘清空与识别关闭；无 API 请求。`test:layout` 当前共 6 项，不等于微信权限 / 真实系统剪贴板验收。
+
 REL-01a-3b-1 修复业务代码快速修改后应用旧值：按钮应用通过 uni blur 提交最新值，输入 Enter 使用包含最新值的 uni confirm，不提前在 keydown 应用节流旧值；上下文改变重建输入，避免旧输入回填。组件 blur / confirm 回归及 `tests/browser/coupon-business.browser.cjs` 三宽度快速输入 / 平台重置回归归入 `test:layout`。仅本机 HTTP 测试数据，不代表渠道或微信真机验收。
 
-REL-01a-3b-2 的 `tests/browser/coupon-text-resize.browser.cjs` 使用实际页面 / uni GET、测试端 HTTP 合成券与商品，验证三宽度 / 200% CSS 文本、长字段、城市 / 业务键盘筛选、分页 503 保留和显式重试、商品错误 / 空 / 恢复、关闭与未开放平台清理、只读提示与错误脱敏。`test:layout` 共 5 项；运行前提与外部可选截图目录沿用上述说明，不安装浏览器依赖或新增生产模拟数据。不表示全部字段 / 系统字体 / 微信真机或真实渠道领取验收。
+REL-01a-3b-2 的 `tests/browser/coupon-text-resize.browser.cjs` 使用实际页面 / uni GET、测试端 HTTP 合成券与商品，验证三宽度 / 200% CSS 文本、长字段、城市 / 业务键盘筛选、分页 503 保留和显式重试、商品错误 / 空 / 恢复、关闭与未开放平台清理、只读提示与错误脱敏。该任务完成时 `test:layout` 共 5 项；运行前提与外部可选截图目录沿用上述说明，不安装浏览器依赖或新增生产模拟数据。不表示全部字段 / 系统字体 / 微信真机或真实渠道领取验收。
 
 M6-02b-3a 扩展适用商品 `/api/v1/coupons/{id}/products` 只读分页契约：券 ID、地域 / 业务与游标编码，固定每页 20；校验完整商品 ID / 标题 / 更新与有效期、重复 ID、分页结构和过期数据。接口不含实时价格或购买地址，不因商品名称而开放领取 / 下单。
 

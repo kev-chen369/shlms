@@ -10,7 +10,7 @@
 | 非推广 P 页；V3 领券设计 | `pages/coupons/index.vue` | `/api/v1/coupon-cities`、`/api/v1/coupons`、详情与适用商品只读 | coupon API / model / component 用例；`tests/browser/coupon-business.browser.cjs` / `coupon-text-resize.browser.cjs` 非空目录 / 商品、业务与平台键盘、分页恢复。领取 / 购买 / 外跳未开放 |
 | P-02 的入口骨架，不是完整工作台 | `pages/promotion/index.vue` | 本人订单、统计、准备链接入口；默认真实身份未接入 | orders / dashboard 页面键盘用例；开通、推广位及转链业务未验收 |
 | 非推广 P 页；我的次级入口 | `pages/profile/index.vue` | 推广 / 消费者订单 / AI 导航；身份与余额未接入提示 | 当前页面导航测试及本轮键盘进入推广；不展示假余额或收益 |
-| P-05 的本地准备子集 | `pages/promotion/convert.vue` | 主动读取剪贴板、输入 / 清空；识别关闭 | `tests/link-input.test.ts`，REL-01a-1；不是 P-06～P-08 或真实转链 |
+| P-05 的本地准备子集 | `pages/promotion/convert.vue` | 主动读取剪贴板、输入 / 清空；识别关闭 | `tests/link-input.test.ts`，REL-01a-1；`tests/browser/link-input-text-resize.browser.cjs` 非空大字号 / 错误 / 等待状态；不是 P-06～P-08 或真实转链 |
 | P-10；P-11 仅归因详情子集 | `pages/promotion/orders.vue` | `/api/v1/promoter/orders` 及本人详情；UTC 日期 | `tests/promoter-orders-page.test.ts`、组件 / 模型 / API；M3-02c-2b 浏览器。无收益双状态 / 金额，不等于 P-11 收益详情完成 |
 | P-12 的只读计数子集 | `pages/promotion/dashboard.vue` | `/api/v1/promoter/dashboard`；上海自然日、精确快照、三计数 | `tests/promoter-dashboard-page.test.ts`、组件 / 模型 / API；M3-04b-2b-2 浏览器。没有可信点击、收益或转化率 |
 
@@ -39,16 +39,22 @@
 
 首次实际 RED：两页面原生输入高 24px 裁切 28px 字体。外框 50px 扣除 24px padding 和 2px border，根因一致；外框改为 60px，原生可用高 34px。保留原键盘、blur、版本 key、筛选与会话清理，不动 API。回归及项目 336 项单元 / 组件测试、类型检查、双端构建通过。直接查看 320px 订单表单、统计输入与计数截图；截图仅本机合成数据，可由已存在的外部目录 `CLIENT_QA_SCREENSHOT_DIR` 保存，不写入 Git。
 
-范围不含 DST 日期操作、全部字段 / 任意字号、真实提供方 / 真实订单 / 收益或系统字体与屏幕阅读器；当时未覆盖的非空券与商品状态见下节补充。3a / 3b 已完成，REL-01a 的非空链接准备状态由 4 继续；REL-01a 与 REL-01 未完成。
+范围不含 DST 日期操作、全部字段 / 任意字号、真实提供方 / 真实订单 / 收益或系统字体与屏幕阅读器；当时未覆盖的非空券与商品状态见下节补充。3a / 3b 已完成，非空链接准备状态见 4；REL-01a 整体证据核对与 REL-01 未完成。
 
 ### REL-01a-3b：非空券与商品
 
-新增两个真实 Chrome / Playwright 回归，`test:layout` 当前共 5 项。HTTP 拦截只在测试浏览器提供完整合成材料，实际页面 / uni GET / API 校验 / catalog 状态均保留；不在产品代码加入测试券或身份。
+新增两个真实 Chrome / Playwright 回归，该任务完成时 `test:layout` 共 5 项。HTTP 拦截只在测试浏览器提供完整合成材料，实际页面 / uni GET / API 校验 / catalog 状态均保留；不在产品代码加入测试券或身份。
 
 320 / 390 / 1280px、200% CSS 文本：长券标题 / 范围 / 规则版本、商品标题 / ID，城市 Enter / Space、40 字符业务筛选并核对请求；券与商品分页 503 保留已有项及显式 Space 恢复；商品刷新 503 清理 / 空 / 恢复、详情保留、错误脱敏；Enter 关闭与 PDD 未开放平台切换清理。逐状态检查无文档横向溢出、按钮至少 44×44、业务原生输入高度不裁切字号；未出现框架覆盖或非预期 console / pageerror。平台自身横向滚动保留。
 
 业务输入曾真实 RED 发送 old，REL-01a-3b-1 修复后按钮 / 输入 Enter 与快速平台重置三宽度通过。font helper 用 WeakMap 保留各节点首次字号，动态节点只放大一次，不等于全部 CSS 文本、系统字体、屏幕阅读器或全页缩放。截图可通过既有外部目录 CLIENT_QA_SCREENSHOT_DIR 保存，默认不写文件，不作为真实渠道证据；没有实时价格或购买链接。真实渠道 / 全部领取模式 / 真机与辅助技术仍另行验收。
 
+### REL-01a-4：非空链接准备与提示
+
+真实准备页及 LinkInput，测试只在临时浏览器页替换 `uni.getClipboardData`；不用替代页面 / 组件，不读写 OS 剪贴板，也不开放识别 readiness。三宽度、200% CSS 文本，长链接 / 中文文案，失败 / 空 / 4200 UTF-8 字节超限保留原输入；等待时编辑和清空禁用，强制键盘事件不清空，完成后恢复及更新；快速两次输入再 Space 清空、动态原生节点名称保持正确。实际无 API 请求、无非预期 console / pageerror / 框架覆盖，按钮>=44×44、原生 textarea 宽>=80及高>=字号、无文档溢出。直接查看320px粘贴后首屏图，放大文案换行、长文本在文本域内部滚动，属于有意布局。
+
+首次粘贴完成断言早于 uni 原生值异步同步，改为等待实际输入值后才断言；随后三宽度通过，没有为测试修改产品代码。`test:layout` 当前共6项；font WeakMap 只放大新节点一次，不是全部 CSS 字段、真实剪贴板权限、系统字体、微信或辅助技术验收。可选截图仍只保存在已有外部目录。
+
 ## 保留的发布门槛
 
-REL-01a-4 的非空链接准备 / 错误提示验收继续。REL-01b 的系统字体 / 微信真机 / 辅助技术与完整业务状态、产品视觉验收仍阻塞。身份、正式推广数据、收益、结算、提现及真实订单回流未满足，REL-01 和整体发布门槛未完成；数据库用例跳过情况另见 M3-05 验收矩阵。本轮不推送、部署或迁移数据库。
+REL-01a 各子项已有约定本机证据，父任务仍需当前七页面 / 各状态的整体证据核对。REL-01b 的系统字体 / 微信真机 / 辅助技术与完整业务状态、产品视觉验收仍阻塞。身份、正式推广数据、收益、结算、提现及真实订单回流未满足，REL-01 和整体发布门槛未完成；数据库用例跳过情况另见 M3-05 验收矩阵。本轮不推送、部署或迁移数据库。
