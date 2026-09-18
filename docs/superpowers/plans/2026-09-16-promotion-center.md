@@ -10,6 +10,10 @@
 
 ## 分支整合
 
+- [ ] PROC-07【进行中】2026-09-19：按用户要求同步本地四项已验收功能、相关文档与适用商品页面截图到 GitHub main；先 fetch / merge 最新 main，复核测试与截图，再非强制推送并核对远端。不部署生产或迁移数据库。
+  - [x] PROC-07a【已完成】2026-09-19：fetch / merge origin/main 8e4edaa（Already up to date），复核 M6-02b-3a / M6-02b-3b / M3-02c-1 / M3-02c-2a；归档 320 / 390px 适用商品区域截图，更新同步说明、文档与图索引。客户端 217 项测试、类型检查、H5 / 微信构建；`go test -count=1 ./...`、`go vet ./...`、`go build ./...`、原生 H5 Node 13 项测试及 diff 检查通过。已有 Playwright / Chrome 在 320 / 390 / 1280px 验证真实 uni 请求的本机 HTTP 测试数据、分页 / 重试 / 键盘 / 到期 / 失效 / 旧响应；51 次无授权 GET，9 条预期 404 / 503 日志，无其他运行错误；直接检查两张截图及 PNG 签名 / 非零尺寸和路径。PG_TEST_DSN 未设置，数据库集成跳过；订单页面未实现，不代表真实身份、订单、渠道或资金验收。独立提交，不部署或迁移。
+  - [ ] PROC-07b【进行中】重新 fetch / merge、非强制推送 main 并核对远端，记录同步结果；不覆盖其他 Codex 的远端提交。
+
 - [x] PROC-06【已完成】2026-09-19：按用户要求更新 GitHub main 代码、文档与图；纳入 M1-01c、M1-01d-1、M1-01d-2 已验收提交，合并 origin/main 并归档实际页面截图、更新图册索引及复核合并结果。非强制推送后重新 fetch 核对双方一致；不部署生产、不迁移数据库、不把截图测试券当真实渠道数据。
   - [x] PROC-06a【已完成】2026-09-19：合并 origin/main 58b4549，无冲突；归档两张 390px 实际页面截图、更新图片索引和同步说明。合并后客户端 109 项测试、类型检查、H5 / 微信构建、`go test -count=1 ./...`、`go vet ./...`、`go build ./...`、`node --test web/*.test.mjs` 13 项与 diff 检查通过；39 张 PNG 签名 / 非零尺寸及新增截图链接存在性检查通过。未设置 PG_TEST_DSN，数据库集成跳过；浏览器本机 HTTP 测试数据，不代表真实业务。远端推送单独由 PROC-06b 核对。
   - [x] PROC-06b【已完成】2026-09-19：再次 fetch / merge origin/main（Already up to date），经 SSH 非强制推送 GitHub main 58b4549→60f7cb6；重新 `git fetch origin` 及 `git rev-parse HEAD origin/main` 确认双方均为 60f7cb6，完整保留远端历史。当前记录单独提交，不将本次提交哈希循环写入自身；无生产部署或数据库迁移。

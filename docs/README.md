@@ -6,6 +6,7 @@
 
 ## 阅读顺序
 
+- [最新代码、文档与实际页面图同步](./26-github-sync-products-orders-20260919.md)：适用商品展示及本人推广订单接口 / 状态模型，区分已实现、未实现与真实业务验收。
 - [推广中心详细设计（含首页与 16 个页面图）](./21-promotion-center-detailed-design.md)：入口、状态、接口、数据与资金边界。
 - [推广中心研发计划](./superpowers/plans/2026-09-16-promotion-center.md)：M0～M5 依赖、开发任务和验收门槛。
 - [万单宝式模型分析与推广中心用户端](./20-promoter-model-user-ui-design.md)：业务规则分析、P-01～P-16 功能关联与 16 个界面。

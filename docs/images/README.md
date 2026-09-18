@@ -2,6 +2,7 @@
 
 ## 文件
 
+- `client-coupon-products-390-20260919.png`、`client-coupon-products-320-20260919.png`：M6-02b-3b 实际 H5 券详情适用商品区域，390 / 320px 视口；本机 HTTP 测试数据，只读，没有实时价格 / 购买入口，不代表真实渠道或领券验收。详见[最新同步记录](../26-github-sync-products-orders-20260919.md)。
 - `client-home-readonly-20260919.png`、`client-coupons-readonly-20260919.png`：2026-09-19 实际 uni-app H5 首页与领券页，390px 屏宽。本机 HTTP 测试服务经真实 uni 请求和开发代理提供测试券，非真实可领优惠；用于 M1-01d-2 页面验收，不取代 V3 概念稿或微信真机验收。券只读，领取与购买未接通。详见[同步记录](../25-github-sync-20260919.md)。
 
 - `home-platform-modules-h5-v3.png`：2026-09-17 多平台切换首页 H5 概念稿；京东选中态、四个内容模块和「首页 / 领券 / 推广 / 我的」四栏底导航。DOC-04 已确认此结构为当前设计基线，旧 V2 五栏仅作历史归档；全部商品、店铺、价格和券额均为演示，不代表客户端已完成或业务可用。
