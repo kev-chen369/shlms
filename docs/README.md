@@ -6,6 +6,8 @@
 
 ## 阅读顺序
 
+- [现有 H5 页面关联与可用性验收](./28-client-accessibility-acceptance-20260919.md)：P 编号 / 页面 / API / 用例映射，七页面字体 / 键盘检查及两项回归修复；不是完整业务或微信真机验收。
+
 - [最新代码、文档与实际页面图同步](./27-github-sync-dashboard-orders-20260919.md)：独立本人推广订单页面、看板接口 / 状态模型及实际页面截图，区分已实现、未实现与真实业务验收。
 - [推广中心详细设计（含首页与 16 个页面图）](./21-promotion-center-detailed-design.md)：入口、状态、接口、数据与资金边界。
 - [推广中心研发计划](./superpowers/plans/2026-09-16-promotion-center.md)：M0～M5 依赖、开发任务和验收门槛。

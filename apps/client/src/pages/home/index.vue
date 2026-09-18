@@ -47,13 +47,13 @@ function explain(kind: string) { notice.value = `${selectedPlatformName.value}${
 
 <style scoped>
 .home-page { padding: 0 14px calc(94px + env(safe-area-inset-bottom)); background: #f8faf8; }
-.home-header { display: flex; align-items: center; gap: 14px; margin: 0 -14px; padding: 22px 14px; background: linear-gradient(110deg, #f4fff9, #e5fbed); }
+.home-header { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin: 0 -14px; padding: 22px 14px; background: linear-gradient(110deg, #f4fff9, #e5fbed); }
 .brand-block { flex-shrink: 0; }
 .brand { font-size: 23px; letter-spacing: -.6px; }
 .brand-caption { display: block; margin-top: 5px; font-size: 10px; color: #6d7e74; }
-.search-bar { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; min-height: 48px; padding: 0 8px; border: 1px solid #dce4df; border-radius: 28px; background: white; }
+.search-bar { display: flex; align-items: center; gap: 6px; flex: 1 1 190px; min-width: min(190px, 100%); min-height: 48px; padding: 0 8px; border: 1px solid #dce4df; border-radius: 28px; background: white; }
 .search-icon { width: 20px; height: 20px; flex-shrink: 0; }
-.search-bar input { width: 0; min-width: 0; flex: 1; font-size: 13px; }
+.search-bar input { width: 0; min-width: 0; flex: 1; height: 44px; font-size: 13px; }
 button { margin: 0; background: transparent; min-height: 44px; color: #66786b; font-size: 13px; line-height: 44px; }
 button::after { border: none; }
 .search-bar button { min-width: 44px; padding: 0; color: #07594b; flex-shrink: 0; }
