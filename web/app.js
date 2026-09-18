@@ -1,3 +1,5 @@
+import { loadPromoterState, renderPromoterState } from './promoter.mjs';
+
 const platforms = [
   { id: 'JD', name: '京东', active: true },
   { id: 'MT', name: '美团', active: true },
@@ -107,6 +109,15 @@ function selectTab(tab) {
   byId('content').focus({ preventScroll: true });
   window.scrollTo({ top: 0, behavior: 'instant' });
   if (tab === 'coupons') loadCoupons();
+  if (tab === 'promotion') refreshPromotion();
+}
+
+async function refreshPromotion() {
+  const content = byId('promotion-content');
+  content.replaceChildren(statusBox('正在检查推广状态', '请稍候…'));
+  const result = await loadPromoterState({ accessToken: null });
+  if (state.tab !== 'promotion') return;
+  renderPromoterState(content, result, () => selectTab('coupons'));
 }
 
 function scopeName(scope) {
