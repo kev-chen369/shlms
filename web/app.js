@@ -8,7 +8,7 @@ const platforms = [
   { id: 'ELEME', name: '饿了么', active: false },
 ];
 
-const state = { platform: 'JD', cityCode: '', tab: 'home', request: null, couponRequest: null, detailRequest: null, cityRequest: null, nextCursor: '', activeCoupon: '' };
+const state = { platform: 'JD', cityCode: '', tab: 'home', accessToken: null, request: null, couponRequest: null, detailRequest: null, cityRequest: null, nextCursor: '', activeCoupon: '' };
 const byId = (id) => document.getElementById(id);
 const platformName = () => platforms.find((item) => item.id === state.platform)?.name ?? '';
 const yuan = (minor) => `¥${(minor / 100).toFixed(minor % 100 === 0 ? 0 : 2)}`;
@@ -115,9 +115,9 @@ function selectTab(tab) {
 async function refreshPromotion() {
   const content = byId('promotion-content');
   content.replaceChildren(statusBox('正在检查推广状态', '请稍候…'));
-  const result = await loadPromoterState({ accessToken: null });
+  const result = await loadPromoterState({ accessToken: state.accessToken });
   if (state.tab !== 'promotion') return;
-  renderPromoterState(content, result, () => selectTab('coupons'));
+  renderPromoterState(content, result, () => selectTab('coupons'), state.accessToken);
 }
 
 function scopeName(scope) {

@@ -1,3 +1,5 @@
+import { mountPromotionFlow } from './promotion-flow-view.mjs';
+
 const statusCopy = {
   NOT_APPLIED: ['尚未申请推广资格', '提交申请并通过审核后，才可创建推广位和生成专属链接。'],
   PENDING: ['申请审核中', '审核结果以推广中心状态为准，等待期间不能生成推广链接。'],
@@ -43,7 +45,7 @@ function card(title, description) {
   return item;
 }
 
-export function renderPromoterState(target, state, onBrowse) {
+export function renderPromoterState(target, state, onBrowse, accessToken = null) {
   target.replaceChildren();
   if (state.kind === 'SIGNED_OUT') {
     const item = card('登录后查看推广资格', '登录接入完成后，可在这里查看申请状态、本人推广位和订单数据。');
@@ -77,10 +79,13 @@ export function renderPromoterState(target, state, onBrowse) {
   const dataCard = card('近期推广数据', state.dashboard ? `成功转链 ${state.dashboard.successfulLinks} 次 · 复制上报 ${state.dashboard.copyReports ?? 0} 次 · 有效归因订单 ${state.dashboard.validOrders} 笔` : '推广数据暂时无法读取');
   dataCard.append(node('small', '', '复制上报不代表送达；订单数不代表收益。'));
   target.append(dataCard);
-  const convertCard = card('生成推广链接', '渠道位核验和真实商品能力接通后开放。');
-  const convert = node('button', 'promotion-button', '暂不可生成');
-  convert.type = 'button';
-  convert.disabled = true;
-  convertCard.append(convert);
+  const convertCard = card('生成推广链接', '请先确认本人推广位及渠道状态。');
+  if (!mountPromotionFlow(convertCard, { positions: state.positions || [], accessToken })) {
+    convertCard.append(node('p', '', '渠道位尚未核验为可用，暂不能生成链接。'));
+    const convert = node('button', 'promotion-button', '暂不可生成');
+    convert.type = 'button';
+    convert.disabled = true;
+    convertCard.append(convert);
+  }
   target.append(convertCard);
 }
