@@ -178,4 +178,14 @@ app.Config增加显式CatalogBindings，NewHandler在既有公钥 / 数据库 / 
 
 历史read-only快照保证完整旧读取；这里“新请求复判”不是撤销中止在途请求或生成事务最终锁。来源真实性、角色 / DDL权限、正式账户、设备、生成最终检查及前端选品仍待对应任务。
 
+## M7-01d-3b-1 严格部署绑定解析（已完成）
+
+仅增加受控配置解析契约，不开放配置写入API。JSON根必须为数组，每项精确包含platform / type / terminal / scene / mediaId五个字符串；字段顺序及JSON空白可变，字段名称区分大小写，重复字段（含等价转义）、未知字段、缺字段、null / 非字符串、尾随JSON、非法UTF8及超过64KiB拒绝。四维范围不可重复，媒体 / 场景长度及平台类型 / 终端沿用读取服务语义，共享校验不依赖业务数据库。空数组不授予权限，错误统一ErrInvalid且无部分配置或输入内容。
+
+TDD缺ParseCatalogBindings编译RED后解析GREEN；新增真实隔离库消费者测试验证正确媒体详情、当前声明撤销后的SUSPENDED，以及空数组UNCONFIGURED / 无item / cursor。首次消费者测试context导入与既有测试函数同名，改为stdcontext别名；此编译失败不作为业务RED。文件读取、环境变量与cmd/api装配留给M7-01d-3b-2，不提前完成父项；默认运行时仍为空绑定。无视觉改动、无真实渠道调用、无生产迁移、无自动push。
+
+独立审查初版无Critical / Important，指出孤立UTF-16 surrogate会被Go解码替换；先补测试实见scene变U+FFFD却nil错误的RED，再增加配对转义校验。合法surrogate对及转义反斜线字面值保留，孤立高 / 低surrogate或错误配对拒绝。下段为M7-01d-3a历史验收，不是本项文件加载证据。
+
+2026-09-19本项最终验证：私有PG_TEST_DSN定向-race -count3（解析 / 消费者 / 原读取服务）与全量go test -count=1 ./...、go vet ./...、go build ./...均退出0；12个计划相对链接、diff通过，独立增量审查无阻断、解析定向实跑通过，测试结束非系统schema数0。只暂存本项实现 / 测试 / 状态文档，不提交.DS_Store，不推送或部署。
+
 2026-09-19：3项真实应用测试及九类状态子项独立实跑通过，最终私有PG_TEST_DSN定向-race -count3和全量go test -count=1 ./... / vet / build均退出0，20相关文档相对链接与diff通过。首轮Page重复JSON解码使omitempty NextCursor残留于测试对象，造成尾页误判RED；按实际生产省略字段语义重置每页解码对象后GREEN，不改生产游标或序列化。独立审查实际三项 / 九子项无Critical / Important，强化跨人 / 空配置结果必须items[]或无item，三轮race再通过；最终全量实跑后非系统schema数0。只增加应用7行装配，不改Verifier或渠道 / 历史SQL、不启用生成、不对现有数据库执行迁移。3b受控配置加载与综合父项复核未完成，本地逐任务提交，无push / 部署。

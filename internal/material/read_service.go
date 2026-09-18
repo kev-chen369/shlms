@@ -40,18 +40,11 @@ func NewReadService(repo Repository, bindings []CatalogBinding) (*ReadService, e
 	if repo.DB == nil {
 		return nil, ErrUnavailable
 	}
-	s := &ReadService{repo: repo, bindings: make(map[bindingScope]string, len(bindings)), now: time.Now}
-	for _, binding := range bindings {
-		if !platformType(binding.Platform, binding.Type) || !terminal(binding.Terminal) || !text(binding.Scene, 80, false) || !text(binding.MediaID, 128, false) {
-			return nil, ErrInvalid
-		}
-		scope := bindingScope{binding.Platform, binding.Type, binding.Terminal, binding.Scene}
-		if _, exists := s.bindings[scope]; exists {
-			return nil, ErrInvalid
-		}
-		s.bindings[scope] = binding.MediaID
+	configured, err := bindingMap(bindings)
+	if err != nil {
+		return nil, err
 	}
-	return s, nil
+	return &ReadService{repo: repo, bindings: configured, now: time.Now}, nil
 }
 
 func (s *ReadService) key(ctx stdcontext.Context, in ReadInput) (capability.Key, bool, error) {
