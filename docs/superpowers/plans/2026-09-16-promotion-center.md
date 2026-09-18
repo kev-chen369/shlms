@@ -10,9 +10,9 @@
 
 ## 分支整合
 
-- [ ] PROC-05【进行中】2026-09-19：按用户要求同步 GitHub main 的已验收代码、当前文档及既有图稿；保留原工作区未验收的 M1-01c 改动。不包含生产部署、数据库迁移、真实渠道验收或重新绘图。
+- [x] PROC-05【已完成】2026-09-19：按用户要求同步 GitHub main 的已验收代码、当前文档及既有图稿；保留原工作区未验收的 M1-01c 改动。不包含生产部署、数据库迁移、真实渠道验收或重新绘图。
   - [x] PROC-05a【已完成】2026-09-19：在独立工作树复核远端 71da903 与已验收品牌提交 M0-02f，修正图片索引的 V3 已确认结构和历史名称说明；未改变既有 PNG。验证：`go test ./...`、`go vet ./...`、`go build ./...`、`node --test web/*.test.mjs`（13 项）、客户端 `npm test`（43 项）、`npm run typecheck`、`npm run build:h5`、`npm run build:mp-weixin` 全部通过；Node 检查 37 张 PNG 签名 / 非零尺寸及索引文件路径通过，`git diff --check` 通过。未配置 PG_TEST_DSN，数据库集成测试跳过，不代表真实渠道、生产数据库或微信真机验收；远端推送另由 PROC-05b 核对。
-  - [ ] PROC-05b【进行中】将已验收版本以非强制方式同步 GitHub main，推送后重新 fetch 并核对远端提交；若远端有新提交先合并再验证，不能覆盖另一研发任务。
+  - [x] PROC-05b【已完成】2026-09-19：重新 fetch / merge origin/main（Already up to date），通过 SSH 非强制推送已验收品牌代码与图稿索引记录；再次 `git fetch origin`、`git rev-parse HEAD origin/main` 核对双方均为 4025e18，完整保留远端既有历史。仅 GitHub 仓库同步，未执行生产部署或数据库迁移。`npm ci --ignore-scripts` 完成，审计仍为 40 项（15 low / 12 moderate / 13 high），继续由 M0-02e 跟踪，不代表安全发布门槛通过。
 
 - [x] M0-02f【已完成】2026-09-19：按 DOC-08 已确认名称统一 uni-app 首页、H5 HTML / manifest 标题、跨端 manifest 显示名称及全局导航标题为「万宝单生活」，更新当前 README；保留 AppID / 包名 / 渠道媒体 ID、版本号、公开分享文案与 V2 历史验证记录。首页品牌测试先实际失败，实现后 `npm test`（43 项）、`npm run typecheck`、`npm run build:h5`、`npm run build:mp-weixin` 通过。Browser 插件未提供，使用现有 Playwright / Chrome 在本机 127.0.0.1:5173 验证 320×844、390×844、1280×844 的实际标题、首页新名称、无旧名称 / 框架覆盖 / 运行错误 / 横向溢出，首页品牌与城市按钮不重叠、五栏保留且推广入口到达；直接查看 320px 截图。只读代码审查无阻断，`git diff --check` 通过。仅客户端品牌适配，不代表 V3 页面、微信设备、图稿重绘或真实业务验收；本地逐任务提交，不自动推送 / 部署。
 
