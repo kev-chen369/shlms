@@ -139,3 +139,16 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 HTTP可信媒体与场景解析属于d-2，启动及鉴权集成属于d-3；仓储验证不替代API或真实渠道 / 来源验收。当前特性分支无其他tracked修改，按此前自行判断授权在原工作区继续，保留.DS_Store和所有其他工作树；不自动push / 部署。
 
 2026-09-19：缺Get / Detail接口实际编译RED后新增实现。真实私有PG17.11六项详情测试及三轮race通过；商品安全11字段、三平台WX_MINI活动、11类域拒绝、缺失与跨平台类型同原因、本人 / 位 / 能力 / 证据到期、无能力缺表仍返回拒绝、规范ID / 范围 / kind / now、nil / SQL失败 / 关闭 / cancel错误零Detail、零Tracking / 请求断言通过。首轮到期reason测试误写EVIDENCE_EXPIRED，经policy现有契约证实改VERIFICATION_EXPIRED，生产策略不改。新增真实pg_locks / writer PID条件观察详情阻塞，提交会员 / 标题 / expiry变更，旧读取完整旧快照，新请求最新结果；临时READ COMMITTED实测三case混合快照RED，恢复后三轮GREEN。最终配置PG_TEST_DSN全量Go test / vet / build、9相关文档相对链接 / diff退出0；独立审查真实恢复后六项通过，无Critical / Important问题。新增78行详情实现，不改List、JD适配器或历史SQL；无公开路由、来源批准、生成权限或生产部署验收。M7-01d父项继续，下一项d-2。
+
+### M7-01d-2a【已完成】：可信目录读取服务
+
+CatalogBinding以平台 / 类型 / 终端 / 场景四维精确映射服务端MediaID；不设默认媒体 / 通配 / 自动READY。NewReadService复制配置到私有map，拒绝歧义重复绑定及非法组合 / 文本字段，DB不能为空，空配置是合法关闭态。ReadInput只有可信OwnerID、五维Scope、所选内部PositionID及Scene，无media / now / 状态字段。服务List接cursor / limit，Get只接materialID；读取前验证完整输入、分页绑定和取消。缺绑定返回非nil空列表或无item详情、UNCONFIGURED能力拒绝，不调用物料SQL；有绑定构造完整CATALOG Key，以服务端time.Now逐次调用真实仓储复核本人位、资格和证据。
+
+所选位 / scene不是客户端授权声明，仓储仍验证本人、启用和实际位scene。媒体配置只是来源选择，并不代替获批负责人 / 来源 / 实调用证明；仓储读取可信证据记录并校验结构 / 时效，真实性另行审核。游标仍按既有owner / 五维Scope协议绑定分页位置，不携带缓存授权；换位 / 场景或配置改变后每次重新检查完整Key，前端切换时必须清理旧游标。
+
+- [x] 缺服务接口RED后实现；真实PG验证可信配置复制、正确媒体 / 分页 / 详情、错媒体与四维配置隔离、撤销和跨用户、空配置缺表无读取、非法 / 重复配置与输入及取消零数据。
+- [x] 定向race / 全量Go / vet / build / 文档链接 / diff，独立只读复审后本地逐任务提交。
+
+M7-01d-2b仍负责HTTP鉴权与参数白名单，d-3负责启动装配与验证器集成；当前服务未注册路由或配置真实媒体，不push / 部署。
+
+2026-09-19：缺CatalogBinding / NewReadService / ReadInput真实编译RED后新增服务和3项真实PG测试GREEN；私有PG17.11定向-race -count3及配置PG_TEST_DSN全量go test -count=1 ./... / vet / build均退出0，11计划相对链接及diff通过。独立审查实际三项通过，无Critical / Important；修正文档真实性边界minor措辞，未改变策略或源批准。全量及审查完成后非系统schema数0。服务输入不含media / READY / now，复制静态部署映射、精确无通配，逐次数据库复核，无API / 新迁移 / 真实渠道 / 前端装配。逐任务本地提交，M7-01d-2和父项继续，下一项d-2b。
