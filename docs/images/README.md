@@ -2,6 +2,8 @@
 
 ## 文件
 
+- `client-materials-selection-390-20260919.png`：2026-09-19 重新生成并查看的实际 H5 390px 推广选品页面，展示显式本人位 / 固定场景 / 城市与业务确认及目录未配置。测试端合成身份与 HTTP 响应，生成链接关闭，不代表生产渠道或完整多尺寸验收；见[PROC-17 同步说明](../30-github-sync-materials-accessibility-20260919.md)。
+
 - `qa-coupon-list-text200-320.png`、`qa-coupon-products-text200-320.png`、`qa-link-input-text200-320.png`、`qa-profile-route-text200-320.png`、`qa-promotion-route-text200-320.png`：2026-09-19 实际 H5 320px / 200% CSS 文本截图；券与商品为合成测试数据，转链未开放，不代表生产授权或真实设备验收。见[最新同步说明](../30-github-sync-materials-accessibility-20260919.md)。
 
 - `qa-promoter-dashboard-filter-text200-320.png`、`qa-promoter-dashboard-input-text200-320.png`、`qa-promoter-dashboard-counts-text200-320.png`、`qa-promoter-orders-filter-text200-320.png`、`qa-promoter-orders-input-text200-320.png`、`qa-promoter-orders-detail-text200-320.png`：2026-09-19 实际 H5 320px / 200% CSS 文本筛选、输入、计数与归因详情截图。仅测试端合成身份与 HTTP 测试数据，不代表生产身份 / 订单、收益、系统字体或正式无障碍验收；见[最新同步说明](../29-github-sync-accessibility-dashboard-20260919.md)。

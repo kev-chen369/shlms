@@ -7,7 +7,7 @@
 ## 阅读顺序
 
 - [隔离 PostgreSQL 环境与实跑记录](./31-isolated-postgresql-acceptance-20260919.md)：本机私有测试库、真实数据库验证及剩余业务边界，不是生产部署。
-- [最新 GitHub 同步范围与实际页面图](./30-github-sync-materials-accessibility-20260919.md)：物料 / 能力模型与授权仓储、23项迁移及并发快照验收、五张实际截图和未完成API / 选品 / 真实渠道边界。
+- [最新 GitHub 同步范围与实际页面图](./30-github-sync-materials-accessibility-20260919.md)：本人推广位读取、选品组件 / 完整页面及实际页面图，包含物料 / 能力与授权仓储历史记录；完整多尺寸验收、真实渠道和生产发布仍待完成。
 - [统计页面同步记录](./29-github-sync-accessibility-dashboard-20260919.md)：本人统计页面、输入与大字号修复、复验结果及未完成边界。
 
 - [现有 H5 页面关联与可用性验收](./28-client-accessibility-acceptance-20260919.md)：P 编号 / 页面 / API / 用例映射，七页面字体 / 键盘检查及两项回归修复；不是完整业务或微信真机验收。
