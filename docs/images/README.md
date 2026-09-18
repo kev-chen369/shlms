@@ -2,6 +2,8 @@
 
 ## 文件
 
+- `qa-promoter-dashboard-filter-text200-320.png`、`qa-promoter-dashboard-input-text200-320.png`、`qa-promoter-dashboard-counts-text200-320.png`、`qa-promoter-orders-filter-text200-320.png`、`qa-promoter-orders-input-text200-320.png`、`qa-promoter-orders-detail-text200-320.png`：2026-09-19 实际 H5 320px / 200% CSS 文本筛选、输入、计数与归因详情截图。仅测试端合成身份与 HTTP 测试数据，不代表生产身份 / 订单、收益、系统字体或正式无障碍验收；见[最新同步说明](../29-github-sync-accessibility-dashboard-20260919.md)。
+
 - `client-promoter-orders-login-390-20260919.png`、`client-promoter-orders-list-390-20260919.png`、`client-promoter-orders-detail-390-20260919.png`：实际 H5 本人推广订单未登录 / 列表 / 详情页面。列表与详情使用 QA 测试身份及本机 HTTP 测试数据，无收益金额，不代表真实订单或生产身份验收；见[当前同步说明](../27-github-sync-dashboard-orders-20260919.md)。
 
 - `client-coupon-products-390-20260919.png`、`client-coupon-products-320-20260919.png`：M6-02b-3b 实际 H5 券详情适用商品区域，390 / 320px 视口；本机 HTTP 测试数据，只读，没有实时价格 / 购买入口，不代表真实渠道或领券验收。详见[最新同步记录](../26-github-sync-products-orders-20260919.md)。
