@@ -65,6 +65,11 @@ func promoterDashboardHandler(d Dependencies) http.HandlerFunc {
 			}
 			return
 		}
+		// UTC wire timestamps preserve historical second-level timezone offsets.
+		// The filter and declared calendar zone remain Asia/Shanghai.
+		counts.From = counts.From.UTC()
+		counts.ToExclusive = counts.ToExclusive.UTC()
+		counts.AsOf = counts.AsOf.UTC()
 		writeJSON(w, 200, map[string]any{"code": 0, "message": "success", "data": counts})
 	}
 }
