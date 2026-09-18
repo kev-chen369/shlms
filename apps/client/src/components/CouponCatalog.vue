@@ -50,6 +50,18 @@ const statusText = computed(() => state.error || state.expiredNotice || ({ idle:
       <view v-if="state.detailStatus !== 'ready'" role="status" aria-live="polite">{{ state.detailStatus === 'loading' ? '正在读取规则…' : state.detailError }}</view>
       <view v-if="state.detail" class="detail-fields"><text>{{ state.detail.title }}</text><text>优惠金额：{{ money(state.detail.discountMinor) }}</text><text>使用门槛：{{ state.detail.thresholdMinor ? `满${money(state.detail.thresholdMinor)}` : '无金额门槛' }}</text><text>适用范围：{{ scopeName(state.detail.scope) }} {{ state.detail.scopeName }}</text><text>适用城市：{{ state.detail.cityName || state.detail.cityCode || '不限城市活动' }}</text><text>适用业务：{{ state.detail.business || '不限业务活动' }}</text><text>有效期至：{{ dateText(state.detail.expiresAt) }}</text><text>数据更新：{{ dateText(state.detail.updatedAt) }}</text><text>规则版本：{{ state.detail.ruleVersion }}</text><text>领取方式：{{ state.detail.actionLabel }}（暂不可操作）</text><text class="hint readonly-notice">领取与购买暂未接通，不表示券已领取；最终优惠以平台结算为准。</text></view>
       <button v-if="['error', 'unavailable'].includes(state.detailStatus)" role="button" tabindex="0" class="catalog-action" @tap="catalog.openDetail(state.detailId)" @keydown.enter.prevent="catalog.openDetail(state.detailId)" @keydown.space.prevent="catalog.openDetail(state.detailId)">重试规则</button>
+      <view v-if="state.detailStatus === 'ready' && state.detail && state.detail.scope !== 'ACTIVITY'" class="applicable-products" data-test="coupon-products" role="region" aria-label="适用商品">
+        <text class="coupon-title">适用商品</text>
+        <text class="hint">仅展示已核验的商品身份与有效期，不提供实时价格或购买入口；适用资格仍须平台结算复核。</text>
+        <view v-if="state.productsStatus !== 'ready'" data-test="coupon-products-status" class="hint" role="status" aria-live="polite">{{ state.productsError ? (state.productsStatus === 'unavailable' ? '适用商品服务尚未接入' : '适用商品读取失败，请稍后重试') : state.productsStatus === 'loading' ? '正在读取适用商品…' : '暂无可用适用商品' }}</view>
+        <text v-if="state.productsNotice" class="hint" role="status">{{ state.productsNotice }}</text>
+        <view v-for="product in state.products" :key="product.externalProductId" data-test="coupon-product" class="applicable-product">
+          <text class="product-title">{{ product.title }}</text><text class="hint">商品 ID：{{ product.externalProductId }}</text><text class="hint">有效期至：{{ dateText(product.expiresAt) }}</text><text class="hint">数据更新：{{ dateText(product.updatedAt) }}</text>
+        </view>
+        <text v-if="state.productsPageError" class="hint" role="status">适用商品加载失败，可重试加载更多。</text>
+        <button v-if="state.productsStatus !== 'loading'" role="button" tabindex="0" data-test="coupon-products-retry" class="catalog-action" @tap="catalog.refreshProducts" @keydown.enter.prevent="catalog.refreshProducts" @keydown.space.prevent="catalog.refreshProducts">{{ ['error', 'unavailable'].includes(state.productsStatus) ? '重试适用商品' : '刷新适用商品' }}</button>
+        <button v-if="state.productsCursor" role="button" tabindex="0" data-test="coupon-products-more" class="catalog-action" :disabled="state.loadingMoreProducts" @tap="catalog.loadMoreProducts" @keydown.enter.prevent="catalog.loadMoreProducts" @keydown.space.prevent="catalog.loadMoreProducts">{{ state.loadingMoreProducts ? '正在加载适用商品…' : '加载更多适用商品' }}</button>
+      </view>
     </view>
   </view>
 </template>
@@ -81,5 +93,8 @@ button image { width: 14px; height: 14px; }
 .coupon-detail { margin-top: 16px; padding: 14px; border: 1px solid #dce7df; border-radius: 14px; background: white; font-size: 14px; }
 .detail-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .detail-fields > text { display: block; margin: 6px 0; overflow-wrap: anywhere; }
+.applicable-products { border-top: 1px solid #dce7df; margin-top: 16px; padding-top: 16px; }
+.applicable-product { padding: 12px 0; border-bottom: 1px solid #dce7df; overflow-wrap: anywhere; }
+.product-title { display: block; font-size: 14px; font-weight: 650; margin-bottom: 4px; }
 @media (max-width: 360px) { .coupon-value { flex-basis: 86px; padding: 16px 8px; } .amount { font-size: 20px; } .coupon-copy { padding: 10px; } }
 </style>
