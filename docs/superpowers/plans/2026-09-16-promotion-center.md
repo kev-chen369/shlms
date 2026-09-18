@@ -303,7 +303,10 @@ M0 规则 / 工程准备 → M1 身份与推广位 → M2 预览转链 → M3 �
     - [x] M7-01c-3【已完成】2026-09-19：3a真实全部23迁移up / down / up、并发 / 重复与清理，3b十类提交变更的真实阻塞、跨批旧快照 / 新请求及旧游标续页一致性均通过。配置私有PG_TEST_DSN最终全量test / vet / build与定向race重复、文档 / diff通过；独立审查实跑无阻断。仅测试schema，不能替代生产权限、来源或真实渠道验收。
       - [x] M7-01c-3a【已完成】2026-09-19：新增internal/dbmigrate/chain_test.go，真实000001～000023完整Run / Verify→逐版逆序down与精确测试账本删除同事务→无业务关系 / 函数残留→完整up / Verify / 重复零应用，动态版本数；既有4路并发核对新物料 / 能力 / 证据表。私有PG_TEST_DSN定向-race -count3及全量go test -count=1 ./... / vet / build、14相对文档链接 / diff退出0；独立审查实跑无阻断。只改测试及计划 / 测试记录，down与账本清理仅临时合成schema，不提供生产down/reset或声称无损回滚；3b及父项仍未完成，逐项本地提交。
       - [x] M7-01c-3b【已完成】2026-09-19：新增internal/material/snapshot_test.go，pg_locks目标relation及writer PID阻塞观察，提交能力 / 会员 / 位 / 新未来证据及六类物料变更；limit1跨批跳ID2非法证据，原读取保留旧ID1 / 标题 / READY与真hasMore，新请求及旧游标续页看到最新拒绝 / 空目录 / ID3新标题。三条材料 / 证据保留、零Tracking / 请求断言；READ COMMITTED mutation实测两个case混合快照RED后精确恢复，生产实现与HEAD无差异。私有PG17.11定向-race -count3十case及最终配置PG_TEST_DSN全量go test -count=1 ./... / vet / build、18相对链接 / diff退出0；独立审查十case实际通过，无阻断，最终非系统schema数0。此一致性不是撤销立即中止在途读取或生成授权锁；只改测试 / 文档，逐项本地提交，不push / 部署。
-  - [ ] M7-01d【未开始】鉴权本人范围只读目录 / 详情与安全能力投影、分页 / 失效测试；无可信配置拒绝开放。
+  - [ ] M7-01d【进行中】鉴权本人范围只读目录 / 详情与安全能力投影、分页 / 失效测试；无可信配置拒绝开放。先补详情仓储，再装配可信范围与HTTP，不因仓储完成勾选API。
+    - [x] M7-01d-1【已完成】2026-09-19：新增internal/material/detail.go / detail_test.go，Get同只读REPEATABLE READ快照先gate、规范本人 / 物料UUID及范围 / CATALOG校验，ID / 平台 / 类型独立SQL绑定后CardFor白名单投影。六项真实数据库测试覆盖商品 / JD淘宝美团活动、11类物料拒绝、本人 / 位 / 能力 / 证据到期、缺表仍拒绝、缺失与跨类型平台统一安全原因、nil / SQL故障 / 关闭 / 取消零Detail及零新增Tracking / 请求。缺Get接口RED后实现；测试证据到期原因按既有契约修正VERIFICATION_EXPIRED，未改策略。真实物料锁并发会员 / 标题 / 有效期三case，READ COMMITTED mutation三case实际混合快照RED后恢复；私有PG17.11定向-race -count3、配置PG_TEST_DSN全量go test -count=1 ./... / vet / build、9文档相对链接 / diff退出0；独立审查恢复后实跑六项通过，无阻断。仅仓储元数据，不是HTTP / 来源真实性 / 生成授权或前端验收；逐任务本地提交，无push / 部署。
+    - [ ] M7-01d-2【未开始】服务端可信媒体 / 场景配置解析及鉴权列表 / 详情HTTP契约，严格参数、拒绝客户端伪造owner / media / READY；无配置保持不可用，覆盖状态和分页。
+    - [ ] M7-01d-3【未开始】启动装配与真实验证器 / 仓储HTTP集成验收，复核本人隔离、撤销及只读边界；真实身份提供方和渠道另验收。
   - [ ] M7-01e【未开始】前端契约 / 状态及选品页面，平台切换清理、空 / 未开放 / 错误 / 分页；与M7-06生成流程区分。
   - [ ] M7-01f【阻塞】真实获批目录和逐能力脱敏证据、负责人验收；依赖渠道权限和测试账号，模型 / 模拟测试不代表READY。
 - [ ] M7-02【未开始】完成京东商品真实验收后扩展获批京东活动目录、活动预览、按推广位转链与结果核验；与 M5-01 衔接，活动不假装为商品 SKU。

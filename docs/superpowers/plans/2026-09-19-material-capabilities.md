@@ -128,3 +128,14 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 私有PG_TEST_DSN定向-race -count3与全量Go验证 / 文档链接 / diff，独立审查并提交M7-01c-3b后复核c-2 / c-3父项。
 
 2026-09-19【已完成】：真实PostgreSQL17.11十case定向-race -count3全部通过，旧游标续页新增断言同样三轮通过；最终配置PG_TEST_DSN全量go test -count=1 ./... / go vet ./... / go build ./...、diff退出0，18相对文档链接通过，独立审查实际十case通过无阻断。临时降为READ COMMITTED的mutation实际捕获会员变更后READY / 空页、标题变更后READY / 新标题混合快照RED；精确恢复原RepeatableRead，未保留生产变更。最后非系统schema数0，测试合成数据已清理。结合3a及c-1 / c-2各子项现有与本轮全量实跑证据，父c-2 / c-2c / c-3 / M7-01c范围复核完成，仅结构、只读目录列表仓储及隔离验证；详情 / 目录HTTP、前端、生产角色 / 来源批准、真实渠道与生成最终复核仍未完成。下一项M7-01d，不push / 部署。
+
+### M7-01d-1【已完成】：详情只读仓储
+
+在既有目录仓储上增加 `Get(ctx, ownerID, scope, key, materialID, now)`，不复用列表limit / cursor，不将内部Record序列化。返回Detail的可选item安全Card、capability Decision及availability Decision。规范本人UUID / 物料UUID、CATALOG与全部范围参数先校验；只读REPEATABLE READ先检查同快照本人资格 / 位 / 能力，再按ID + 平台 + 类型及独立本人启用条件读取。能力拒绝时不查物料、item为空、availability为CAPABILITY_UNAVAILABLE；无行及跨平台类型统一MATERIAL_UNAVAILABLE。同范围已找到记录由CardFor检查状态 / 时效 / 地域 / 业务 / 终端及内部字段完整性；拒绝只有安全原因，item为空。SQL / commit失败不返回部分详情，取消保留context错误。无网络、写入、生成或公开路由。
+
+- [x] 真实PG详情白名单 / 拒绝 / 缺失范围 / 输入与存储错误测试先RED，最小实现后GREEN。
+- [x] 定向race、全量Go / vet / build及diff验证；只读独立审查后记录证据并逐任务提交。
+
+HTTP可信媒体与场景解析属于d-2，启动及鉴权集成属于d-3；仓储验证不替代API或真实渠道 / 来源验收。当前特性分支无其他tracked修改，按此前自行判断授权在原工作区继续，保留.DS_Store和所有其他工作树；不自动push / 部署。
+
+2026-09-19：缺Get / Detail接口实际编译RED后新增实现。真实私有PG17.11六项详情测试及三轮race通过；商品安全11字段、三平台WX_MINI活动、11类域拒绝、缺失与跨平台类型同原因、本人 / 位 / 能力 / 证据到期、无能力缺表仍返回拒绝、规范ID / 范围 / kind / now、nil / SQL失败 / 关闭 / cancel错误零Detail、零Tracking / 请求断言通过。首轮到期reason测试误写EVIDENCE_EXPIRED，经policy现有契约证实改VERIFICATION_EXPIRED，生产策略不改。新增真实pg_locks / writer PID条件观察详情阻塞，提交会员 / 标题 / expiry变更，旧读取完整旧快照，新请求最新结果；临时READ COMMITTED实测三case混合快照RED，恢复后三轮GREEN。最终配置PG_TEST_DSN全量Go test / vet / build、9相关文档相对链接 / diff退出0；独立审查真实恢复后六项通过，无Critical / Important问题。新增78行详情实现，不改List、JD适配器或历史SQL；无公开路由、来源批准、生成权限或生产部署验收。M7-01d父项继续，下一项d-2。
