@@ -93,6 +93,14 @@ func TestConvertRequotesBeforeReserveAndReplays(t *testing.T) {
 	if _, err := s.Convert(ctx, in); !errors.Is(err, ErrIdempotencyConflict) {
 		t.Fatal(err)
 	}
+	in.Scene = "home"
+	in.PositionID = "p2"
+	if _, err := s.Convert(ctx, in); !errors.Is(err, ErrIdempotencyConflict) {
+		t.Fatal("changed position did not return idempotency conflict", err)
+	}
+	if store.writes != 1 || requotes != 1 {
+		t.Fatal("conflicting replay performed a second conversion", store.writes, requotes)
+	}
 }
 
 func TestConvertFailsClosedBeforeTracking(t *testing.T) {
@@ -197,5 +205,13 @@ func TestConvertWithPostgresPersistsOnlyAfterMatchingQuote(t *testing.T) {
 	again, err := s.Convert(ctx, in)
 	if err != nil || again.ID != result.ID {
 		t.Fatal(again, err)
+	}
+	conflict := in
+	conflict.PositionID = "pos-u2"
+	if _, err := s.Convert(ctx, conflict); !errors.Is(err, ErrIdempotencyConflict) {
+		t.Fatal("reused key with different position", err)
+	}
+	if err := db.QueryRow(`SELECT count(*) FROM tracking_records`).Scan(&count); err != nil || count != 1 {
+		t.Fatal("conflicting key wrote tracking", count, err)
 	}
 }

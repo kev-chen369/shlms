@@ -55,10 +55,6 @@ func (s Service) Convert(ctx context.Context, in ConvertInput) (Record, error) {
 	if s.Eligibility == nil || s.Previews == nil || s.Requests == nil {
 		return Record{}, ErrUnavailable
 	}
-	position, err := s.Eligibility.Check(ctx, in.OwnerUserID, in.PositionID)
-	if err != nil {
-		return Record{}, eligibilityError(err)
-	}
 	h := sha256.New()
 	for _, part := range []string{in.PositionID, in.PreviewID, in.Scene} {
 		_, _ = h.Write([]byte{0})
@@ -70,10 +66,17 @@ func (s Service) Convert(ctx context.Context, in ConvertInput) (Record, error) {
 		if prior.RequestFingerprint != fingerprint {
 			return Record{}, ErrIdempotencyConflict
 		}
+		if _, err := s.Eligibility.Check(ctx, in.OwnerUserID, in.PositionID); err != nil {
+			return Record{}, eligibilityError(err)
+		}
 		return prior, nil
 	}
 	if !errors.Is(err, ErrNotFound) {
 		return Record{}, err
+	}
+	position, err := s.Eligibility.Check(ctx, in.OwnerUserID, in.PositionID)
+	if err != nil {
+		return Record{}, eligibilityError(err)
 	}
 	snapshot, err := s.Previews.FindByID(ctx, in.OwnerUserID, in.PreviewID)
 	if errors.Is(err, preview.ErrNotFound) {
