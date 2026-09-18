@@ -22,7 +22,7 @@ function timestamp(value: unknown): value is string {
   return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === day
 }
 function cursorValid(value: unknown): value is string { return text(value, 134, true) && /^[A-Za-z0-9_-]*$/.test(value) }
-function compareTime(left: string, right: string) {
+export function compareTime(left: string, right: string) {
   const seconds = Math.floor(Date.parse(left) / 1000) - Math.floor(Date.parse(right) / 1000)
   const fraction = (value: string) => Number((value.match(/\.(\d{1,9})/)?.[1] ?? '').padEnd(9, '0'))
   return seconds || fraction(left) - fraction(right)
