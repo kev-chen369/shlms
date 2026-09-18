@@ -113,6 +113,7 @@ P-00 首页按已确认的 [H5 V3 多平台图稿](./images/home-platform-module
 | GET /promotions/convert/{id} | 本人转链请求 ID | 返回状态与 Tracking；仅 SUCCEEDED 可返回链接，未授权对象以 404 隐藏 |
 | GET /promotion-links/{id} | 本人 | PROCESSING / READY / FAILED / EXPIRED、跳转地址与到期时间 |
 | GET /promotion-links/{id}/share-artifacts | type=link/text | 公开文案和链接，不含个人收益；未开放素材类型拒绝 |
+
 | POST /promotion-links/{id}/share-events | eventId、action、scene | 去重记操作，不宣称送达，不触发收益 |
 | GET /promoter/orders | cursor、from、to、channel、positionId、orderStatus、earningStatus | 脱敏订单与独立状态 |
 | GET /promoter/orders/{id} | 本人归因订单 | 归因证据摘要、规则版本、金额和状态历史 |
@@ -124,6 +125,8 @@ P-00 首页按已确认的 [H5 V3 多平台图稿](./images/home-platform-module
 | GET /wallet、POST /withdrawals | 沿用钱包契约 | 同人同币种统一钱包，不新建重复提现通道 |
 | GET /withdrawals、GET /withdrawals/{id} | cursor / 本人记录 | 冻结、付款、失败解冻状态 |
 | GET /promoter/activities | channel、cursor | M5：仅有效且已授权活动 |
+
+分享内容实现进展（M2-06a）：实际 API 为 `GET /api/v1/promotions/convert/{id}/share-artifacts?type=link|text`，只对已验签的本人且转链状态为 `SUCCEEDED` 返回成功链接或「商品标题 + 链接 + 结算提示」文案。个人收益、消费者返现和原始渠道证据不进入公开文案；QR、海报和非本人请求关闭。当前未接 H5 复制行为，取到文案不代表已复制或送达。
 
 只读订单接口进展（M3-02a）：实际 API 路径为 `GET /api/v1/promoter/orders` 和 `GET /api/v1/promoter/orders/{id}`。已验签用户只可读取本人已精确归因的订单；支持 `from`、`to`、`channel`、`positionId`、`orderStatus`、`cursor`、`limit`。日期按最早渠道订单事件时间筛选，采用 RFC3339 且结束时间不包含在区间内；归因时间另列。详情 ID 为随机公开 UUID，订单号仅显示末四位，响应不包含原始渠道报文、买家身份或尚未确认的收益。图稿所需金额、收益状态筛选和页面仍待渠道订单与规则快照接入。
 

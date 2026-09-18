@@ -23,6 +23,9 @@ type UserResolver interface {
 }
 
 type Dependencies struct {
+	ShareArtifacts interface {
+		GetArtifact(context.Context, string, string, string) (conversion.ShareArtifact, error)
+	}
 	Orders interface {
 		ListOwned(context.Context, order.OrderFilter) (order.OrderPage, error)
 		GetOwned(context.Context, string, string) (order.OrderDetail, error)
