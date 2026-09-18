@@ -7,9 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -65,16 +69,21 @@ type runtimeMaterialResponse struct {
 
 func getRuntimeMaterial(t *testing.T, server *httptest.Server, path, token string, status int) runtimeMaterialResponse {
 	t.Helper()
+	return getRuntimeMaterialHTTP(t, server.Client(), server.URL, path, token, status)
+}
+
+func getRuntimeMaterialHTTP(t *testing.T, client *http.Client, baseURL, path, token string, status int) runtimeMaterialResponse {
+	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	r, err := http.NewRequestWithContext(ctx, "GET", server.URL+path, nil)
+	r, err := http.NewRequestWithContext(ctx, "GET", baseURL+path, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if token != "" {
 		r.Header.Set("Authorization", "Bearer "+token)
 	}
-	resp, err := server.Client().Do(r)
+	resp, err := client.Do(r)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -103,6 +112,130 @@ func getRuntimeMaterial(t *testing.T, server *httptest.Server, path, token strin
 		t.Fatal("error returned data", string(raw))
 	}
 	return got
+}
+
+// Catches entrypoint omission of parsed bindings, fallback and startup reloads.
+// Real API child processes use only temporary files and a synthetic PG schema.
+func TestRuntimeMaterialsDeploymentFileEntrypoint(t *testing.T) {
+	db, config, private, _ := runtimeMaterialFixture(t)
+	dir := t.TempDir()
+	binary := filepath.Join(dir, "api")
+	buildCtx, buildCancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer buildCancel()
+	if out, err := exec.CommandContext(buildCtx, "go", "build", "-o", binary, "../../cmd/api").CombinedOutput(); err != nil {
+		t.Fatalf("build API: %s %v", out, err)
+	}
+	keyPath := filepath.Join(dir, "public.pem")
+	bindingPath := filepath.Join(dir, "bindings.json")
+	if err := os.WriteFile(keyPath, config.PublicKeyPEM, 0600); err != nil {
+		t.Fatal(err)
+	}
+	var schema string
+	if err := db.QueryRow(`SELECT current_schema()`).Scan(&schema); err != nil {
+		t.Fatal(err)
+	}
+	dsn, err := url.Parse(os.Getenv("PG_TEST_DSN"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	params := dsn.Query()
+	params.Set("search_path", schema)
+	dsn.RawQuery = params.Encode()
+	for _, configured := range []bool{true, false} {
+		t.Run(fmt.Sprint(configured), func(t *testing.T) {
+			if _, err := db.Exec(`UPDATE channel_capabilities SET status='READY'`); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.WriteFile(bindingPath, []byte(`[{"platform":"JD","type":"PRODUCT","terminal":"H5","scene":"home","mediaId":"runtime-media"}]`), 0600); err != nil {
+				t.Fatal(err)
+			}
+			file := bindingPath
+			if !configured {
+				file = ""
+			}
+			// Reserve a loopback-only port; no production port or business DSN is used.
+			listener, err := net.Listen("tcp", "127.0.0.1:0")
+			if err != nil {
+				t.Fatal(err)
+			}
+			addr := listener.Addr().String()
+			if err = listener.Close(); err != nil {
+				t.Fatal(err)
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+			defer cancel()
+			cmd := exec.CommandContext(ctx, binary)
+			// Do not inherit deployment secrets or business configuration.
+			cmd.Env = []string{"DATABASE_URL=" + dsn.String(), "AUTH_PUBLIC_KEY_FILE=" + keyPath, "AUTH_ISSUER=" + config.Issuer, "AUTH_AUDIENCE=" + config.Audience, "PROMOTER_AGREEMENT_VERSION=" + config.AgreementVersion, "CATALOG_BINDINGS_FILE=" + file, "API_ADDR=" + addr}
+			cmd.Dir = "../.."
+			if err = cmd.Start(); err != nil {
+				t.Fatal(err)
+			}
+			defer func() { cancel(); _ = cmd.Wait() }()
+			client := &http.Client{Timeout: time.Second}
+			baseURL := "http://" + addr
+			deadline := time.Now().Add(5 * time.Second)
+			for {
+				resp, err := client.Get(baseURL + "/healthz")
+				if err == nil {
+					resp.Body.Close()
+					if resp.StatusCode == 200 {
+						break
+					}
+				}
+				if time.Now().After(deadline) {
+					t.Fatal("temporary API did not become ready")
+				}
+				time.Sleep(20 * time.Millisecond)
+			}
+			token := runtimeToken(t, private, runtimeMaterialOwner)
+			base := "/api/v1/promoter/materials"
+			detailPath := base + "/" + runtimeMaterialID + "?" + runtimeMaterialQuery
+			read := func(path string) material.Detail {
+				t.Helper()
+				var detail material.Detail
+				got := getRuntimeMaterialHTTP(t, client, baseURL, path, token, 200)
+				if err := json.Unmarshal(got.Data, &detail); err != nil {
+					t.Fatal(err)
+				}
+				return detail
+			}
+			var page material.Page
+			got := getRuntimeMaterialHTTP(t, client, baseURL, base+"?"+runtimeMaterialQuery+"&limit=1", token, 200)
+			if err := json.Unmarshal(got.Data, &page); err != nil {
+				t.Fatal(err)
+			}
+			detail := read(detailPath)
+			if !configured {
+				if page.Items == nil || len(page.Items) != 0 || page.NextCursor != "" || page.Capability.Reason != "UNCONFIGURED" || detail.Item != nil || detail.Capability.Reason != "UNCONFIGURED" {
+					t.Fatal(page, detail)
+				}
+				return
+			}
+			if len(page.Items) != 1 || page.Items[0].ID != runtimeMaterialID || page.NextCursor == "" || !page.Capability.Allowed || detail.Item == nil || detail.Item.ID != runtimeMaterialID {
+				t.Fatal(page, detail)
+			}
+			if err := os.WriteFile(bindingPath, []byte(`[]`), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if detail = read(detailPath); detail.Item == nil || !detail.Capability.Allowed {
+				t.Fatal("unexpected config reload", detail)
+			}
+			if _, err := db.Exec(`UPDATE channel_capabilities SET status='SUSPENDED'`); err != nil {
+				t.Fatal(err)
+			}
+			if detail = read(detailPath); detail.Item != nil || detail.Capability.Allowed || detail.Capability.Reason != "SUSPENDED" {
+				t.Fatal(detail)
+			}
+		})
+	}
+	var tracking, requests int
+	if err := db.QueryRow(`SELECT count(*) FROM tracking_records`).Scan(&tracking); err != nil {
+		t.Fatal(err)
+	}
+	if err := db.QueryRow(`SELECT count(*) FROM promotion_conversion_requests`).Scan(&requests); err != nil || tracking != 0 || requests != 0 {
+		t.Fatal(tracking, requests, err)
+	}
 }
 
 // Catches missing runtime wiring, bypassed signature/owner checks, invalid IDs,

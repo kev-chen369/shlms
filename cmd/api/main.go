@@ -22,6 +22,10 @@ func main() {
 	if err != nil {
 		log.Fatal("read configured public key: ", err)
 	}
+	config, err := loadAPIConfig(key)
+	if err != nil {
+		log.Fatal("catalog binding configuration is invalid or unreadable")
+	}
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		log.Fatal(err)
@@ -29,10 +33,7 @@ func main() {
 	defer db.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	handler, err := app.NewHandler(ctx, db, app.Config{
-		PublicKeyPEM: key, Issuer: os.Getenv("AUTH_ISSUER"), Audience: os.Getenv("AUTH_AUDIENCE"),
-		AgreementVersion: os.Getenv("PROMOTER_AGREEMENT_VERSION"), MigrationsDir: "migrations",
-	})
+	handler, err := app.NewHandler(ctx, db, config)
 	if err != nil {
 		log.Fatal("API configuration or database is not ready: ", err)
 	}

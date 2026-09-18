@@ -1,5 +1,11 @@
 # 测试计划
 
+## M7-01d-3b-2 启动配置验收（2026-09-19）
+
+`TestLoadCatalogBindingsFile`验证普通绝对路径、未设置 / 空数组关闭、缺失 / 目录 / FIFO / symlink / 相对路径 / 超限 / 非法内容安全拒绝；`TestLoadAPIConfig`验证环境选择与启动配置保留，`TestMainRejectsBrokenCatalogConfig`执行真实main子进程，错误配置失败且无监听或输入泄漏。`TestRuntimeMaterialsDeploymentFileEntrypoint`编译临时API并用隔离PG / RSA签名实际HTTP读取，验证配置真正传入列表 / 详情、未设置拒绝、不热重载、数据库撤销及零Tracking / 转链请求。临时丢弃main绑定的mutation实际RED，恢复后GREEN；不是源码文本测试。
+
+用私有PG_TEST_DSN运行cmd/api、material、app定向三轮race和全量Go / vet / build；本机Unix进程与合成数据不替代正式身份提供方、媒体来源、最小权限、真实设备或渠道生成验收。前端选品仍待M7-01e，现有京东适配器不变。
+
 ## 分层
 
 - 单元：状态映射、金额换算、佣金规则、幂等键和风控规则。
