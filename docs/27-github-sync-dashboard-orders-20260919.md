@@ -31,4 +31,4 @@ PG_TEST_DSN 未配置，数据库集成跳过。真实身份、渠道、订单�
 
 ## 合并与同步
 
-fetch / merge origin/main 815172d，Already up to date；当前四项任务为其后继提交。推送使用非强制 main 更新并重新 fetch 核对，保留另一 Codex 与远端既有历史；未完成工作和 .DS_Store 保留在原工作区，不暂存。
+fetch / merge origin/main 815172d，Already up to date；当前四项任务为其后继提交。HTTPS 推送因缺少本机认证失败，改用既有 SSH 身份非强制推送 main 至 ce8e516，重新 fetch 后确认 HEAD 与 origin/main 一致。核对记录另由 PROC-08b 提交；保留另一 Codex 与远端既有历史，未完成工作和 .DS_Store 保留在原工作区，不暂存。
