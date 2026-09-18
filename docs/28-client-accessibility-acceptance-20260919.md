@@ -7,7 +7,7 @@
 | 设计关联 | 实际页面（`apps/client/src/`） | 当前接口 / 行为 | 主要用例与未完成范围 |
 |---|---|---|---|
 | P-00，V3 首页 | `pages/home/index.vue` | 平台切换、四模块、领券只读接口、四栏导航 | `tests/home.test.ts` 等现有首页测试；`tests/browser/home-text-resize.browser.cjs` 实际布局。商品搜索 / 店铺 / 真实推广内容未接通 |
-| 非推广 P 页；V3 领券设计 | `pages/coupons/index.vue` | `/api/v1/coupon-cities`、`/api/v1/coupons`、详情与适用商品只读 | coupon API / model / component 用例；本轮浏览器空目录及平台键盘操作。领取 / 购买 / 外跳未开放 |
+| 非推广 P 页；V3 领券设计 | `pages/coupons/index.vue` | `/api/v1/coupon-cities`、`/api/v1/coupons`、详情与适用商品只读 | coupon API / model / component 用例；`tests/browser/coupon-business.browser.cjs` / `coupon-text-resize.browser.cjs` 非空目录 / 商品、业务与平台键盘、分页恢复。领取 / 购买 / 外跳未开放 |
 | P-02 的入口骨架，不是完整工作台 | `pages/promotion/index.vue` | 本人订单、统计、准备链接入口；默认真实身份未接入 | orders / dashboard 页面键盘用例；开通、推广位及转链业务未验收 |
 | 非推广 P 页；我的次级入口 | `pages/profile/index.vue` | 推广 / 消费者订单 / AI 导航；身份与余额未接入提示 | 当前页面导航测试及本轮键盘进入推广；不展示假余额或收益 |
 | P-05 的本地准备子集 | `pages/promotion/convert.vue` | 主动读取剪贴板、输入 / 清空；识别关闭 | `tests/link-input.test.ts`，REL-01a-1；不是 P-06～P-08 或真实转链 |
@@ -39,8 +39,16 @@
 
 首次实际 RED：两页面原生输入高 24px 裁切 28px 字体。外框 50px 扣除 24px padding 和 2px border，根因一致；外框改为 60px，原生可用高 34px。保留原键盘、blur、版本 key、筛选与会话清理，不动 API。回归及项目 336 项单元 / 组件测试、类型检查、双端构建通过。直接查看 320px 订单表单、统计输入与计数截图；截图仅本机合成数据，可由已存在的外部目录 `CLIENT_QA_SCREENSHOT_DIR` 保存，不写入 Git。
 
-范围不含 DST 日期操作、全部字段 / 任意字号、真实提供方 / 真实订单 / 收益或系统字体与屏幕阅读器；非空券与商品状态由 REL-01a-3b 继续。REL-01a-3、REL-01a 与 REL-01 未完成。
+范围不含 DST 日期操作、全部字段 / 任意字号、真实提供方 / 真实订单 / 收益或系统字体与屏幕阅读器；当时未覆盖的非空券与商品状态见下节补充。3a / 3b 已完成，REL-01a 的非空链接准备状态由 4 继续；REL-01a 与 REL-01 未完成。
+
+### REL-01a-3b：非空券与商品
+
+新增两个真实 Chrome / Playwright 回归，`test:layout` 当前共 5 项。HTTP 拦截只在测试浏览器提供完整合成材料，实际页面 / uni GET / API 校验 / catalog 状态均保留；不在产品代码加入测试券或身份。
+
+320 / 390 / 1280px、200% CSS 文本：长券标题 / 范围 / 规则版本、商品标题 / ID，城市 Enter / Space、40 字符业务筛选并核对请求；券与商品分页 503 保留已有项及显式 Space 恢复；商品刷新 503 清理 / 空 / 恢复、详情保留、错误脱敏；Enter 关闭与 PDD 未开放平台切换清理。逐状态检查无文档横向溢出、按钮至少 44×44、业务原生输入高度不裁切字号；未出现框架覆盖或非预期 console / pageerror。平台自身横向滚动保留。
+
+业务输入曾真实 RED 发送 old，REL-01a-3b-1 修复后按钮 / 输入 Enter 与快速平台重置三宽度通过。font helper 用 WeakMap 保留各节点首次字号，动态节点只放大一次，不等于全部 CSS 文本、系统字体、屏幕阅读器或全页缩放。截图可通过既有外部目录 CLIENT_QA_SCREENSHOT_DIR 保存，默认不写文件，不作为真实渠道证据；没有实时价格或购买链接。真实渠道 / 全部领取模式 / 真机与辅助技术仍另行验收。
 
 ## 保留的发布门槛
 
-REL-01b 的系统字体 / 微信真机 / 辅助技术与完整业务状态、产品视觉验收仍阻塞。身份、正式推广数据、收益、结算、提现及真实订单回流未满足，REL-01 和整体发布门槛未完成；数据库用例跳过情况另见 M3-05 验收矩阵。本轮不推送、部署或迁移数据库。
+REL-01a-4 的非空链接准备 / 错误提示验收继续。REL-01b 的系统字体 / 微信真机 / 辅助技术与完整业务状态、产品视觉验收仍阻塞。身份、正式推广数据、收益、结算、提现及真实订单回流未满足，REL-01 和整体发布门槛未完成；数据库用例跳过情况另见 M3-05 验收矩阵。本轮不推送、部署或迁移数据库。
