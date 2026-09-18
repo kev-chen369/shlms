@@ -8,6 +8,8 @@ export type Coupon = {
   ruleVersion: string; updatedAt: string; expiresAt: string;
 }
 export type CouponPage = { items: Coupon[]; nextCursor: string }
+export type CouponProduct = { externalProductId: string; title: string; updatedAt: string; expiresAt: string }
+export type CouponProductPage = { items: CouponProduct[]; nextCursor: string }
 export type City = { code: string; name: string }
 export class CouponError extends Error {
   constructor(public readonly kind: 'unopened' | 'unavailable' | 'not-found' | 'error' = 'error') {
@@ -88,6 +90,20 @@ export function createCouponAPI(request: Request = uniRequest) {
       const item = coupon(await read(url('/api/v1/coupons/' + encodeURIComponent(id), values)), context)
       if (item.id !== id) throw new CouponError()
       return item
+    },
+    async products(context: Context, id: string, cursor = ''): Promise<CouponProductPage> {
+      code(context.platform)
+      if (!text(id, 128) || !text(cursor, 1000, true)) throw new CouponError()
+      const values: [string, string][] = [...query(context), ['limit', '20']]
+      if (cursor) values.push(['cursor', cursor])
+      const data = await read(url('/api/v1/coupons/' + encodeURIComponent(id) + '/products', values))
+      if (!record(data) || !Array.isArray(data.items) || data.items.length > 20 || !text(data.nextCursor, 1000, true)) throw new CouponError()
+      if (!data.items.every(item => record(item) && text(item.externalProductId, 128) && text(item.title, 256) &&
+        text(item.updatedAt, 80) && Number.isFinite(Date.parse(item.updatedAt)) && text(item.expiresAt, 80) &&
+        Number.isFinite(Date.parse(item.expiresAt)) && Date.parse(item.expiresAt) > Date.now())) throw new CouponError()
+      const items = data.items as CouponProduct[]
+      if (new Set(items.map(item => item.externalProductId)).size !== items.length || (!items.length && data.nextCursor !== '')) throw new CouponError()
+      return { items, nextCursor: data.nextCursor }
     },
   }
 }
