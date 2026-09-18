@@ -10,6 +10,10 @@
 
 ## 分支整合
 
+- [ ] PROC-06【进行中】2026-09-19：按用户要求更新 GitHub 代码、文档与图；纳入 M1-01c、M1-01d-1、M1-01d-2 已验收提交，先合并 origin/main，再归档带测试数据边界的实际页面截图、更新图册索引并复核合并结果。最后使用非强制推送并重新 fetch 核对远端；不部署生产、不迁移数据库、不把截图测试券当真实渠道数据。
+  - [x] PROC-06a【已完成】2026-09-19：合并 origin/main 58b4549，无冲突；归档两张 390px 实际页面截图、更新图片索引和同步说明。合并后客户端 109 项测试、类型检查、H5 / 微信构建、`go test -count=1 ./...`、`go vet ./...`、`go build ./...`、`node --test web/*.test.mjs` 13 项与 diff 检查通过；39 张 PNG 签名 / 非零尺寸及新增截图链接存在性检查通过。未设置 PG_TEST_DSN，数据库集成跳过；浏览器本机 HTTP 测试数据，不代表真实业务。远端推送单独由 PROC-06b 核对。
+  - [ ] PROC-06b【进行中】非强制推送已合并并验证的代码、文档与图至 GitHub main；推送后重新 fetch 比对提交，保留其他任务的历史。未成功前不宣称远端已更新。
+
 - [x] PROC-05【已完成】2026-09-19：按用户要求同步 GitHub main 的已验收代码、当前文档及既有图稿；保留原工作区未验收的 M1-01c 改动。不包含生产部署、数据库迁移、真实渠道验收或重新绘图。
   - [x] PROC-05a【已完成】2026-09-19：在独立工作树复核远端 71da903 与已验收品牌提交 M0-02f，修正图片索引的 V3 已确认结构和历史名称说明；未改变既有 PNG。验证：`go test ./...`、`go vet ./...`、`go build ./...`、`node --test web/*.test.mjs`（13 项）、客户端 `npm test`（43 项）、`npm run typecheck`、`npm run build:h5`、`npm run build:mp-weixin` 全部通过；Node 检查 37 张 PNG 签名 / 非零尺寸及索引文件路径通过，`git diff --check` 通过。未配置 PG_TEST_DSN，数据库集成测试跳过，不代表真实渠道、生产数据库或微信真机验收；远端推送另由 PROC-05b 核对。
   - [x] PROC-05b【已完成】2026-09-19：重新 fetch / merge origin/main（Already up to date），通过 SSH 非强制推送已验收品牌代码与图稿索引记录；再次 `git fetch origin`、`git rev-parse HEAD origin/main` 核对双方均为 4025e18，完整保留远端既有历史。仅 GitHub 仓库同步，未执行生产部署或数据库迁移。`npm ci --ignore-scripts` 完成，审计仍为 40 项（15 low / 12 moderate / 13 high），继续由 M0-02e 跟踪，不代表安全发布门槛通过。
