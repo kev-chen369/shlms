@@ -37,3 +37,4 @@
 - M7-01a：`go test -count=1 ./internal/capability` 验证可信能力声明精确范围、各能力 / 类型独立、默认 / 待核验 / 停用 / 未知关闭、完整证据与有效时间、错误字段边界及安全投影。纯领域测试无数据库，不证明真实批准 / 调用引用真实性；无生产装配或READY写入口。目录 / 仓储迁移 / API / 前端与真实获批验收仍分别执行。
 - M7-01b：`go test -count=1 ./internal/material` 验证商品 / 无价格活动、平台类型与地域 / 业务 / 终端、起止及源更新时间、未知 / 缺项 / 字段 / JSON时间边界、零卡片拒绝与安全字段投影、slice隔离。URL仅校验HTTPS语法，不执行网络 / 证明官方授权；真实源导入、数据库唯一约束及目录API仍独立验收，不因可展示而开放转链。
 - M7-01c-1：同包查询测试验证首屏 / 后续游标、用户与五维筛选切换、limit和字段上限、UUID边界、未知 / 重复 / 重排 / 尾随JSON与非规范base64。游标仅分页位置，后续接口须可信身份解析，仓储须独立绑定本人范围；当前无SQL / HTTP装配，不构成数据库或API验收。
+- M7-01c-2a：TestMaterialSchemaConstraintsAndDown在配置PG_TEST_DSN的隔离PostgreSQL真实执行000022 up、合法商品 / 活动及身份唯一性、26项CHECK边界与合法最大城市规则、down表 / helper清理。不把DDL或引用存在当来源授权，Record.Validate及只读仓储 / API仍独立验证。

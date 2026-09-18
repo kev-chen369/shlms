@@ -68,3 +68,13 @@ M7-01b～f已在主计划逐项编号；各项开始前补充该项实际仓储 
 - [x] 定向RED后实现最小协议，全量Go验证；独立审查后以M7-01c-1提交。不声明数据库仓储完成。
 
 2026-09-19：4组新增查询测试通过，缺接口RED后GREEN；补齐实际重复键、空白 / 重排、nil afterID与最大字段往返。Go test -count=1 ./internal/material及全量test / vet / build、diff检查退出0。独立审查无阻断；仓储、迁移、API及生产授权未实现，PG_TEST_DSN未配置的数据库测试跳过。M7-01c-2继续，c-3隔离库阻塞，不将本协议当端到端目录。
+
+### M7-01c-2a：物料目录数据库迁移
+
+文件：migrations/000022_promotion_materials.up.sql / down.sql，internal/material/schema_test.go。消费Record领域契约，产生promotion_materials表（内部UUID主键、platform / material_type / external_material_id唯一、内部canonical_url / evidence_ref、title / status默认DRAFT、starts_at可选商品 / 必填活动、ends_at / source_updated_at、rule_version、region_mode / city_codes TEXT[]、business、terminals TEXT[]），无价格 / SKU / 收益。DB保证MT仅活动、非零UUID、基本字节边界、已知状态、有限1～9999年窗口及起止顺序、城市与终端一维唯一非空规则；共享数组校验函数只供此表约束。完整UTF-8 / URL语法与信任证据仍由领域校验和获批导入保证，不因数据库字段存在获得授权。
+
+- [x] 写真实隔离schema测试，执行up后插入合法商品 / 无价格活动，验证平台命名空间唯一、非法范围 / 窗口CHECK失败、down无残留；依赖PG_TEST_DSN，不以SKIP当RED。
+- [x] 在新建私有实例运行定向测试，观察缺迁移RED，然后实现新增迁移，不改历史SQL。
+- [x] 定向 / 全量Go及完整迁移验证，记录DB版本与实跑 / 跳过范围，审查并提交M7-01c-2a。
+
+2026-09-19：PostgreSQL17.11私有Unixsocket实例，真实缺迁移RED后GREEN；26个CHECK拒绝用例、最大城市数量 / 字节边界、身份命名空间及唯一性与down表 / helper无残留通过。时间fixture显式Z避免上海时区将10000年转换为9999年UTC；没有放宽约束。独立审查无阻断，审查者实跑原21边界，新增minor边界主执行复验通过。配置PG_TEST_DSN全量Go test / vet / build和diff退出0；既有迁移链up / 并发 / 重复验证随全量执行，本新增迁移独立up / down实测。全部新迁移完整up / down与仓储一致性仍属于c-3，不提前勾选。未执行生产迁移 / 部署，未开放目录或生成。
