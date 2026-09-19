@@ -6,6 +6,7 @@
 
 ## 阅读顺序
 
+- [推广选品实际图册与V3对应验收](./32-material-page-design-acceptance-20260919.md)：只读本人选品页面、九张实际图、三宽度 / 文字放大 / 竞态证据及未完成的真实渠道、生成和真机边界。
 - [隔离 PostgreSQL 环境与实跑记录](./31-isolated-postgresql-acceptance-20260919.md)：本机私有测试库、真实数据库验证及剩余业务边界，不是生产部署。
 - [最新 GitHub 同步范围与实际页面图](./30-github-sync-materials-accessibility-20260919.md)：本人推广位读取、选品组件 / 完整页面及实际页面图，包含物料 / 能力与授权仓储历史记录；完整多尺寸验收、真实渠道和生产发布仍待完成。
 - [统计页面同步记录](./29-github-sync-accessibility-dashboard-20260919.md)：本人统计页面、输入与大字号修复、复验结果及未完成边界。

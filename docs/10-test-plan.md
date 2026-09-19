@@ -1,5 +1,9 @@
 # 测试计划
 
+## M7-01e-3c-2 图册与父项复核（2026-09-19）
+
+本轮重新执行 `test:materials` 六项及全量27文件485项、typecheck、H5 / 微信构建，均通过；九张实际路由 / 组件图逐张直接查看，PNG签名 / 非零尺寸及生成源与归档字节一致核对，记录视口 / 全页与合成HTTP差异、V3对应及保留的生成 / 分享 / 真机门槛，见[实际图册与验收](./32-material-page-design-acceptance-20260919.md)。只完成约定只读前端，不以图像存在证明完整产品视觉、正式身份或获批渠道。下方各任务记录保留当时完成范围，不将历史数量冒充本轮数据。
+
 ## M7-01e-3b-2 选品页与本人位选择（2026-09-19）
 
 `materials-workbench.test.ts`实际positions-api与materials-model链路验证：未登录零请求、不自动选择默认位、显式位与服务端scene、目录范围查询、非法/字节超限位保持列表但不可选、城市 / 业务边界、平台 / 类型清选择、JD-only映射、分页故障恢复、401清双模型且锁拒重试、身份切换不自动读与ABA、迟到同会话 / 旧会话401及目录401。`materials-page.test.ts`真实页面和uni边界验证注册、四底栏、键盘入口及显式选位再确认；不填模拟商品或生产身份。`tests/browser/materials-page.browser.cjs`已有Chrome / Playwright在390px验证实际推广入口、无身份零调用、同一页面测试端提供方session、本人与scene确认、快速城市 / 业务原生输入最新query、目录拒绝、淘宝未开放和身份丢失，console / pageerror / overlay / 横溢出与Bearer GET断言。是本机合成HTTP状态验收，不替代正式登录、渠道权限、真实物料 / 订单或真机；完整布局及实际图册3c继续。

@@ -2,6 +2,10 @@
 
 2026-09-19，本机 Chrome / uni H5；不表示完整 P-00～P-16 产品、微信设备、真实业务或正式无障碍符合性验收完成。
 
+## M7-01e-3c 增量：只读选品页
+
+后续新增 `pages/promotion/materials.vue` 及推广入口；320 / 390 / 1280px默认 / 200% CSS文字、显式本人位 / 服务端scene、范围原生输入、商品 / 活动、详情、目录与位分页错误恢复、平台 / 身份及迟到请求，由 `npm run test:materials` 六项及485项全量单测重新实跑。九张实际图与V3对应 / 差异见[选品图册验收](./32-material-page-design-acceptance-20260919.md)。这是原七页证据之后的独立增量，不把历史21组或338项改写成当时已经检查了选品页；原 `test:layout` 仍七项。测试身份 / HTTP为合成，生成、正式身份 / 渠道、真机与完整产品视觉未完成。
+
 ## 设计、页面、接口与用例关联
 
 | 设计关联 | 实际页面（`apps/client/src/`） | 当前接口 / 行为 | 主要用例与未完成范围 |
@@ -9,6 +13,7 @@
 | P-00，V3 首页 | `pages/home/index.vue` | 平台切换、四模块、领券只读接口、四栏导航 | `tests/home.test.ts` 等现有首页测试；`tests/browser/home-text-resize.browser.cjs` 实际布局。商品搜索 / 店铺 / 真实推广内容未接通 |
 | 非推广 P 页；V3 领券设计 | `pages/coupons/index.vue` | `/api/v1/coupon-cities`、`/api/v1/coupons`、详情与适用商品只读 | coupon API / model / component 用例；`tests/browser/coupon-business.browser.cjs` / `coupon-text-resize.browser.cjs` 非空目录 / 商品、业务与平台键盘、分页恢复。领取 / 购买 / 外跳未开放 |
 | P-02 的入口骨架，不是完整工作台 | `pages/promotion/index.vue` | 本人订单、统计、准备链接入口；默认真实身份未接入 | orders / dashboard 页面键盘用例；开通、推广位及转链业务未验收 |
+| V3只读推广选品增量，不是完整生成页 | `pages/promotion/materials.vue` | 本人位GET、显式位 / scene范围、物料列表 / 最新详情；生成关闭 | positions / workbench / materials API、模型、组件及页面；`test:materials` 六项浏览器与九图；真实渠道、生成 / 分享、设备与整体视觉仍另验收 |
 | 非推广 P 页；我的次级入口 | `pages/profile/index.vue` | 推广 / 消费者订单 / AI 导航；身份与余额未接入提示 | 当前页面导航测试及本轮键盘进入推广；不展示假余额或收益 |
 | P-05 的本地准备子集 | `pages/promotion/convert.vue` | 主动读取剪贴板、输入 / 清空；识别关闭 | `tests/link-input.test.ts`，REL-01a-1；`tests/browser/link-input-text-resize.browser.cjs` 非空大字号 / 错误 / 等待状态；不是 P-06～P-08 或真实转链 |
 | P-10；P-11 仅归因详情子集 | `pages/promotion/orders.vue` | `/api/v1/promoter/orders` 及本人详情；UTC 日期 | `tests/promoter-orders-page.test.ts`、组件 / 模型 / API；M3-02c-2b 浏览器。无收益双状态 / 金额，不等于 P-11 收益详情完成 |

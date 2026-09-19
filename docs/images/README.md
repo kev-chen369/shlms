@@ -2,6 +2,8 @@
 
 ## 文件
 
+- `qa-materials-signed-out-390.png`、`qa-materials-selection-text200-320.png`、`qa-materials-product-text200-320.png`、`qa-materials-desktop-text200-1280.png`、`qa-materials-detail-text200-320.png`、`qa-materials-blocked-text200-320.png`、`qa-materials-activity-text200-320.png`、`qa-materials-component-390.png`：2026-09-19实际选品路由 / 组件截图，分别未登录、本人位、商品、桌面、最新详情、停用、活动与正常组件全页；文字放大仅200% CSS，目录 / 身份为测试端合成。与下面完整390px页合计九图，逐张查看及V3差异见[实际图册验收](../32-material-page-design-acceptance-20260919.md)，不是生产或微信验收。
+
 - `client-materials-selection-390-20260919.png`：2026-09-19 重新生成并查看的实际 H5 390px 推广选品页面，展示显式本人位 / 固定场景 / 城市与业务确认及目录未配置。测试端合成身份与 HTTP 响应，生成链接关闭，不代表生产渠道或完整多尺寸验收；见[PROC-17 同步说明](../30-github-sync-materials-accessibility-20260919.md)。
 
 - `qa-coupon-list-text200-320.png`、`qa-coupon-products-text200-320.png`、`qa-link-input-text200-320.png`、`qa-profile-route-text200-320.png`、`qa-promotion-route-text200-320.png`：2026-09-19 实际 H5 320px / 200% CSS 文本截图；券与商品为合成测试数据，转链未开放，不代表生产授权或真实设备验收。见[最新同步说明](../30-github-sync-materials-accessibility-20260919.md)。
