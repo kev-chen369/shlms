@@ -3,6 +3,7 @@ package order
 import (
 	"bytes"
 	"context"
+	"database/sql"
 	"errors"
 	"testing"
 	"time"
@@ -195,5 +196,76 @@ func TestAnomalyRefundsAndLateOrderDoNotReopenOrHalfWrite(t *testing.T) {
 	}
 	if result, err := project.Apply(ctx, ProjectionInput{EvidenceID: lateRefundID, RefundID: "late-refund-id", RefundKind: "PARTIAL", RefundAmountMinor: 50}); err != nil || result.Status != "PAID" {
 		t.Fatal("late refund replay after order", result, err)
+	}
+}
+
+func TestAnomalyPendingAndAttributedOrdersStayOwnerIsolated(t *testing.T) {
+	db := orderTestDB(t)
+	ctx := context.Background()
+	store, err := NewStore(db, "pending-v1", bytes.Repeat([]byte{79}, 32))
+	if err != nil {
+		t.Fatal(err)
+	}
+	owner, position, tracking, conversion := "pending-owner", "pending-position", "pending-tracking", "pending-conversion"
+	seedAttributionFixture(t, db, owner, position, tracking, conversion)
+	project := ProjectionStore{DB: db}
+	saveOrder := func(eventID, externalID string, payload string) string {
+		t.Helper()
+		raw, _, err := store.Save(ctx, RawEvent{Channel: "JD", EventID: eventID, ExternalOrderID: externalID,
+			EventType: "ORDER", OccurredAt: time.Date(2026, 9, 18, 10, 0, 0, 0, time.UTC), Payload: []byte(payload)})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if result, err := project.Apply(ctx, ProjectionInput{EvidenceID: raw.ID, Status: "PAID"}); err != nil || result.Status != "PAID" {
+			t.Fatal(result, err)
+		}
+		return raw.ID
+	}
+	noneID := saveOrder("pending-none-event", "pending-none-order", `{"buyer_id":"private-marker","status":"PAID"}`)
+	unknownID := saveOrder("pending-unknown-event", "pending-unknown-order", `{"buyer_id":"another-private-marker","status":"PAID"}`)
+	ownedID := saveOrder("owned-event", "owned-order", `{"buyer_id":"must-not-be-exposed","status":"PAID"}`)
+	attributions := AttributionStore{DB: db}
+	none, err := attributions.Apply(ctx, AttributionInput{EvidenceID: noneID, Method: AttributionNone})
+	if err != nil || none.Status != "PENDING_REVIEW" || none.OwnerUserID != "" || none.PositionID != "" || none.TrackingID != "" || none.ConversionRequestID != "" {
+		t.Fatal("NONE attribution inferred ownership or consumer", none, err)
+	}
+	unknown, err := attributions.Apply(ctx, AttributionInput{EvidenceID: unknownID, Method: AttributionSubID, Value: "unknown-sub-id"})
+	if err != nil || unknown.Status != "PENDING_REVIEW" || unknown.OwnerUserID != "" || unknown.PositionID != "" || unknown.TrackingID != "" || unknown.ConversionRequestID != "" {
+		t.Fatal("unknown sub ID inferred ownership or consumer", unknown, err)
+	}
+	if _, err := attributions.Apply(ctx, AttributionInput{EvidenceID: unknownID, Method: AttributionSubID, Value: "different-sub-id"}); !errors.Is(err, ErrAttributionConflict) {
+		t.Fatalf("pending attribution accepted different evidence: %v", err)
+	}
+	attributed, err := attributions.Apply(ctx, AttributionInput{EvidenceID: ownedID, Method: AttributionSubID, Value: tracking})
+	if err != nil || attributed.Status != "ATTRIBUTED" || attributed.OwnerUserID != owner || attributed.PositionID != position || attributed.TrackingID != tracking {
+		t.Fatal("valid tracking was not attributed exactly", attributed, err)
+	}
+
+	reader := ReadStore{DB: db}
+	ownedPage, err := reader.ListOwned(ctx, OrderFilter{OwnerUserID: owner, From: time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC), To: time.Date(2026, 9, 19, 0, 0, 0, 0, time.UTC), Limit: 20})
+	if err != nil || len(ownedPage.Items) != 1 || ownedPage.Items[0].MaskedOrderID != "****rder" {
+		t.Fatal(ownedPage, err)
+	}
+	if _, err := reader.GetOwned(ctx, "other-owner", ownedPage.Items[0].ID); !errors.Is(err, ErrNotFound) {
+		t.Fatalf("cross-owner detail read returned %v", err)
+	}
+	otherPage, err := reader.ListOwned(ctx, OrderFilter{OwnerUserID: "other-owner", From: time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC), To: time.Date(2026, 9, 19, 0, 0, 0, 0, time.UTC), Limit: 20})
+	if err != nil || len(otherPage.Items) != 0 {
+		t.Fatal(otherPage, err)
+	}
+	ownedCounts, err := (dashboard.ReadStore{DB: db}).Get(ctx, dashboard.Filter{OwnerUserID: owner, From: time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC), To: time.Date(2026, 9, 19, 0, 0, 0, 0, time.UTC)})
+	if err != nil || ownedCounts.ValidOrders != 1 {
+		t.Fatal(ownedCounts, err)
+	}
+	otherCounts, err := (dashboard.ReadStore{DB: db}).Get(ctx, dashboard.Filter{OwnerUserID: "other-owner", From: time.Date(2026, 9, 18, 0, 0, 0, 0, time.UTC), To: time.Date(2026, 9, 19, 0, 0, 0, 0, time.UTC)})
+	if err != nil || otherCounts.ValidOrders != 0 {
+		t.Fatal(otherCounts, err)
+	}
+	var pendingOwner, pendingPosition, pendingTracking, pendingConversion sql.NullString
+	if err := db.QueryRow(`SELECT owner_user_id,position_id,tracking_id,conversion_request_id FROM order_attributions WHERE channel='JD' AND external_order_id='pending-none-order'`).Scan(&pendingOwner, &pendingPosition, &pendingTracking, &pendingConversion); err != nil {
+		t.Fatal(err)
+	}
+	if pendingOwner.Valid || pendingPosition.Valid || pendingTracking.Valid || pendingConversion.Valid {
+		t.Fatalf("pending attribution persisted ownership fields: %#v %#v %#v %#v", pendingOwner, pendingPosition, pendingTracking, pendingConversion)
 	}
 }
