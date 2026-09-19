@@ -28,13 +28,13 @@
 | TestReadOwnedOrdersFiltersAndMasks | `internal/order/read_test.go`：本人归属、脱敏、公有 ID、筛选、分页及订单发生时间 | 随事件回补 / 退款后的同一链路计数 |
 | TestCountsOwnRecordsAndDates | `internal/dashboard/read_test.go`：合成最终记录的本人 / 日期 / 渠道 / 推广位及退款排除 | 从原始事件生成记录、计数随乱序 / 退款 / 回补一致 |
 
-## M3-05b：隔离数据库联测验收（环境已解除阻塞，新增联测未实现）
+## M3-05b：隔离数据库联测验收（环境已解除阻塞，b1已完成，b2～b5继续）
 
 拟新增 `internal/order/anomaly_integration_test.go`，沿用 `orderTestDB` 的随机 schema 和清理，不改写历史迁移，不向需要保留数据的数据库运行测试。读取现有仓储公开方法；不增加测试专用生产入口。
 
-每项先写带手工期望值的真实仓储测试、观察失败或对已有行为作明确回归证明，缺行为时再最小修正，完成后独立提交任务实现 / 测试 / 状态。恢复数据库后先执行已有 9 项，任何失败先定位原因，不通过跳过或削弱断言解决。
+每项先写带手工期望值的真实仓储测试、观察失败或对已有行为作明确回归证明，缺行为时再最小修正，完成后独立提交任务实现 / 测试 / 状态。M3-05b-1已在私有数据库完成；后续b2～b5先复跑已有9项，任何失败先定位原因，不通过跳过或削弱断言解决。
 
-- [ ] M3-05b-1【未开始】重复 / 乱序 / 时间回补与指标一致性。固定上海 2026-09-18 当天范围；先 PAID，再重放原事件及同状态新事件，归因、列表、看板都只计一个订单。后到的早期 CREATED 跨入前一自然日时，状态仍 PAID，但 `order_occurred_at` 为真实最早发生时间；前日看板为 1、原日为 0、列表日期筛选一致，原始事件和投影历史保留。相同 eventId 不同载荷必须冲突，不能偷偷重新归属。
+- [x] M3-05b-1【已完成】2026-09-19：新增 `internal/order/anomaly_integration_test.go`，沿用随机schema / 真实迁移 / 真实仓储链路。固定 Asia/Shanghai 2026-09-18日界线，先PAID、同状态新事件重放及跨前一自然日迟到CREATED；断言状态不回退、最早 `order_occurred_at` 回补、重复 / 迟到投影历史保留、归因 / 本人列表 / 详情 / 看板各只计一条且前日1、原日0；相同eventId改载荷返回冲突。成功转链 / 复制事件仅用于合成既有只读统计时间窗口，不创建收益或消费者身份。首次RED发现SUCCEEDED夹具遗漏迁移约束要求的`channel_request_id`，补齐夹具后GREEN，不放宽生产约束。私有PG17.11下定向 `go test -count=1 -v ./internal/order ./internal/dashboard`、`go test -race -count=1 ./internal/order ./internal/dashboard`、全量 `go test -count=1 ./...`、`go vet ./...`、`go build ./...`退出0；无生产库 / 真实渠道调用。其余M3-05b-2～5仍未完成。
 - [ ] M3-05b-2【未开始】退款和先退款后订单。部分退款记录只增加一个 refund event，订单状态不误变 REFUNDED，当前有效计数仍 1；全额退款后有效计数 0，订单仍能以 REFUNDED 查询本人详情、保留历史，后到 PAID 不恢复有效订单。退款重放不多记录。先退款缺订单返回 ErrMissingOrder、不可半写；补订单再重放原退款才能成功。退款金额只是仓储合成事件，不推导钱包冲正或可提现收入。
 - [ ] M3-05b-3【未开始】无归因和匿名消费者。NONE / 未知 subId 保留 PENDING_REVIEW，所有本人列表与看板不展示该订单；有效推广者 Tracking 可归因推广者，但不得创建 / 推断消费者身份、返现或钱包记录。另一个推广者的列表 / 详情 / 看板不可读取。既有待核验记录的不同凭据 Apply 会返回冲突，不能假装已存在人工回补接口；先设计受权审计回补方案，另编号实现后再验收。
 - [ ] M3-05b-4【未开始】共享渠道位与账户隔离。`channel_positions` 已有 `(channel,account_id,external_position_id)` 唯一约束：同账户同外部位映射到两人应拒绝，而不是任选一个归属；不同账户相同外部位分别映射时，只能以可信 AccountID 精确归因，错误账户 / 非 READY 不归属。合成 READY 仅测试使用，不能给生产渠道置 READY。消费者在多人使用同一外部位时仍不可推断。
@@ -42,7 +42,7 @@
 
 PROC-11补充证据（2026-09-19）：新建私有PostgreSQL17.11仅Unixsocket实例，已有order / dashboard共11项（含上述9个数据库用例）全部RUN / PASS、0 SKIP；Go全量test / vet / build通过。环境见[隔离库记录](../../31-isolated-postgresql-acceptance-20260919.md)。上文初次复核SKIP保持为历史，不代表当前仍缺库。
 
-下一步：在该可丢弃私有实例研发M3-05b-1～5新增联测与独立断言；各用例保持随机schema / 清理，不仅凭旧用例通过标为完成。不得将生产DATABASE_URL自动当作PG_TEST_DSN；真实业务M3-05c仍阻塞。
+下一步：在该可丢弃私有实例继续研发M3-05b-2～5新增联测与独立断言；b1已完成但不替代剩余异常场景。各用例保持随机schema / 清理，不仅凭旧用例通过标为完成。不得将生产DATABASE_URL自动当作PG_TEST_DSN；真实业务M3-05c仍阻塞。
 
 验证命令（测试连接由专用运行环境提供，不在文档写真实 DSN）：
 
